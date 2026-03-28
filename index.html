@@ -253,7 +253,7 @@
 </div>
 
 <script>
-const SUPABASE_URL = 'https://rvouqjhrbjsmqyvqtxy.supabase.co';
+const SUPABASE_URL = 'https://rvouqjhrbjsmqyzvqtxy.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_gr_VMD5No5n8McWg93vq1A_gO6pKoUQ';
 
 const ICONS = {'Stabparkett':'🪵','Mosaikparkett':'🔲','Hochkantlamellenparkett':'📐','Massivholzdielen':'🏡','Altholz':'🌿','Breitlamellenparkett':'▬','Landhausdielen':'🏘️','Fischgratparkett':'🐟'};
@@ -261,8 +261,25 @@ const ICONS = {'Stabparkett':'🪵','Mosaikparkett':'🔲','Hochkantlamellenpark
 let warenkorb = [], aktKat = null, aktArt = null, aktSort = null, aktProdukt = null, aktPakete = [], lieferart = 'abholung', zahlungsart = 'stripe';
 
 async function db(table, params='') {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}});
-  return r.json();
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
+      headers:{
+        'apikey':SUPABASE_KEY,
+        'Authorization':`Bearer ${SUPABASE_KEY}`,
+        'Content-Type':'application/json',
+        'Accept':'application/json'
+      }
+    });
+    if (!r.ok) {
+      const err = await r.text();
+      console.error('DB Error:', r.status, err);
+      return null;
+    }
+    return r.json();
+  } catch(e) {
+    console.error('Fetch Error:', e);
+    return null;
+  }
 }
 async function dbInsert(table, data) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(data)});
@@ -278,7 +295,8 @@ function showScreen(name) {
 async function ladeKategorien() {
   const data = await db('kategorien','?aktiv=eq.true&order=reihenfolge');
   const grid = document.getElementById('kategorienGrid');
-  if (!data||!data.length) { grid.innerHTML='<div style="padding:20px;color:var(--gray);grid-column:span 2">Noch keine Produkte angelegt.</div>'; return; }
+  if (!data) { grid.innerHTML='<div style="padding:20px;color:red;grid-column:span 2">Verbindungsfehler. Bitte neu laden.</div>'; return; }
+  if (!data.length) { grid.innerHTML='<div style="padding:20px;color:var(--gray);grid-column:span 2">Noch keine Produkte angelegt.</div>'; return; }
   grid.innerHTML = data.map(k=>`<div class="kat-card" onclick="zeigeArten(${k.id},'${k.name}')"><div class="kat-card-img">${ICONS[k.name]||'🪵'}</div><div class="kat-card-body"><div class="kat-card-name">${k.name}</div><div class="kat-card-count">Kollektion →</div></div></div>`).join('');
 }
 
