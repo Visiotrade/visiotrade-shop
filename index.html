@@ -69,6 +69,7 @@
   .produkt-name { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--walnut); margin-bottom: 6px; line-height: 1.3; }
   .produkt-preis { font-size: 26px; font-weight: 600; color: var(--oak); margin-bottom: 16px; }
   .produkt-preis span { font-size: 14px; color: var(--gray); font-weight: 400; }
+  .mwst-hinweis { font-size: 14px; color: var(--gray); font-weight: 400; margin-bottom: 16px; font-family: 'Playfair Display', serif; }
   .produkt-beschreibung { font-size: 14px; color: var(--gray); line-height: 1.6; margin-bottom: 20px; }
 
   .m2-section { background: var(--gray-light); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
@@ -335,6 +336,7 @@ async function zeigeProdukt(sortId, sortName) {
   aktProdukt = produkte[0];
   document.getElementById('produktName').textContent=`${aktKat.name} — ${aktArt.name} — ${sortName}`;
   document.getElementById('produktPreis').innerHTML=`${aktProdukt.preis_pro_m2.toFixed(2).replace('.',',')} € <span>/ m²</span>`;
+  document.getElementById('produktBeschreibung').insertAdjacentHTML('beforebegin', '<div class="mwst-hinweis">zzgl. 19% MwSt.</div>');
   document.getElementById('produktBeschreibung').textContent=aktProdukt.beschreibung||'';
   document.getElementById('produktImg').textContent=ICONS[aktKat.name]||'🪵';
   const pakete = await db('pakete',`?produkt_id=eq.${aktProdukt.id}&aktiv=eq.true&order=menge_m2`);
@@ -394,7 +396,7 @@ function renderWarenkorb() {
   const cont = document.getElementById('warenkorbContent');
   if (!warenkorb.length) { cont.innerHTML=`<div class="warenkorb-leer"><div class="warenkorb-leer-icon">🛒</div><h3>Warenkorb ist leer</h3><p>Entdecken Sie unser Sortiment.</p></div>`; return; }
   const gesamt = warenkorb.reduce((s,i)=>s+i.preis,0);
-  cont.innerHTML=`<div class="warenkorb-items">${warenkorb.map(item=>`<div class="wk-item"><div class="wk-item-icon">${item.icon}</div><div class="wk-item-info"><div class="wk-item-name">${item.name}</div><div class="wk-item-detail">${item.gesamt_m2.toFixed(0)} m²</div><div class="wk-item-preis">${item.preis.toFixed(2).replace('.',',')} €</div></div><button class="wk-remove" onclick="removeFromCart(${item.id})">✕</button></div>`).join('')}</div><div class="wk-summary"><div class="wk-row"><span>Zwischensumme</span><span>${gesamt.toFixed(2).replace('.',',')} €</span></div><div class="wk-row"><span>Lieferkosten</span><span>auf Anfrage</span></div><div class="wk-row total"><span>Gesamt Material</span><span>${gesamt.toFixed(2).replace('.',',')} €</span></div></div><button class="checkout-btn" onclick="showScreen('kasse')">Zur Kasse →</button><div class="pb-safe"></div>`;
+  cont.innerHTML=`<div class="warenkorb-items">${warenkorb.map(item=>`<div class="wk-item"><div class="wk-item-icon">${item.icon}</div><div class="wk-item-info"><div class="wk-item-name">${item.name}</div><div class="wk-item-detail">${item.gesamt_m2.toFixed(0)} m²</div><div class="wk-item-preis">${item.preis.toFixed(2).replace('.',',')} €</div></div><button class="wk-remove" onclick="removeFromCart(${item.id})">✕</button></div>`).join('')}</div><div class="wk-summary"><div class="wk-row"><span>Nettobetrag</span><span>${gesamt.toFixed(2).replace('.',',')} €</span></div><div class="wk-row"><span>MwSt. 19%</span><span>${(gesamt*0.19).toFixed(2).replace('.',',')} €</span></div><div class="wk-row"><span>Lieferkosten</span><span>auf Anfrage</span></div><div class="wk-row total"><span>Gesamtbetrag inkl. MwSt.</span><span>${(gesamt*1.19).toFixed(2).replace('.',',')} €</span></div></div><button class="checkout-btn" onclick="showScreen('kasse')">Zur Kasse →</button><div class="pb-safe"></div>`;
 }
 
 function removeFromCart(id) { warenkorb=warenkorb.filter(i=>i.id!==id); document.getElementById('cartCount').textContent=warenkorb.length; renderWarenkorb(); }
