@@ -127,6 +127,7 @@
   .agb-checkbox-row input[type="checkbox"] { width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px; accent-color: var(--oak); cursor: pointer; }
   .agb-checkbox-row span { font-size: 14px; color: var(--walnut); line-height: 1.5; }
   .agb-checkbox-row a { color: var(--oak); text-decoration: underline; font-weight: 600; }
+  .b2b-hinweis { background: #FFF8E1; border: 1px solid #F0C040; border-radius: var(--radius-sm); padding: 12px; font-size: 13px; color: #7B5800; line-height: 1.5; }
 
   .erfolg-screen { text-align: center; padding: 60px 24px; }
   .erfolg-icon { font-size: 80px; margin-bottom: 20px; animation: pop 0.4s ease; }
@@ -139,6 +140,17 @@
   .spinner { width: 36px; height: 36px; border: 3px solid var(--oak-pale); border-top-color: var(--oak); border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .pb-safe { padding-bottom: 32px; }
+
+  .footer { background: var(--walnut); color: rgba(255,255,255,0.6); padding: 24px 20px; font-size: 12px; line-height: 1.6; }
+  .footer-links { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; }
+  .footer-links a { color: var(--oak-light); text-decoration: none; font-size: 13px; font-weight: 500; }
+  .footer-links a:hover { text-decoration: underline; }
+  .footer-divider { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 12px 0; }
+
+  .impressum-content { padding: 20px; font-size: 14px; line-height: 1.7; color: var(--walnut); }
+  .impressum-content h2 { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 16px; }
+  .impressum-content h3 { font-size: 15px; font-weight: 600; margin: 16px 0 6px; color: var(--oak); }
+  .impressum-content p { margin-bottom: 8px; color: var(--gray); }
 </style>
 </head>
 <body>
@@ -160,6 +172,16 @@
   <div class="section-title">Kategorien</div>
   <div class="kategorien-grid" id="kategorienGrid">
     <div class="loading" style="grid-column:span 2"><div class="spinner"></div>Lädt...</div>
+  </div>
+  <div class="footer">
+    <div class="footer-links">
+      <a href="#" onclick="showScreen('impressum');return false;">Impressum</a>
+      <a href="https://raw.githubusercontent.com/Visiotrade/visiotrade-shop/main/AGB_VisioTrade.pdf" target="_blank">AGB</a>
+      <a href="https://raw.githubusercontent.com/Visiotrade/visiotrade-shop/main/Datenschutzerklaerung_VisioTrade.pdf" target="_blank">Datenschutz</a>
+    </div>
+    <hr class="footer-divider">
+    <p>© 2026 VisioTrade GmbH · Zur Ovelgönne 3, 49163 Bohmte</p>
+    <p>Ausschließlich für gewerbliche Kunden (B2B) · HRB 203590 · USt-IdNr.: DE267521464</p>
   </div>
 </div>
 
@@ -185,7 +207,7 @@
     <div id="produktBadge" class="produkt-badge badge-gruen">● Verfügbar</div>
     <div id="produktName" class="produkt-name">Produktname</div>
     <div id="produktPreis" class="produkt-preis">0,00 € <span>/ m²</span></div>
-    <div class="mwst-hinweis">zzgl. 19% MwSt.</div>
+    <div class="mwst-hinweis">zzgl. 19% MwSt. · Nur für Gewerbetreibende</div>
     <div id="produktBeschreibung" class="produkt-beschreibung"></div>
     <div class="m2-section">
       <div class="m2-label">Wie viel Fläche benötigen Sie?</div>
@@ -215,10 +237,16 @@
   <div class="back-bar" onclick="showScreen('warenkorb')">← Warenkorb</div>
   <div class="section-title">Ihre Daten</div>
   <div class="kasse-form">
+
+    <div class="b2b-hinweis">🏢 Dieser Shop ist ausschließlich für gewerbliche Kunden. Bitte bestätigen Sie Ihre Unternehmereigenschaft beim Bestellen.</div>
+
     <div class="form-group"><label>Vorname *</label><input type="text" id="vorname" placeholder="Max" autocomplete="given-name"></div>
     <div class="form-group"><label>Nachname *</label><input type="text" id="nachname" placeholder="Mustermann" autocomplete="family-name"></div>
+    <div class="form-group"><label>Firma *</label><input type="text" id="firma" placeholder="Muster GmbH" autocomplete="organization"></div>
+    <div class="form-group"><label>USt-IdNr.</label><input type="text" id="ustid" placeholder="DE123456789"></div>
     <div class="form-group"><label>E-Mail *</label><input type="email" id="email" placeholder="max@beispiel.de" autocomplete="email"></div>
     <div class="form-group"><label>Telefon</label><input type="tel" id="telefon" placeholder="+49 171 1234567" autocomplete="tel"></div>
+
     <div class="form-group">
       <label>Lieferart</label>
       <div class="lieferart-toggle">
@@ -232,6 +260,7 @@
       <div class="form-group"><label>Ort</label><input type="text" id="ort" placeholder="Musterstadt"></div>
       <div style="background:#FFF8E1;border-radius:8px;padding:12px;font-size:13px;color:#7B5800;line-height:1.5;">📦 Lieferkosten werden nach Ihrer Bestellung separat mitgeteilt.</div>
     </div>
+
     <div class="form-group">
       <label>Zahlungsart</label>
       <div class="zahlung-options">
@@ -246,8 +275,11 @@
       </div>
     </div>
 
-    <!-- AGB & Datenschutz Checkboxen -->
     <div class="agb-bereich">
+      <label class="agb-checkbox-row">
+        <input type="checkbox" id="checkB2B" onchange="pruefeCheckboxen()">
+        <span>Ich bestätige, dass ich als <strong>Unternehmer / Gewerbetreibender</strong> im Sinne des § 14 BGB bestelle. Ein gesetzliches Widerrufsrecht besteht nicht.</span>
+      </label>
       <label class="agb-checkbox-row">
         <input type="checkbox" id="checkAgb" onchange="pruefeCheckboxen()">
         <span>Ich habe die <a href="https://raw.githubusercontent.com/Visiotrade/visiotrade-shop/main/AGB_VisioTrade.pdf" target="_blank">AGB</a> gelesen und akzeptiere sie.</span>
@@ -273,6 +305,31 @@
   </div>
 </div>
 
+<!-- IMPRESSUM -->
+<div id="screen-impressum" class="screen">
+  <div class="back-bar" onclick="showScreen('home')">← Zurück</div>
+  <div class="impressum-content">
+    <h2>Impressum</h2>
+    <h3>Angaben gemäß § 5 TMG</h3>
+    <p><strong>VisioTrade GmbH</strong><br>Zur Ovelgönne 3<br>49163 Bohmte<br>Deutschland</p>
+    <h3>Kontakt</h3>
+    <p>E-Mail: visiotradegmbh@gmail.com</p>
+    <h3>Handelsregister</h3>
+    <p>Registergericht: Amtsgericht Osnabrück<br>Registernummer: HRB 203590</p>
+    <h3>Umsatzsteuer-ID</h3>
+    <p>USt-IdNr.: DE267521464<br>Steuernummer: 65/200/14587</p>
+    <h3>Hinweis zum Kundenkreis</h3>
+    <p>Dieser Shop richtet sich ausschließlich an Unternehmer im Sinne des § 14 BGB. Ein Vertragsschluss mit Verbrauchern ist ausgeschlossen. Ein gesetzliches Widerrufsrecht besteht nicht.</p>
+    <h3>Streitschlichtung</h3>
+    <p>Wir sind nicht verpflichtet und nicht bereit, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen, da wir ausschließlich gegenüber Unternehmern tätig sind.</p>
+    <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--gray-light);display:flex;flex-direction:column;gap:12px;">
+      <a href="https://raw.githubusercontent.com/Visiotrade/visiotrade-shop/main/AGB_VisioTrade.pdf" target="_blank" style="color:var(--oak);font-weight:600;">→ AGB herunterladen</a>
+      <a href="https://raw.githubusercontent.com/Visiotrade/visiotrade-shop/main/Datenschutzerklaerung_VisioTrade.pdf" target="_blank" style="color:var(--oak);font-weight:600;">→ Datenschutzerklärung herunterladen</a>
+    </div>
+  </div>
+  <div class="pb-safe"></div>
+</div>
+
 <script>
 const SUPABASE_URL = 'https://rvouqjhrbjsmqyzvqtxy.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_gr_VMD5No5n8McWg93vq1A_gO6pKoUQ';
@@ -285,12 +342,7 @@ let warenkorb = [], aktKat = null, aktArt = null, aktSort = null, aktProdukt = n
 async function db(table, params='') {
   try {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
-      headers:{
-        'apikey':SUPABASE_KEY,
-        'Authorization':`Bearer ${SUPABASE_KEY}`,
-        'Content-Type':'application/json',
-        'Accept':'application/json'
-      }
+      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Accept':'application/json'}
     });
     if (!r.ok) { console.error('DB Error:', r.status); return null; }
     return r.json();
@@ -433,27 +485,28 @@ function setZahlung(art) {
 }
 
 function pruefeCheckboxen() {
-  const agb = document.getElementById('checkAgb').checked;
-  const datenschutz = document.getElementById('checkDatenschutz').checked;
-  document.getElementById('bestellBtn').disabled = !(agb && datenschutz);
+  const ok = document.getElementById('checkB2B').checked &&
+             document.getElementById('checkAgb').checked &&
+             document.getElementById('checkDatenschutz').checked;
+  document.getElementById('bestellBtn').disabled = !ok;
 }
 
 async function bestellungAbsenden() {
-  if (!document.getElementById('checkAgb').checked || !document.getElementById('checkDatenschutz').checked) {
-    alert('Bitte AGB und Datenschutzerklärung akzeptieren.');
+  if (!document.getElementById('checkB2B').checked || !document.getElementById('checkAgb').checked || !document.getElementById('checkDatenschutz').checked) {
+    alert('Bitte alle Bestätigungen ankreuzen.');
     return;
   }
   const vorname=document.getElementById('vorname').value.trim();
   const nachname=document.getElementById('nachname').value.trim();
+  const firma=document.getElementById('firma').value.trim();
   const email=document.getElementById('email').value.trim();
-  if (!vorname||!nachname||!email) { alert('Bitte Vorname, Nachname und E-Mail ausfüllen.'); return; }
+  if (!vorname||!nachname||!firma||!email) { alert('Bitte Vorname, Nachname, Firma und E-Mail ausfüllen.'); return; }
   const btn=document.getElementById('bestellBtn');
   btn.textContent='Wird verarbeitet...'; btn.disabled=true;
   try {
     const user=window.Telegram?.WebApp?.initDataUnsafe?.user;
     const gesamt=warenkorb.reduce((s,i)=>s+i.preis,0);
 
-    // Bestellung in Supabase speichern
     const best=await dbInsert('bestellungen',{
       telegram_user_id:user?.id?.toString()||null,
       telegram_username:user?.username||null,
@@ -471,7 +524,6 @@ async function bestellungAbsenden() {
 
     if (!best||!best[0]) throw new Error('Bestellung konnte nicht gespeichert werden');
 
-    // Bestellpositionen speichern
     for (const item of warenkorb) {
       for (const k of item.kombi) {
         await dbInsert('bestellpositionen',{
@@ -487,43 +539,24 @@ async function bestellungAbsenden() {
       }
     }
 
-    // Zahlung starten
     if (zahlungsart === 'stripe') {
       const stripeRes = await fetch(`${API_URL}/api/stripe/create-session`, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          bestellung_id:best[0].id,
-          items:warenkorb.map(i=>({name:i.name,gesamt_m2:i.gesamt_m2,preis:i.preis})),
-          kundenname:`${vorname} ${nachname}`,
-          email,
-          netto:gesamt
-        })
+        body:JSON.stringify({bestellung_id:best[0].id,items:warenkorb.map(i=>({name:i.name,gesamt_m2:i.gesamt_m2,preis:i.preis})),kundenname:`${vorname} ${nachname}`,email,netto:gesamt})
       });
       const stripeData = await stripeRes.json();
-      if (stripeData.url) {
-        window.location.href = stripeData.url;
-        return;
-      } else {
-        throw new Error('Stripe URL fehlt');
-      }
+      if (stripeData.url) { window.location.href = stripeData.url; return; }
+      else { throw new Error('Stripe URL fehlt'); }
     } else if (zahlungsart === 'paypal') {
       const ppRes = await fetch(`${API_URL}/api/paypal/create-order`, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          bestellung_id:best[0].id,
-          netto:gesamt,
-          kundenname:`${vorname} ${nachname}`
-        })
+        body:JSON.stringify({bestellung_id:best[0].id,netto:gesamt,kundenname:`${vorname} ${nachname}`})
       });
       const ppData = await ppRes.json();
-      if (ppData.url) {
-        window.location.href = ppData.url;
-        return;
-      } else {
-        throw new Error('PayPal URL fehlt');
-      }
+      if (ppData.url) { window.location.href = ppData.url; return; }
+      else { throw new Error('PayPal URL fehlt'); }
     }
 
     warenkorb=[];
@@ -538,7 +571,6 @@ async function bestellungAbsenden() {
   }
 }
 
-// PayPal Rückgabe verarbeiten
 function checkPayPalReturn() {
   const params = new URLSearchParams(window.location.search);
   if (params.get('success') === '1') {
