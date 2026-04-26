@@ -120,7 +120,13 @@
   .zahlung-opt.active { border-color: var(--oak); background: var(--oak-pale); }
   .zahlung-opt-icon { font-size: 22px; }
   .bestellen-btn { width: 100%; background: var(--green); color: var(--white); border: none; border-radius: var(--radius); padding: 18px; font-family: 'DM Sans', sans-serif; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 8px; }
-  .bestellen-btn:disabled { background: var(--gray); }
+  .bestellen-btn:disabled { background: var(--gray); cursor: not-allowed; }
+
+  .agb-bereich { background: var(--white); border: 2px solid var(--gray-light); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .agb-checkbox-row { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+  .agb-checkbox-row input[type="checkbox"] { width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px; accent-color: var(--oak); cursor: pointer; }
+  .agb-checkbox-row span { font-size: 14px; color: var(--walnut); line-height: 1.5; }
+  .agb-checkbox-row a { color: var(--oak); text-decoration: underline; font-weight: 600; }
 
   .erfolg-screen { text-align: center; padding: 60px 24px; }
   .erfolg-icon { font-size: 80px; margin-bottom: 20px; animation: pop 0.4s ease; }
@@ -231,7 +237,7 @@
       <div class="zahlung-options">
         <div class="zahlung-opt active" id="zOpt-stripe" onclick="setZahlung('stripe')">
           <span class="zahlung-opt-icon">💳</span>
-          <div><div style="font-weight:600">Kreditkarte / Debitkarte</div><div style="font-size:12px;color:var(--gray);margin-top:2px">Via Stripe — sicher & sofort</div></div>
+          <div><div style="font-weight:600">Kreditkarte / Debitkarte</div><div style="font-size:12px;color:var(--gray);margin-top:2px">Via Stripe — sicher &amp; sofort</div></div>
         </div>
         <div class="zahlung-opt" id="zOpt-paypal" onclick="setZahlung('paypal')">
           <span class="zahlung-opt-icon">🅿️</span>
@@ -239,7 +245,20 @@
         </div>
       </div>
     </div>
-    <button class="bestellen-btn" id="bestellBtn" onclick="bestellungAbsenden()">✓ Jetzt kostenpflichtig bestellen</button>
+
+    <!-- AGB & Datenschutz Checkboxen -->
+    <div class="agb-bereich">
+      <label class="agb-checkbox-row">
+        <input type="checkbox" id="checkAgb" onchange="pruefeCheckboxen()">
+        <span>Ich habe die <a href="https://raw.githubusercontent.com/Visiotrade/visiotrade-shop/main/AGB_VisioTrade.pdf" target="_blank">AGB</a> gelesen und akzeptiere sie.</span>
+      </label>
+      <label class="agb-checkbox-row">
+        <input type="checkbox" id="checkDatenschutz" onchange="pruefeCheckboxen()">
+        <span>Ich habe die <a href="https://raw.githubusercontent.com/Visiotrade/visiotrade-shop/main/Datenschutzerklaerung_VisioTrade.pdf" target="_blank">Datenschutzerklärung</a> gelesen und akzeptiere sie.</span>
+      </label>
+    </div>
+
+    <button class="bestellen-btn" id="bestellBtn" onclick="bestellungAbsenden()" disabled>✓ Jetzt kostenpflichtig bestellen</button>
   </div>
   <div class="pb-safe"></div>
 </div>
@@ -413,7 +432,17 @@ function setZahlung(art) {
   document.getElementById('zOpt-paypal').classList.toggle('active',art==='paypal');
 }
 
+function pruefeCheckboxen() {
+  const agb = document.getElementById('checkAgb').checked;
+  const datenschutz = document.getElementById('checkDatenschutz').checked;
+  document.getElementById('bestellBtn').disabled = !(agb && datenschutz);
+}
+
 async function bestellungAbsenden() {
+  if (!document.getElementById('checkAgb').checked || !document.getElementById('checkDatenschutz').checked) {
+    alert('Bitte AGB und Datenschutzerklärung akzeptieren.');
+    return;
+  }
   const vorname=document.getElementById('vorname').value.trim();
   const nachname=document.getElementById('nachname').value.trim();
   const email=document.getElementById('email').value.trim();
