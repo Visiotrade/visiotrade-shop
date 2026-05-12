@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<!-- saved from url=(0045)file:///C:/Users/info/Downloads/admin_15.html -->
+<html lang="de"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VisioTrade Admin</title>
+<link href="./admin_files/css2" rel="stylesheet">
+<style>
+  :root {
+    --oak: #8B6914; --oak-light: #C49A2B; --oak-pale: #F5EDD8; --oak-dark: #4A3508;
+    --walnut: #3D2B1F; --cream: #FAF7F2; --white: #FFFFFF;
+    --gray: #6B7280; --gray-light: #F3F0EB;
+    --green: #2D6A4F; --green-light: #E8F5EE;
+    --red: #C0392B; --red-light: #FDECEA;
+    --shadow: 0 2px 16px rgba(61,43,31,0.10);
+    --radius: 14px; --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--walnut); min-height: 100vh; }
+
+  /* HEADER */
+  .header { background: var(--walnut); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .header-logo { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--oak-light); }
+  .header-logo span { color: white; font-weight: 400; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .header-user { font-size: 13px; color: rgba(255,255,255,0.7); }
+  .logout-btn { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 7px 14px; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+
+  /* LOGIN */
+  .login-wrap { max-width: 400px; margin: 80px auto; padding: 0 20px; }
+  .login-card { background: var(--white); border-radius: var(--radius); padding: 32px 28px; box-shadow: var(--shadow); }
+  .login-title { font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 6px; }
+  .login-sub { font-size: 13px; color: var(--gray); margin-bottom: 24px; }
+  .login-error { background: var(--red-light); color: var(--red); padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 16px; display: none; }
+
+  /* FORM ELEMENTS */
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 11px; font-weight: 700; color: var(--oak); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 11px 13px; border: 2px solid var(--gray-light);
+    border-radius: var(--radius-sm); font-size: 14px; font-family: 'DM Sans', sans-serif;
+    color: var(--walnut); background: var(--white); outline: none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--oak); }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .btn { padding: 12px 20px; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+  .btn-primary { background: var(--oak); color: white; width: 100%; }
+  .btn-primary:disabled { background: var(--gray); cursor: not-allowed; }
+  .btn-green { background: var(--green); color: white; }
+  .btn-red { background: var(--red-light); color: var(--red); }
+  .btn-sm { padding: 7px 14px; font-size: 13px; }
+
+  /* LAYOUT */
+  .admin-wrap { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 56px); }
+  .sidebar { background: var(--white); border-right: 1px solid var(--gray-light); padding: 20px 0; }
+  .sidebar-item { display: flex; align-items: center; gap: 10px; padding: 12px 20px; font-size: 14px; font-weight: 500; color: var(--gray); cursor: pointer; border-left: 3px solid transparent; }
+  .sidebar-item:hover { background: var(--cream); color: var(--walnut); }
+  .sidebar-item.active { color: var(--oak); font-weight: 700; border-left-color: var(--oak); background: var(--oak-pale); }
+  .sidebar-icon { font-size: 18px; }
+  .main { padding: 28px; overflow-y: auto; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-title { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 20px; }
+
+  /* STATS */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card { background: var(--white); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+  .stat-val { font-size: 28px; font-weight: 700; color: var(--oak); }
+  .stat-label { font-size: 13px; color: var(--gray); margin-top: 4px; }
+
+  /* TABLE */
+  .table-wrap { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .table-header { padding: 16px 20px; border-bottom: 1px solid var(--gray-light); display: flex; justify-content: space-between; align-items: center; }
+  .table-header h3 { font-size: 15px; font-weight: 700; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: var(--cream); padding: 11px 16px; text-align: left; font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; }
+  td { padding: 12px 16px; border-top: 1px solid var(--gray-light); font-size: 14px; vertical-align: middle; }
+  tr:hover td { background: var(--cream); }
+  .badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-red { background: var(--red-light); color: var(--red); }
+  .badge-gray { background: var(--gray-light); color: var(--gray); }
+  .badge-blue { background: #DBEAFE; color: #1E40AF; }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--white); border-radius: var(--radius); padding: 28px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .modal-title { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 20px; }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--gray-light); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* PRODUKT BILD */
+  .img-preview { width: 48px; height: 48px; border-radius: var(--radius-sm); background: var(--gray-light); object-fit: cover; display: flex; align-items: center; justify-content: center; font-size: 20px; overflow: hidden; }
+  .img-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--walnut); color: white; padding: 12px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  .toast.error { background: var(--red); }
+
+  @media (max-width: 768px) {
+    .admin-wrap { grid-template-columns: 1fr; }
+    .sidebar { display: flex; overflow-x: auto; padding: 0; border-right: none; border-bottom: 1px solid var(--gray-light); }
+    .sidebar-item { border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
+    .sidebar-item.active { border-left: none; border-bottom-color: var(--oak); }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" style="display: none;">
+  <div style="background:var(--walnut);padding:16px 24px;">
+    <div style="font-family:&#39;Playfair Display&#39;,serif;font-size:20px;color:var(--oak-light);">Visio<span style="color:white;font-weight:400;">Trade</span> <span style="color:rgba(255,255,255,0.5);font-size:13px;font-weight:400;">Admin</span></div>
+  </div>
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-title">Admin-Login</div>
+      <div class="login-sub">Nur für autorisierte Administratoren</div>
+      <div id="loginError" class="login-error"></div>
+      <div class="field"><label>E-Mail</label><input type="email" id="adminEmail" placeholder="admin@visiotrade.de"></div>
+      <div class="field"><label>Passwort</label><input type="password" id="adminPass" placeholder="••••••••" onkeydown="if(event.key===&#39;Enter&#39;)adminLogin()"></div>
+      <button class="btn btn-primary" id="loginBtn" onclick="adminLogin()">Anmelden</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel" style="display: block;">
+  <div class="header">
+    <div class="header-logo">Visio<span>Trade</span> <span style="color:rgba(255,255,255,0.5);font-size:13px;font-weight:400;">Admin</span></div>
+    <div class="header-right">
+      <div class="header-user" id="adminUserLabel">mg@gft-studio.de</div>
+      <button class="logout-btn" onclick="adminLogout()">Abmelden</button>
+    </div>
+  </div>
+
+  <div class="admin-wrap">
+    <div class="sidebar">
+      <div class="sidebar-item active" onclick="zeigeSeite(&#39;dashboard&#39;)"><span class="sidebar-icon">📊</span> Dashboard</div>
+      <div class="sidebar-item" onclick="zeigeSeite(&#39;produkte&#39;)"><span class="sidebar-icon">🪵</span> Produkte</div>
+      <div class="sidebar-item" onclick="zeigeSeite(&#39;kategorien&#39;)"><span class="sidebar-icon">📂</span> Kategorien</div>
+      <div class="sidebar-item" onclick="zeigeSeite(&#39;bestellungen&#39;)"><span class="sidebar-icon">📦</span> Bestellungen</div>
+      <div class="sidebar-item" onclick="zeigeSeite(&#39;preise&#39;)"><span class="sidebar-icon">💶</span> Lieferkosten</div>
+    </div>
+
+    <div class="main">
+
+      <!-- DASHBOARD -->
+      <div id="page-dashboard" class="page active">
+        <div class="page-title">Dashboard</div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-val" id="statProdukte">37</div><div class="stat-label">Produkte</div></div>
+          <div class="stat-card"><div class="stat-val" id="statBestellungen">20</div><div class="stat-label">Bestellungen</div></div>
+          <div class="stat-card"><div class="stat-val" id="statOffen">19</div><div class="stat-label">Offene Bestellungen</div></div>
+          <div class="stat-card"><div class="stat-val" id="statUmsatz">909 €</div><div class="stat-label">Gesamtumsatz (netto)</div></div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-header"><h3>Letzte Bestellungen</h3></div>
+          <table><thead><tr><th>Nr.</th><th>Datum</th><th>Kunde</th><th>Betrag</th><th>Status</th></tr></thead>
+          <tbody id="dashBestellungen">
+      <tr>
+        <td><strong>#79</strong></td>
+        <td>8.5.2026</td>
+        <td>test Gavrilov</td>
+        <td><strong>63,00 €</strong></td>
+        <td><span class="badge badge-gray">offen</span></td>
+      </tr>
+      <tr>
+        <td><strong>#76</strong></td>
+        <td>30.3.2026</td>
+        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
+        <td><strong>44,54 €</strong></td>
+        <td><span class="badge badge-gray">bezahlt</span></td>
+      </tr>
+      <tr>
+        <td><strong>#75</strong></td>
+        <td>30.3.2026</td>
+        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
+        <td><strong>44,54 €</strong></td>
+        <td><span class="badge badge-gray">offen</span></td>
+      </tr>
+      <tr>
+        <td><strong>#74</strong></td>
+        <td>30.3.2026</td>
+        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
+        <td><strong>44,54 €</strong></td>
+        <td><span class="badge badge-gray">offen</span></td>
+      </tr>
+      <tr>
+        <td><strong>#73</strong></td>
+        <td>30.3.2026</td>
+        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
+        <td><strong>44,54 €</strong></td>
+        <td><span class="badge badge-gray">offen</span></td>
+      </tr>
+      <tr>
+        <td><strong>#72</strong></td>
+        <td>30.3.2026</td>
+        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
+        <td><strong>44,54 €</strong></td>
+        <td><span class="badge badge-gray">offen</span></td>
+      </tr>
+      <tr>
+        <td><strong>#71</strong></td>
+        <td>30.3.2026</td>
+        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
+        <td><strong>44,54 €</strong></td>
+        <td><span class="badge badge-gray">offen</span></td>
+      </tr>
+      <tr>
+        <td><strong>#70</strong></td>
+        <td>30.3.2026</td>
+        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
+        <td><strong>44,54 €</strong></td>
+        <td><span class="badge badge-gray">offen</span></td>
+      </tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- PRODUKTE -->
+      <div id="page-produkte" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <div class="page-title" style="margin:0;">Produkte</div>
+          <button class="btn btn-green" onclick="oeffneProduktModal()">+ Neues Produkt</button>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Bild</th><th>Name</th><th>Kategorie</th><th>Preis/m²</th><th>Bestand</th><th>Aktiv</th><th>Aktionen</th></tr></thead>
+          <tbody id="produkteTable"><tr><td colspan="7" style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- KATEGORIEN -->
+      <div id="page-kategorien" class="page">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <div class="page-title" style="margin:0;">Kategorien</div>
+          <button class="btn btn-green" onclick="oeffneKatModal()">+ Neue Kategorie</button>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Name</th><th>Reihenfolge</th><th>Aktiv</th><th>Aktionen</th></tr></thead>
+          <tbody id="kategorienTable"><tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- BESTELLUNGEN -->
+      <div id="page-bestellungen" class="page">
+        <div class="page-title">Bestellungen</div>
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+          <select id="filterStatus" onchange="ladeBestellungen()" style="padding:9px 13px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-family:&#39;DM Sans&#39;,sans-serif;font-size:14px;background:var(--white);">
+            <option value="">Alle Status</option>
+            <option value="offen">Offen</option>
+            <option value="bestätigt">Bestätigt</option>
+            <option value="versendet">Versendet</option>
+            <option value="geliefert">Geliefert</option>
+            <option value="storniert">Storniert</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Nr.</th><th>Datum</th><th>Kunde</th><th>Firma</th><th>Betrag</th><th>Status</th><th>Aktionen</th></tr></thead>
+          <tbody id="bestellungenTable"><tr><td colspan="7" style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- LIEFERKOSTEN -->
+      <div id="page-preise" class="page">
+        <div class="page-title">Lieferkosten-Einstellungen</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div class="table-wrap" style="padding:24px;">
+            <h3 style="margin-bottom:16px;font-size:15px;">Mindestbestellwert</h3>
+            <div class="field"><label>Mindestbestellwert (€ netto)</label><input type="number" id="minBestellwert" placeholder="500"></div>
+            <div class="field"><label>Versandkostenfrei ab (€ netto)</label><input type="number" id="kostenfreiAb" placeholder="2000"></div>
+            <button class="btn btn-primary" onclick="speichereEinstellungen()">Speichern</button>
+          </div>
+          <div class="table-wrap" style="padding:24px;">
+            <h3 style="margin-bottom:16px;font-size:15px;">Info</h3>
+            <p style="font-size:13px;color:var(--gray);line-height:1.7;">
+              Die Lieferkosten werden automatisch über die Raben- und BOLL-Spedition berechnet basierend auf PLZ-Zone und Gewicht.<br><br>
+              Zum Anpassen der Frachttabellen bitte direkt im Code unter <code>RABEN_PLZ_ZONE</code> und <code>BOLL_PLZ_ZONE</code> in der index.html editieren.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- PRODUKT MODAL -->
+<div class="modal-overlay" id="produktModal">
+  <div class="modal">
+    <div class="modal-title" id="produktModalTitle">Neues Produkt</div>
+    <input type="hidden" id="produktId">
+    <div class="field-row">
+      <div class="field"><label>Name *</label><input type="text" id="pName" placeholder="Stabparkett Eiche Natur"></div>
+      <div class="field"><label>Kategorie *</label><select id="pKategorie"></select></div>
+    </div>
+    <div class="field"><label>Beschreibung</label><textarea id="pBeschreibung" placeholder="Produktbeschreibung…"></textarea></div>
+    <div class="field-row">
+      <div class="field"><label>Holzart</label><input type="text" id="pHolzart" placeholder="Eiche"></div>
+      <div class="field"><label>Oberfläche</label><input type="text" id="pOberflaeche" placeholder="roh / geölt / lackiert"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Stärke (mm)</label><input type="number" id="pStaerke" placeholder="22"></div>
+      <div class="field"><label>Sortierung</label><input type="text" id="pSortierung" placeholder="Natur / Rustikal"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Breite (mm)</label><input type="number" id="pBreite" placeholder="140"></div>
+      <div class="field"><label>Länge (mm)</label><input type="number" id="pLaenge" placeholder="2200"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Artikelnummer</label><input type="text" id="pArtikelnummer" placeholder="VT-1234"></div>
+      <div class="field"><label>Preis pro m² (€ netto) *</label><input type="number" id="pPreis" placeholder="45.00" step="0.01"></div>
+      <div class="field"><label>Gewicht pro Paket (kg)</label><input type="number" id="pGewicht" placeholder="25" step="0.1"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>VE (m² pro Paket)</label><input type="number" id="pM2" placeholder="3.072" step="0.001"></div>
+      <div class="field"><label>m² pro Palette</label><input type="number" id="pMindest" placeholder="50" step="0.1"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Bestand gesamt (Pakete verfügbar)</label><input type="number" id="pBestand" placeholder="0" min="0"></div>
+      <div class="field"><label>Lagerort / Hinweis</label><input type="text" id="pLagerort" placeholder="Lager A / auf Anfrage"></div>
+    </div>
+    <div class="field"><label>Foto-URLs (eine pro Zeile)</label><textarea id="pFotos" placeholder="https://..." style="min-height:80px;"></textarea></div>
+    <div class="field" style="display:flex;align-items:center;gap:10px;">
+      <input type="checkbox" id="pAktiv" style="width:18px;height:18px;accent-color:var(--oak);">
+      <label for="pAktiv" style="font-size:14px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--walnut);">Produkt aktiv (im Shop sichtbar)</label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;produktModal&#39;)">Abbrechen</button>
+      <button class="btn btn-green btn-sm" onclick="speichereProdukt()">💾 Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- KATEGORIE MODAL -->
+<div class="modal-overlay" id="katModal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-title" id="katModalTitle">Neue Kategorie</div>
+    <input type="hidden" id="katId">
+    <div class="field"><label>Name *</label><input type="text" id="kName" placeholder="Stabparkett"></div>
+    <div class="field"><label>Reihenfolge</label><input type="number" id="kReihenfolge" placeholder="1"></div>
+    <div class="field" style="display:flex;align-items:center;gap:10px;">
+      <input type="checkbox" id="kAktiv" style="width:18px;height:18px;accent-color:var(--oak);">
+      <label for="kAktiv" style="font-size:14px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--walnut);">Kategorie aktiv</label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;katModal&#39;)">Abbrechen</button>
+      <button class="btn btn-green btn-sm" onclick="speichereKategorie()">💾 Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- BESTELLUNG MODAL -->
+<div class="modal-overlay" id="bestellModal">
+  <div class="modal">
+    <div class="modal-title" id="bestellModalTitle">Bestellung</div>
+    <div id="bestellModalContent"></div>
+    <div class="modal-footer">
+      <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;bestellModal&#39;)">Schließen</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://rvouqjhrbjsmqyzvqtxy.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_gr_VMD5No5n8McWg93vq1A_gO6pKoUQ';
+const ADMIN_EMAIL_DOMAIN = 'visiotrade'; // Nur E-Mails mit diesem Begriff sind Admin
+
+let adminToken = null;
+let adminUser = null;
+let alleKategorien = [];
+
+// ===== AUTH =====
+async function adminLogin() {
+  const email = document.getElementById('adminEmail').value.trim();
+  const pass = document.getElementById('adminPass').value;
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginError');
+  err.style.display = 'none';
+  if (!email || !pass) { err.textContent = 'Bitte E-Mail und Passwort eingeben.'; err.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Anmelden…';
+  try {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const res = await r.json();
+    if (res.error || !res.access_token) { err.textContent = 'E-Mail oder Passwort falsch.'; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Anmelden'; return; }
+    // Admin-Rolle prüfen
+    const meta = res.user?.user_metadata || {};
+    const isAdmin = true; // Jeder eingeloggte User hat Zugang
+    if (!isAdmin) { err.textContent = 'Kein Adminzugang für dieses Konto.'; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Anmelden'; return; }
+    adminToken = res.access_token;
+    adminUser = { email: res.user?.email, name: meta.firma || res.user?.email };
+    localStorage.setItem('vt_admin', JSON.stringify({ 
+      token: adminToken, 
+      refresh_token: res.refresh_token,
+      email: adminUser.email 
+    }));
+    zeigeAdmin();
+  } catch(e) { err.textContent = 'Verbindungsfehler.'; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Anmelden'; }
+}
+
+function adminLogout() {
+  adminToken = null; adminUser = null;
+  localStorage.removeItem('vt_admin');
+  document.getElementById('adminPanel').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'block';
+}
+
+async function refreshToken() {
+  try {
+    const s = localStorage.getItem('vt_admin');
+    if (!s) return false;
+    const d = JSON.parse(s);
+    if (!d.refresh_token) return false;
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: d.refresh_token })
+    });
+    const res = await r.json();
+    if (res.error || !res.access_token) return false;
+    adminToken = res.access_token;
+    localStorage.setItem('vt_admin', JSON.stringify({ 
+      token: adminToken, 
+      refresh_token: res.refresh_token,
+      email: d.email 
+    }));
+    return true;
+  } catch(e) { return false; }
+}
+
+function zeigeAdmin() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminPanel').style.display = 'block';
+  document.getElementById('adminUserLabel').textContent = adminUser.email;
+  ladeDashboard();
+  ladeKategorienListe();
+}
+
+// ===== API =====
+async function api(table, params = '', method = 'GET', body = null, token = null) {
+  const doRequest = async (t) => {
+    const headers = {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${t || SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': method !== 'GET' ? 'return=representation' : ''
+    };
+    return fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
+      method, headers, body: body ? JSON.stringify(body) : null
+    });
+  };
+  let r = await doRequest(token || adminToken);
+  // Bei JWT expired: token erneuern und nochmal versuchen
+  if (r.status === 401) {
+    const ok = await refreshToken();
+    if (ok) {
+      r = await doRequest(token || adminToken);
+    } else {
+      adminLogout();
+      throw new Error('Sitzung abgelaufen. Bitte neu anmelden.');
+    }
+  }
+  if (!r.ok) { const e = await r.json(); throw new Error(e.message || r.status); }
+  return method === 'DELETE' ? null : r.json();
+}
+
+// ===== NAVIGATION =====
+function zeigeSeite(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'dashboard') ladeDashboard();
+  if (name === 'produkte') ladeProdukte();
+  if (name === 'kategorien') ladeKategorienSeite();
+  if (name === 'bestellungen') ladeBestellungen();
+}
+
+// ===== DASHBOARD =====
+async function ladeDashboard() {
+  try {
+    const [produkte, bestellungen] = await Promise.all([
+      api('produkte', '?select=id,aktiv'),
+      api('bestellungen', '?order=erstellt_am.desc&limit=20')
+    ]);
+    document.getElementById('statProdukte').textContent = produkte?.length || 0;
+    document.getElementById('statBestellungen').textContent = bestellungen?.length || 0;
+    const offen = (bestellungen || []).filter(b => b.status === 'offen').length;
+    document.getElementById('statOffen').textContent = offen;
+    const umsatz = (bestellungen || []).reduce((s, b) => s + (b.gesamtbetrag || 0), 0);
+    document.getElementById('statUmsatz').textContent = umsatz.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' €';
+    const sm = { 'offen': 'badge-gray', 'bestätigt': 'badge-blue', 'versendet': 'badge-blue', 'geliefert': 'badge-green', 'storniert': 'badge-red' };
+    document.getElementById('dashBestellungen').innerHTML = (bestellungen || []).slice(0, 8).map(b => `
+      <tr>
+        <td><strong>#${b.id}</strong></td>
+        <td>${b.erstellt_am ? new Date(b.erstellt_am).toLocaleDateString('de-DE') : '—'}</td>
+        <td>${b.kundenname || '—'}</td>
+        <td><strong>${(b.gesamtbetrag || 0).toFixed(2).replace('.', ',')} €</strong></td>
+        <td><span class="badge ${sm[b.status] || 'badge-gray'}">${b.status || 'offen'}</span></td>
+      </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--gray);padding:20px;">Keine Bestellungen</td></tr>';
+  } catch(e) { zeigeToast('Fehler beim Laden: ' + e.message, true); }
+}
+
+// ===== PRODUKTE =====
+async function ladeProdukte() {
+  try {
+    const [data, pakete] = await Promise.all([
+      api('produkte', '?select=*,kategorien(name)&order=id.asc'),
+      api('pakete', '?select=produkt_id,verfuegbare_pakete')
+    ]);
+    const bestandMap = {};
+    (pakete || []).forEach(p => {
+      bestandMap[p.produkt_id] = (bestandMap[p.produkt_id] || 0) + (p.verfuegbare_pakete || 0);
+    });
+    document.getElementById('produkteTable').innerHTML = (data || []).map(p => {
+      const bestand = bestandMap[p.id];
+      const bild = p.bild_urls?.[0] || null;
+      return `<tr>
+        <td><div class="img-preview">${bild ? `<img src="${bild}" onerror="this.style.display='none'">` : '🪵'}</div></td>
+        <td>
+          <strong>${p.name || '—'}</strong>
+          <div style="font-size:12px;color:var(--gray);margin-top:2px;">
+            ${p.holzart ? p.holzart : ''}${p.breite_mm ? ' · ' + p.breite_mm + 'mm' : ''}${p.laenge_mm ? '×' + p.laenge_mm + 'mm' : ''}${p.artikelnummer ? ' · <span style="color:var(--oak);font-weight:600;">' + p.artikelnummer + '</span>' : ''}
+          </div>
+        </td>
+        <td>${p.kategorien?.name || '—'}</td>
+        <td>${p.preis_pro_m2 ? p.preis_pro_m2.toFixed(2).replace('.', ',') + ' €' : '—'}</td>
+        <td>${bestand !== undefined ? `<strong style="color:${bestand > 0 ? 'var(--green)' : 'var(--red)'};">${bestand} Pak.</strong>` : '—'}</td>
+        <td><span class="badge ${p.aktiv ? 'badge-green' : 'badge-red'}">${p.aktiv ? 'Aktiv' : 'Inaktiv'}</span></td>
+        <td style="display:flex;gap:6px;">
+          <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="bearbeiteProdukt(${p.id})">✏️ Edit</button>
+          <button class="btn btn-red btn-sm" onclick="loescheProdukt(${p.id}, '${(p.name||'').replace(/'/g,"\'")}')">🗑</button>
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--gray);padding:20px;">Keine Produkte</td></tr>';
+  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
+}
+
+async function ladeKategorienListe() {
+  try {
+    alleKategorien = await api('kategorien', '?order=reihenfolge') || [];
+  } catch(e) {}
+}
+
+function oeffneProduktModal(produkt = null) {
+  document.getElementById('produktModalTitle').textContent = produkt ? 'Produkt bearbeiten' : 'Neues Produkt';
+  document.getElementById('produktId').value = produkt?.id || '';
+  document.getElementById('pName').value = produkt?.name || '';
+  document.getElementById('pBeschreibung').value = produkt?.beschreibung || '';
+  document.getElementById('pHolzart').value = produkt?.holzart || '';
+  document.getElementById('pOberflaeche').value = produkt?.oberflaeche || '';
+  document.getElementById('pStaerke').value = produkt?.staerke_mm || '';
+  document.getElementById('pSortierung').value = produkt?.sortierung || '';
+  document.getElementById('pBreite').value = produkt?.breite_mm || '';
+  document.getElementById('pLaenge').value = produkt?.laenge_mm || '';
+  document.getElementById('pArtikelnummer').value = produkt?.artikelnummer || '';
+  document.getElementById('pPreis').value = produkt?.preis_pro_m2 || '';
+  document.getElementById('pGewicht').value = produkt?.gewicht_pro_paket_kg || '';
+  document.getElementById('pM2').value = produkt?.ve_m2 || '';
+  document.getElementById('pMindest').value = produkt?.m2_pro_palette || '';
+  document.getElementById('pBestand').value = produkt?._bestand_live ?? produkt?.bestand_pakete ?? '';
+  document.getElementById('pLagerort').value = produkt?.lagerort || '';
+  document.getElementById('pFotos').value = (produkt?.bild_urls || []).join('\n');
+  document.getElementById('pAktiv').checked = produkt ? !!produkt.aktiv : true;
+  // Kategorien befüllen
+  const sel = document.getElementById('pKategorie');
+  sel.innerHTML = alleKategorien.map(k => `<option value="${k.id}" ${produkt?.kategorie_id === k.id ? 'selected' : ''}>${k.name}</option>`).join('');
+  document.getElementById('produktModal').classList.add('open');
+}
+
+async function bearbeiteProdukt(id) {
+  try {
+    const [produktData, paketeData] = await Promise.all([
+      api('produkte', `?id=eq.${id}`),
+      api('pakete', `?produkt_id=eq.${id}&order=menge_m2`)
+    ]);
+    if (produktData?.[0]) {
+      // Bestand aus pakete-Tabelle lesen (Summe aller verfügbaren Pakete)
+      const gesamtBestand = (paketeData || []).reduce((s, p) => s + (p.verfuegbare_pakete || 0), 0);
+      const produkt = { ...produktData[0], _bestand_live: gesamtBestand, _pakete: paketeData || [] };
+      oeffneProduktModal(produkt);
+    }
+  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
+}
+
+async function ladePakete(produktId) {
+  const sec = document.getElementById('paketeSection');
+  const btn = document.getElementById('neuesPaketBtn');
+  btn.style.display = 'block';
+  btn.onclick = () => neuesPaket(produktId);
+  try {
+    const data = await api('pakete', `?produkt_id=eq.${produktId}&order=menge_m2`);
+    if (!data || !data.length) {
+      sec.innerHTML = '<div style="color:var(--gray);font-size:13px;">Keine Pakete vorhanden.</div>';
+      return;
+    }
+    sec.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead><tr>
+        <th style="text-align:left;padding:6px 8px;color:var(--gray);font-weight:600;">m²/Pak.</th>
+        <th style="text-align:left;padding:6px 8px;color:var(--gray);font-weight:600;">Preis</th>
+        <th style="text-align:left;padding:6px 8px;color:var(--gray);font-weight:600;">Bestand</th>
+        <th style="text-align:left;padding:6px 8px;color:var(--gray);font-weight:600;">Aktiv</th>
+        <th style="padding:6px 8px;"></th>
+      </tr></thead>
+      <tbody>${data.map(p => `<tr style="border-top:1px solid var(--gray-light);">
+        <td style="padding:6px 8px;">${p.menge_m2} m²</td>
+        <td style="padding:6px 8px;">${(p.preis||0).toFixed(2).replace('.',',')} €</td>
+        <td style="padding:6px 4px;">
+          <input type="number" value="${p.verfuegbare_pakete||0}" min="0"
+            style="width:70px;padding:5px 7px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;"
+            onchange="aktualisiereBestand(${p.id}, this.value, ${produktId})">
+        </td>
+        <td style="padding:6px 8px;">
+          <input type="checkbox" ${p.aktiv ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--oak);"
+            onchange="aktualisierePaketAktiv(${p.id}, this.checked, ${produktId})">
+        </td>
+        <td style="padding:6px 8px;">
+          <button class="btn btn-red btn-sm" style="padding:4px 8px;font-size:12px;" onclick="loeschePaket(${p.id}, ${produktId})">🗑</button>
+        </td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  } catch(e) { sec.innerHTML = '<div style="color:var(--red);font-size:13px;">Fehler beim Laden der Pakete.</div>'; }
+}
+
+async function aktualisiereBestand(paketId, wert, produktId) {
+  try {
+    await api('pakete', `?id=eq.${paketId}`, 'PATCH', { verfuegbare_pakete: parseInt(wert) || 0 });
+    zeigeToast('✅ Bestand gespeichert');
+  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
+}
+
+async function aktualisierePaketAktiv(paketId, aktiv, produktId) {
+  try {
+    await api('pakete', `?id=eq.${paketId}`, 'PATCH', { aktiv });
+    zeigeToast('✅ Gespeichert');
+  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
+}
+
+async function neuesPaket(produktId) {
+  const m2 = prompt('m² pro Paket (z.B. 1.4):');
+  if (!m2) return;
+  const preis = prompt('Preis pro Paket (€ netto):');
+  if (!preis) return;
+  const bestand = prompt('Verfügbare Pakete:') || '0';
+  try {
+    await api('pakete', '', 'POST', {
+      produkt_id: produktId,
+      menge_m2: parseFloat(m2),
+      preis: parseFloat(preis),
+      verfuegbare_pakete: parseInt(bestand),
+      aktiv: true
+    });
+    zeigeToast('✅ Paket hinzugefügt');
+    ladePakete(produktId);
+  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
+}
+
+async function loeschePaket(paketId, produktId) {
+  if (!confirm('Paket wirklich löschen?')) return;
+  try {
+    await api('pakete', `?id=eq.${paketId}`, 'DELETE');
+    zeigeToast('✅ Paket gelöscht');
+    ladePakete(produktId);
+  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
+}
+
+async function speichereProdukt() {
+  const id = document.getElementById('produktId').value;
+  const fotos = document.getElementById('pFotos').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const body = {
+    name: document.getElementById('pName').value.trim(),
+    kategorie_id: parseInt(document.getElementById('pKategorie').value),
+    beschreibung: document.getElementById('pBeschreibung').value.trim(),
+    holzart: document.getElementById('pHolzart').value.trim(),
+    oberflaeche: document.getElementById('pOberflaeche').value.trim(),
+    staerke_mm: parseFloat(document.getElementById('pStaerke').value) || null,
+    sortierung: document.getElementById('pSortierung').value.trim(),
+    breite_mm: parseInt(document.getElementById('pBreite').value) || null,
+    laenge_mm: parseInt(document.getElementById('pLaenge').value) || null,
+    artikelnummer: document.getElementById('pArtikelnummer').value.trim() || null,
+    preis_pro_m2: parseFloat(document.getElementById('pPreis').value) || null,
+    gewicht_pro_paket_kg: parseFloat(document.getElementById('pGewicht').value) || null,
+    bestand_pakete: document.getElementById('pBestand').value !== '' ? parseInt(document.getElementById('pBestand').value) : null,
+    lagerort: document.getElementById('pLagerort').value.trim() || null,
+    ve_m2: parseFloat(document.getElementById('pM2').value) || null,
+    m2_pro_palette: parseFloat(document.getElementById('pMindest').value) || null,
+    bestand_pakete: document.getElementById('pBestand').value !== '' ? parseInt(document.getElementById('pBestand').value) : null,
+    lagerort: document.getElementById('pLagerort').value.trim() || null,
+    bild_urls: fotos,
+    aktiv: document.getElementById('pAktiv').checked
+  };
+  if (!body.name) { zeigeToast('Name ist Pflichtfeld', true); return; }
+  try {
+    const bestandWert = document.getElementById('pBestand').value;
+    if (id) {
+      await api('produkte', `?id=eq.${id}`, 'PATCH', body);
+      const m2Wert = parseFloat(document.getElementById('pM2').value) || null;
+      // menge_m2 immer updaten wenn VE ausgefüllt
+      if (m2Wert) {
+        await api('pakete', `?produkt_id=eq.${id}`, 'PATCH', { menge_m2: m2Wert });
+      }
+      // Bestand auf alle Pakete verteilen
+      if (bestandWert !== '') {
+        const pakete = await api('pakete', `?produkt_id=eq.${id}`);
+        if (pakete && pakete.length > 0) {
+          const gesamtBestand = parseInt(bestandWert) || 0;
+          // Bestand gleichmäßig verteilen
+          const proPacket = Math.floor(gesamtBestand / pakete.length);
+          const rest = gesamtBestand % pakete.length;
+          for (let i = 0; i < pakete.length; i++) {
+            const anteil = proPacket + (i === 0 ? rest : 0);
+            await api('pakete', `?id=eq.${pakete[i].id}`, 'PATCH', { verfuegbare_pakete: anteil });
+          }
+        }
+      }
+      zeigeToast('✅ Produkt & Bestand aktualisiert');
+    } else {
+      const neu = await api('produkte', '', 'POST', body);
+      zeigeToast('✅ Produkt erstellt');
+    }
+    schliesseModal('produktModal');
+    ladeProdukte();
+  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
+}
+
+async function loescheProdukt(id, name) {
+  if (!confirm(`Produkt "${name}" wirklich löschen?`)) return;
+  try {
+    await api('produkte', `?id=eq.${id}`, 'DELETE');
+    zeigeToast('✅ Produkt gelöscht');
+    ladeProdukte();
+  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
+}
+
+// ===== KATEGORIEN =====
+async function ladeKategorienSeite() {
+  try {
+    const data = await api('kategorien', '?order=reihenfolge') || [];
+    alleKategorien = data;
+    document.getElementById('kategorienTable').innerHTML = data.map(k => `
+      <tr>
+        <td><strong>${k.name}</strong></td>
+        <td>${k.reihenfolge || '—'}</td>
+        <td><span class="badge ${k.aktiv ? 'badge-green' : 'badge-red'}">${k.aktiv ? 'Aktiv' : 'Inaktiv'}</span></td>
+        <td style="display:flex;gap:6px;">
+          <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="bearbeiteKat(${k.id})">✏️ Edit</button>
+          <button class="btn btn-red btn-sm" onclick="loescheKat(${k.id}, '${k.name}')">🗑</button>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px;">Keine Kategorien</td></tr>';
+  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
+}
+
+function oeffneKatModal(kat = null) {
+  document.getElementById('katModalTitle').textContent = kat ? 'Kategorie bearbeiten' : 'Neue Kategorie';
+  document.getElementById('katId').value = kat?.id || '';
+  document.getElementById('kName').value = kat?.name || '';
+  document.getElementById('kReihenfolge').value = kat?.reihenfolge || '';
+  document.getElementById('kAktiv').checked = kat ? !!kat.aktiv : true;
+  document.getElementById('katModal').classList.add('open');
+}
+
+async function bearbeiteKat(id) {
+  const k = alleKategorien.find(k => k.id === id);
+  if (k) oeffneKatModal(k);
+}
+
+async function speichereKategorie() {
+  const id = document.getElementById('katId').value;
+  const body = {
+    name: document.getElementById('kName').value.trim(),
+    reihenfolge: parseInt(document.getElementById('kReihenfolge').value) || 1,
+    aktiv: document.getElementById('kAktiv').checked
+  };
+  if (!body.name) { zeigeToast('Name ist Pflichtfeld', true); return; }
+  try {
+    if (id) { await api('kategorien', `?id=eq.${id}`, 'PATCH', body); zeigeToast('✅ Kategorie aktualisiert'); }
+    else { await api('kategorien', '', 'POST', body); zeigeToast('✅ Kategorie erstellt'); }
+    schliesseModal('katModal');
+    ladeKategorienSeite();
+  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
+}
+
+async function loescheKat(id, name) {
+  if (!confirm(`Kategorie "${name}" wirklich löschen?`)) return;
+  try { await api('kategorien', `?id=eq.${id}`, 'DELETE'); zeigeToast('✅ Kategorie gelöscht'); ladeKategorienSeite(); }
+  catch(e) { zeigeToast('Fehler: ' + e.message, true); }
+}
+
+// ===== BESTELLUNGEN =====
+async function ladeBestellungen() {
+  const status = document.getElementById('filterStatus').value;
+  const params = status ? `?status=eq.${encodeURIComponent(status)}&order=erstellt_am.desc` : '?order=erstellt_am.desc';
+  try {
+    const data = await api('bestellungen', params) || [];
+    const sm = { 'offen': 'badge-gray', 'bestätigt': 'badge-blue', 'versendet': 'badge-blue', 'geliefert': 'badge-green', 'storniert': 'badge-red' };
+    document.getElementById('bestellungenTable').innerHTML = data.map(b => `
+      <tr>
+        <td><strong>#${b.id}</strong></td>
+        <td>${b.erstellt_am ? new Date(b.erstellt_am).toLocaleDateString('de-DE') : '—'}</td>
+        <td>${b.kundenname || '—'}</td>
+        <td style="font-size:13px;">${b.firma || '—'}</td>
+        <td><strong>${(b.gesamtbetrag || 0).toFixed(2).replace('.', ',')} €</strong></td>
+        <td><span class="badge ${sm[b.status] || 'badge-gray'}">${b.status || 'offen'}</span></td>
+        <td style="display:flex;gap:6px;">
+          <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="zeigeBestellung(${b.id})">👁 Details</button>
+          <select onchange="aktualisiereStatus(${b.id}, this.value)" style="padding:6px 8px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-size:12px;font-family:'DM Sans',sans-serif;">
+            ${['offen','bestätigt','versendet','geliefert','storniert'].map(s => `<option value="${s}" ${b.status===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--gray);padding:20px;">Keine Bestellungen</td></tr>';
+  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
+}
+
+async function aktualisiereStatus(id, status) {
+  try {
+    await api('bestellungen', `?id=eq.${id}`, 'PATCH', { status });
+    zeigeToast('✅ Status aktualisiert');
+  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
+}
+
+async function zeigeBestellung(id) {
+  try {
+    const data = await api('bestellungen', `?id=eq.${id}`);
+    const b = data?.[0];
+    if (!b) return;
+    document.getElementById('bestellModalTitle').textContent = `Bestellung #${b.id}`;
+    document.getElementById('bestellModalContent').innerHTML = `
+      <div style="display:grid;gap:12px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="background:var(--cream);padding:14px;border-radius:var(--radius-sm);">
+            <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;margin-bottom:6px;">Kunde</div>
+            <div style="font-size:14px;line-height:1.8;">${b.kundenname||'—'}<br>${b.firma||''}<br>${b.email||''}<br>${b.telefon||''}</div>
+          </div>
+          <div style="background:var(--cream);padding:14px;border-radius:var(--radius-sm);">
+            <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;margin-bottom:6px;">Lieferung</div>
+            <div style="font-size:14px;line-height:1.8;">${b.lieferadresse_strasse||b.rechnungsadresse_strasse||'—'}<br>${b.lieferadresse_plz||b.rechnungsadresse_plz||''} ${b.lieferadresse_ort||b.rechnungsadresse_ort||''}<br>${b.lieferart||''}</div>
+          </div>
+        </div>
+        <div style="background:var(--cream);padding:14px;border-radius:var(--radius-sm);">
+          <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;margin-bottom:6px;">Beträge</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:14px;">
+            <div>Nettobetrag: <strong>${(b.gesamtbetrag||0).toFixed(2).replace('.',',')} €</strong></div>
+            <div>Lieferkosten: <strong>${b.lieferkosten_spediteur ? (b.lieferkosten_intern||0).toFixed(2).replace('.',',') + ' €' : '—'}</strong></div>
+            <div>Spediteur: <strong>${b.lieferkosten_spediteur||'—'}</strong></div>
+          </div>
+        </div>
+        <div style="background:var(--cream);padding:14px;border-radius:var(--radius-sm);">
+          <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;margin-bottom:6px;">Tracking</div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <input type="text" id="trackingInput" value="${b.tracking_nr||''}" placeholder="Sendungsnummer eingeben" style="flex:1;padding:9px 12px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-size:14px;font-family:'DM Sans',sans-serif;">
+            <button class="btn btn-green btn-sm" onclick="speichereTracking(${b.id})">Speichern</button>
+          </div>
+        </div>
+      </div>`;
+    document.getElementById('bestellModal').classList.add('open');
+  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
+}
+
+async function speichereTracking(id) {
+  const nr = document.getElementById('trackingInput').value.trim();
+  try {
+    await api('bestellungen', `?id=eq.${id}`, 'PATCH', { tracking_nr: nr, spediteur: 'Raben' });
+    zeigeToast('✅ Tracking gespeichert');
+  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
+}
+
+async function speichereEinstellungen() {
+  zeigeToast('✅ Einstellungen gespeichert (folgt in nächster Version)');
+}
+
+// ===== UTILS =====
+function schliesseModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+function zeigeToast(msg, error = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast' + (error ? ' error' : '') + ' show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Session prüfen
+(function() {
+  try {
+    const s = localStorage.getItem('vt_admin');
+    if (s) {
+      const d = JSON.parse(s);
+      if (d.token) {
+        adminToken = d.token;
+        adminUser = { email: d.email, name: d.email };
+        zeigeAdmin();
+      }
+    }
+  } catch(e) {}
+})();
+</script>
+
+
+</body></html>
