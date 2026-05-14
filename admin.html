@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<!-- saved from url=(0048)file:///C:/Users/info/Downloads/admin%20(3).html -->
-<html lang="de"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VisioTrade Admin</title>
-<link href="./admin_files/css2" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --oak: #8B6914; --oak-light: #C49A2B; --oak-pale: #F5EDD8; --oak-dark: #4A3508;
@@ -111,9 +112,9 @@
 <body>
 
 <!-- LOGIN -->
-<div id="loginScreen" style="display: none;">
+<div id="loginScreen">
   <div style="background:var(--walnut);padding:16px 24px;">
-    <div style="font-family:&#39;Playfair Display&#39;,serif;font-size:20px;color:var(--oak-light);">Visio<span style="color:white;font-weight:400;">Trade</span> <span style="color:rgba(255,255,255,0.5);font-size:13px;font-weight:400;">Admin</span></div>
+    <div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--oak-light);">Visio<span style="color:white;font-weight:400;">Trade</span> <span style="color:rgba(255,255,255,0.5);font-size:13px;font-weight:400;">Admin</span></div>
   </div>
   <div class="login-wrap">
     <div class="login-card">
@@ -121,31 +122,31 @@
       <div class="login-sub">Nur für autorisierte Administratoren</div>
       <div id="loginError" class="login-error"></div>
       <div class="field"><label>E-Mail</label><input type="email" id="adminEmail" placeholder="admin@visiotrade.de"></div>
-      <div class="field"><label>Passwort</label><input type="password" id="adminPass" placeholder="••••••••" onkeydown="if(event.key===&#39;Enter&#39;)adminLogin()"></div>
+      <div class="field"><label>Passwort</label><input type="password" id="adminPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()"></div>
       <button class="btn btn-primary" id="loginBtn" onclick="adminLogin()">Anmelden</button>
     </div>
   </div>
 </div>
 
 <!-- ADMIN PANEL -->
-<div id="adminPanel" style="display: block;">
+<div id="adminPanel" style="display:none;">
   <div class="header">
     <div class="header-logo">Visio<span>Trade</span> <span style="color:rgba(255,255,255,0.5);font-size:13px;font-weight:400;">Admin</span></div>
     <div class="header-right">
-      <div class="header-user" id="adminUserLabel">mg@gft-studio.de</div>
+      <div class="header-user" id="adminUserLabel"></div>
       <button class="logout-btn" onclick="adminLogout()">Abmelden</button>
     </div>
   </div>
 
   <div class="admin-wrap">
     <div class="sidebar">
-      <div class="sidebar-item active" onclick="zeigeSeite(&#39;dashboard&#39;)"><span class="sidebar-icon">📊</span> Dashboard</div>
-      <div class="sidebar-item" onclick="zeigeSeite(&#39;produkte&#39;)"><span class="sidebar-icon">🪵</span> Produkte</div>
-      <div class="sidebar-item" onclick="zeigeSeite(&#39;kategorien&#39;)"><span class="sidebar-icon">📂</span> Kategorien</div>
-      <div class="sidebar-item" onclick="zeigeSeite(&#39;bestellungen&#39;)"><span class="sidebar-icon">📦</span> Bestellungen</div>
-      <div class="sidebar-item" onclick="zeigeSeite(&#39;arten&#39;)"><span class="sidebar-icon">🌳</span> Arten</div>
-      <div class="sidebar-item" onclick="zeigeSeite(&#39;sortierungen&#39;)"><span class="sidebar-icon">🏷️</span> Sortierungen</div>
-      <div class="sidebar-item" onclick="zeigeSeite(&#39;preise&#39;)"><span class="sidebar-icon">💶</span> Lieferkosten</div>
+      <div class="sidebar-item active" onclick="zeigeSeite('dashboard')"><span class="sidebar-icon">📊</span> Dashboard</div>
+      <div class="sidebar-item" onclick="zeigeSeite('produkte')"><span class="sidebar-icon">🪵</span> Produkte</div>
+      <div class="sidebar-item" onclick="zeigeSeite('kategorien')"><span class="sidebar-icon">📂</span> Kategorien</div>
+      <div class="sidebar-item" onclick="zeigeSeite('bestellungen')"><span class="sidebar-icon">📦</span> Bestellungen</div>
+      <div class="sidebar-item" onclick="zeigeSeite('arten')"><span class="sidebar-icon">🌳</span> Arten</div>
+      <div class="sidebar-item" onclick="zeigeSeite('sortierungen')"><span class="sidebar-icon">🏷️</span> Sortierungen</div>
+      <div class="sidebar-item" onclick="zeigeSeite('preise')"><span class="sidebar-icon">💶</span> Lieferkosten</div>
     </div>
 
     <div class="main">
@@ -154,71 +155,15 @@
       <div id="page-dashboard" class="page active">
         <div class="page-title">Dashboard</div>
         <div class="stats-grid">
-          <div class="stat-card"><div class="stat-val" id="statProdukte">39</div><div class="stat-label">Produkte</div></div>
-          <div class="stat-card"><div class="stat-val" id="statBestellungen">20</div><div class="stat-label">Bestellungen</div></div>
-          <div class="stat-card"><div class="stat-val" id="statOffen">19</div><div class="stat-label">Offene Bestellungen</div></div>
-          <div class="stat-card"><div class="stat-val" id="statUmsatz">909 €</div><div class="stat-label">Gesamtumsatz (netto)</div></div>
+          <div class="stat-card"><div class="stat-val" id="statProdukte">–</div><div class="stat-label">Produkte</div></div>
+          <div class="stat-card"><div class="stat-val" id="statBestellungen">–</div><div class="stat-label">Bestellungen</div></div>
+          <div class="stat-card"><div class="stat-val" id="statOffen">–</div><div class="stat-label">Offene Bestellungen</div></div>
+          <div class="stat-card"><div class="stat-val" id="statUmsatz">–</div><div class="stat-label">Gesamtumsatz (netto)</div></div>
         </div>
         <div class="table-wrap">
           <div class="table-header"><h3>Letzte Bestellungen</h3></div>
           <table><thead><tr><th>Nr.</th><th>Datum</th><th>Kunde</th><th>Betrag</th><th>Status</th></tr></thead>
-          <tbody id="dashBestellungen">
-      <tr>
-        <td><strong>#79</strong></td>
-        <td>8.5.2026</td>
-        <td>test Gavrilov</td>
-        <td><strong>63,00 €</strong></td>
-        <td><span class="badge badge-gray">offen</span></td>
-      </tr>
-      <tr>
-        <td><strong>#76</strong></td>
-        <td>30.3.2026</td>
-        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
-        <td><strong>44,54 €</strong></td>
-        <td><span class="badge badge-gray">bezahlt</span></td>
-      </tr>
-      <tr>
-        <td><strong>#75</strong></td>
-        <td>30.3.2026</td>
-        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
-        <td><strong>44,54 €</strong></td>
-        <td><span class="badge badge-gray">offen</span></td>
-      </tr>
-      <tr>
-        <td><strong>#74</strong></td>
-        <td>30.3.2026</td>
-        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
-        <td><strong>44,54 €</strong></td>
-        <td><span class="badge badge-gray">offen</span></td>
-      </tr>
-      <tr>
-        <td><strong>#73</strong></td>
-        <td>30.3.2026</td>
-        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
-        <td><strong>44,54 €</strong></td>
-        <td><span class="badge badge-gray">offen</span></td>
-      </tr>
-      <tr>
-        <td><strong>#72</strong></td>
-        <td>30.3.2026</td>
-        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
-        <td><strong>44,54 €</strong></td>
-        <td><span class="badge badge-gray">offen</span></td>
-      </tr>
-      <tr>
-        <td><strong>#71</strong></td>
-        <td>30.3.2026</td>
-        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
-        <td><strong>44,54 €</strong></td>
-        <td><span class="badge badge-gray">offen</span></td>
-      </tr>
-      <tr>
-        <td><strong>#70</strong></td>
-        <td>30.3.2026</td>
-        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
-        <td><strong>44,54 €</strong></td>
-        <td><span class="badge badge-gray">offen</span></td>
-      </tr></tbody></table>
+          <tbody id="dashBestellungen"><tr><td colspan="5" style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</td></tr></tbody></table>
         </div>
       </div>
 
@@ -250,7 +195,7 @@
       <div id="page-bestellungen" class="page">
         <div class="page-title">Bestellungen</div>
         <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-          <select id="filterStatus" onchange="ladeBestellungen()" style="padding:9px 13px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-family:&#39;DM Sans&#39;,sans-serif;font-size:14px;background:var(--white);">
+          <select id="filterStatus" onchange="ladeBestellungen()" style="padding:9px 13px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;background:var(--white);">
             <option value="">Alle Status</option>
             <option value="offen">Offen</option>
             <option value="bestätigt">Bestätigt</option>
@@ -364,7 +309,7 @@
       <label for="pAktiv" style="font-size:14px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--walnut);">Produkt aktiv (im Shop sichtbar)</label>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;produktModal&#39;)">Abbrechen</button>
+      <button class="btn btn-red btn-sm" onclick="schliesseModal('produktModal')">Abbrechen</button>
       <button class="btn btn-green btn-sm" onclick="speichereProdukt()">💾 Speichern</button>
     </div>
   </div>
@@ -376,14 +321,14 @@
     <div class="modal-title" id="artModalTitle">Neue Art</div>
     <input type="hidden" id="artId">
     <div class="field"><label>Name *</label><input type="text" id="artName" placeholder="z.B. Eiche, Kiefer/Tanne"></div>
-    <div class="field"><label>Kategorie *</label><select id="artKategorie" style="width:100%;padding:11px 13px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-size:14px;font-family:&#39;DM Sans&#39;,sans-serif;color:var(--walnut);background:var(--white);outline:none;"></select></div>
+    <div class="field"><label>Kategorie *</label><select id="artKategorie" style="width:100%;padding:11px 13px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-size:14px;font-family:'DM Sans',sans-serif;color:var(--walnut);background:var(--white);outline:none;"></select></div>
     <div class="field"><label>Reihenfolge</label><input type="number" id="artReihenfolge" placeholder="1"></div>
     <div class="field" style="display:flex;align-items:center;gap:10px;">
-      <input type="checkbox" id="artAktiv" checked="" style="width:18px;height:18px;accent-color:var(--oak);">
+      <input type="checkbox" id="artAktiv" checked style="width:18px;height:18px;accent-color:var(--oak);">
       <label for="artAktiv" style="font-size:14px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--walnut);">Art aktiv</label>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;artModal&#39;)">Abbrechen</button>
+      <button class="btn btn-red btn-sm" onclick="schliesseModal('artModal')">Abbrechen</button>
       <button class="btn btn-green btn-sm" onclick="speichereArt()">💾 Speichern</button>
     </div>
   </div>
@@ -396,12 +341,12 @@
     <input type="hidden" id="sortId">
     <div class="field"><label>Name *</label><input type="text" id="sortName" placeholder="z.B. Natur, Rustikal, Gestreift"></div>
     <div class="field"><label>Art (Holzart)</label>
-      <select id="sortArtId" style="width:100%;padding:11px 13px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-size:14px;font-family:&#39;DM Sans&#39;,sans-serif;color:var(--walnut);background:var(--white);outline:none;">
+      <select id="sortArtId" style="width:100%;padding:11px 13px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-size:14px;font-family:'DM Sans',sans-serif;color:var(--walnut);background:var(--white);outline:none;">
         <option value="">— bitte wählen —</option>
       </select>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;sortModal&#39;)">Abbrechen</button>
+      <button class="btn btn-red btn-sm" onclick="schliesseModal('sortModal')">Abbrechen</button>
       <button class="btn btn-green btn-sm" onclick="speichereSortierung()">💾 Speichern</button>
     </div>
   </div>
@@ -419,7 +364,7 @@
       <label for="kAktiv" style="font-size:14px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--walnut);">Kategorie aktiv</label>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;katModal&#39;)">Abbrechen</button>
+      <button class="btn btn-red btn-sm" onclick="schliesseModal('katModal')">Abbrechen</button>
       <button class="btn btn-green btn-sm" onclick="speichereKategorie()">💾 Speichern</button>
     </div>
   </div>
@@ -431,7 +376,7 @@
     <div class="modal-title" id="bestellModalTitle">Bestellung</div>
     <div id="bestellModalContent"></div>
     <div class="modal-footer">
-      <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;bestellModal&#39;)">Schließen</button>
+      <button class="btn btn-red btn-sm" onclick="schliesseModal('bestellModal')">Schließen</button>
     </div>
   </div>
 </div>
@@ -1140,6 +1085,5 @@ function zeigeToast(msg, error = false) {
   } catch(e) {}
 })();
 </script>
-
-
-</body></html>
+</body>
+</html>
