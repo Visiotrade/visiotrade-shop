@@ -579,7 +579,7 @@ async function oeffneProduktModal(produkt = null) {
   document.getElementById('pHolzart').value = produkt?.holzart || '';
   document.getElementById('pOberflaeche').value = produkt?.oberflaeche || '';
   document.getElementById('pStaerke').value = produkt?.staerke_mm || '';
-  document.getElementById('pSortierung').value = produkt?.sortierung || '';
+  // sortierung text field removed - using sortierung_id dropdown instead
   document.getElementById('pBreite').value = produkt?.breite_mm || '';
   document.getElementById('pLaenge').value = produkt?.laenge_mm || '';
   document.getElementById('pArtikelnummer').value = produkt?.artikelnummer || '';
