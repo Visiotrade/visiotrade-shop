@@ -227,6 +227,8 @@
   .kb-bestellung { background:var(--white); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); margin-bottom:12px; }
   .kb-status { font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; }
   .kb-status.offen { background:#FEF3C7; color:#92400E; }
+  .kb-status.warte_auf_zahlung { background:#FFEDD5; color:#9A3412; }
+  .kb-status.bezahlt { background:var(--green-light); color:var(--green); }
   .kb-status.bestaetigt { background:var(--green-light); color:var(--green); }
   .kb-status.versendet { background:#DBEAFE; color:#1E40AF; }
   .kb-status.geliefert { background:var(--green-light); color:var(--green); }
@@ -243,12 +245,12 @@
   <div class="header-logo" onclick="showScreen(&#39;home&#39;)" style="cursor:pointer">Visio<span>Trade</span></div>
   <div style="display:flex;gap:8px;align-items:center;">
     <button class="cart-btn" id="kontoBtn" onclick="zeigeKonto()" style="background:transparent;border:1px solid rgba(255,255,255,0.3);padding:8px 12px;font-size:16px;" title="Mein Konto"><span id="kontoIcon">👤</span></button>
-    <button class="cart-btn" onclick="zeigeWarenkorb()">🛒 Korb <span class="cart-count" id="cartCount">1</span></button>
+    <button class="cart-btn" onclick="zeigeWarenkorb()">🛒 Korb <span class="cart-count" id="cartCount">0</span></button>
   </div>
 </div>
 
 <!-- HOME -->
-<div id="screen-home" class="screen">
+<div id="screen-home" class="screen active">
   <div class="hero">
     <div class="hero-sub">Parkettbörse</div>
     <h1>Edles Holz.<br>Direkt zu Ihnen.</h1>
@@ -669,6 +671,10 @@
           <span class="zahlung-opt-icon">🅿️</span>
           <div><div style="font-weight:600">PayPal</div><div style="font-size:12px;color:var(--gray);margin-top:2px">Mit PayPal-Konto bezahlen</div></div>
         </div>
+        <div class="zahlung-opt" id="zOpt-vorkasse" onclick="setZahlung(&#39;vorkasse&#39;)">
+          <span class="zahlung-opt-icon">🏦</span>
+          <div><div style="font-weight:600">Vorkasse / Überweisung</div><div style="font-size:12px;color:var(--gray);margin-top:2px">Rechnung & Bankdaten per E-Mail</div></div>
+        </div>
       </div>
     </div>
     <div class="agb-bereich">
@@ -698,7 +704,7 @@
 </div>
 
 <!-- BESTELLÜBERSICHT -->
-<div id="screen-uebersicht" class="screen active">
+<div id="screen-uebersicht" class="screen">
   <div class="back-bar" onclick="showScreen(&#39;kasse&#39;)">← Zurück zur Bearbeitung</div>
   <div class="section-title">Bestellübersicht</div>
   <div id="uebersichtContent" style="padding:0 16px 16px;display:flex;flex-direction:column;gap:16px;">
@@ -1021,19 +1027,69 @@ function kbZeige(bereich) {
   if (bereich === 'rechnungen') ladeRechnungen();
 }
 
+
+function statusClass(status) {
+  const classes = {
+    offen: 'offen',
+    warte_auf_zahlung: 'warte_auf_zahlung',
+    bezahlt: 'bezahlt',
+    bestaetigt: 'bestaetigt',
+    bestätigt: 'bestaetigt',
+    versendet: 'versendet',
+    geliefert: 'geliefert',
+    storniert: 'storniert'
+  };
+  return classes[status] || 'offen';
+}
+
+function statusLabel(status) {
+  const labels = {
+    offen: 'Offen',
+    warte_auf_zahlung: 'Warte auf Zahlung',
+    bezahlt: 'Bezahlt',
+    bestaetigt: 'Bestätigt',
+    bestätigt: 'Bestätigt',
+    versendet: 'Versendet',
+    geliefert: 'Geliefert',
+    storniert: 'Storniert'
+  };
+  return labels[status] || status || 'Offen';
+}
+
+function getLieferkostenNettoKunde() {
+  return (lieferart === 'lieferung' && aktuellerFrachtKunde) ? Number(aktuellerFrachtKunde) : 0;
+}
+
+function getWarenwertNetto() {
+  return warenkorb.reduce((summe, item) => summe + Number(item.preis || 0), 0);
+}
+
+function getZahlbetragNetto() {
+  return getWarenwertNetto() + getLieferkostenNettoKunde();
+}
+
+function getZahlungLabel() {
+  const labels = {
+    stripe: '💳 Kreditkarte / Debitkarte (Stripe)',
+    paypal: '🅿️ PayPal',
+    vorkasse: '🏦 Vorkasse / Überweisung'
+  };
+  return labels[zahlungsart] || zahlungsart;
+}
+
 async function ladeBestellungen() {
   const el = document.getElementById('kbBestellungenList');
   const data = await dbAuth('bestellungen', `?email=eq.${encodeURIComponent(kbUser.email)}&order=erstellt_am.desc`, kbUser.access_token);
   if (!data || !data.length) { el.innerHTML='<div style="color:var(--gray);font-size:14px;text-align:center;padding:20px 0;">Noch keine Bestellungen vorhanden.</div>'; return; }
-  const sm = {'offen':'offen','bestätigt':'bestaetigt','versendet':'versendet','geliefert':'geliefert','storniert':'storniert'};
   el.innerHTML = data.map(b => {
     const d = b.erstellt_am ? new Date(b.erstellt_am).toLocaleDateString('de-DE') : '—';
-    const g = b.gesamt_brutto ? b.gesamt_brutto.toFixed(2).replace('.',',') + ' €' : '—';
-    const sk = sm[b.status] || 'offen';
+    const g = b.gesamt_brutto ? b.gesamt_brutto.toFixed(2).replace('.',',') + ' €' : (b.gesamtbetrag ? (Number(b.gesamtbetrag) * 1.19).toFixed(2).replace('.',',') + ' €' : '—');
+    const sk = statusClass(b.status);
+    const sl = statusLabel(b.status);
     return `<div class="kb-bestellung">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;">
         <div><div style="font-weight:700;font-size:14px;">Bestellung #${b.id}</div><div style="font-size:12px;color:var(--gray);margin-top:2px;">${d}</div></div>
-        <span class="kb-status ${sk}">${b.status||'offen'}</span>
+        <span class="kb-status ${sk}">${sl}</span>
       </div>
       <div style="display:flex;justify-content:space-between;margin-top:10px;">
         <span style="font-size:13px;color:var(--gray);">${(b.positionen||[]).length||'—'} Position(en)</span>
@@ -1048,7 +1104,7 @@ async function ladeTracking() {
   const data = await dbAuth('bestellungen', `?email=eq.${encodeURIComponent(kbUser.email)}&status=in.(versendet,geliefert)&order=erstellt_am.desc`, kbUser.access_token);
   if (!data || !data.length) { el.innerHTML='<div style="color:var(--gray);font-size:14px;text-align:center;padding:20px 0;">Keine versendeten Bestellungen.</div>'; return; }
   el.innerHTML = data.map(b => `<div class="kb-box">
-    <div class="kb-box-label">Bestellung #${b.id} · <span class="kb-status ${b.status==='geliefert'?'geliefert':'versendet'}" style="vertical-align:middle;">${b.status}</span></div>
+    <div class="kb-box-label">Bestellung #${b.id} · <span class="kb-status ${statusClass(b.status)}" style="vertical-align:middle;">${statusLabel(b.status)}</span></div>
     <div class="kb-box-val">${b.tracking_nr
       ? `Sendungsnummer: <strong>${b.tracking_nr}</strong><br><br>
          <a href="https://www.raben-group.com/de/tracking/?q=${b.tracking_nr}" target="_blank"
@@ -1416,8 +1472,9 @@ function setLieferart(art) {
 
 function setZahlung(art) {
   zahlungsart=art;
-  document.getElementById('zOpt-stripe').classList.toggle('active',art==='stripe');
-  document.getElementById('zOpt-paypal').classList.toggle('active',art==='paypal');
+  document.getElementById('zOpt-stripe')?.classList.toggle('active',art==='stripe');
+  document.getElementById('zOpt-paypal')?.classList.toggle('active',art==='paypal');
+  document.getElementById('zOpt-vorkasse')?.classList.toggle('active',art==='vorkasse');
 }
 
 function toggleAbwLieferadresse() {
@@ -1732,7 +1789,7 @@ function zeigeBestelluebersicht() {
 
   const abwChecked = document.getElementById('checkAbwLieferadresse')?.checked || false;
   const newsletter = document.getElementById('checkNewsletter')?.checked || false;
-  const zahlungLabel = zahlungsart === 'stripe' ? '💳 Kreditkarte / Debitkarte (Stripe)' : '🅿️ PayPal';
+  const zahlungLabel = getZahlungLabel();
   const lieferartLabel = lieferart === 'abholung' ? '🏭 Abholung' : '🚚 Lieferung';
 
   // Rechnungsadresse
@@ -1902,7 +1959,9 @@ async function bestellungAbsenden() {
   btn.textContent='Wird verarbeitet...'; btn.disabled=true;
   try {
     const user=window.Telegram?.WebApp?.initDataUnsafe?.user;
-    const gesamt=warenkorb.reduce((s,i)=>s+i.preis,0);
+    const gesamt = getWarenwertNetto();
+    const lieferkostenNettoKunde = getLieferkostenNettoKunde();
+    const zahlbetragNetto = getZahlbetragNetto();
     const abwLiefChecked = lieferart==='lieferung' && document.getElementById('checkAbwLieferadresse').checked;
     const best=await dbInsert('bestellungen',{
       telegram_user_id:user?.id?.toString()||null,
@@ -1925,7 +1984,9 @@ async function bestellungAbsenden() {
       lieferadresse_land:abwLiefChecked?document.getElementById('lief-land').value:(lieferart==='lieferung'?rechLand:null),
       lieferadresse_telefon:abwLiefChecked?document.getElementById('lief-telefon').value.trim():telefon,
       lieferadresse_hebebuehne:abwLiefChecked?document.getElementById('lief-hebebuehne').checked:false,
-      gesamtbetrag:gesamt,
+      gesamtbetrag:zahlbetragNetto,
+      warenwert_netto:gesamt,
+      lieferkosten_netto:lieferkostenNettoKunde,
       zahlungsart,
       status:'offen',
       lieferkosten_spediteur: aktuellerFrachtIntern ? aktuellerFrachtIntern.spediteur : null,
@@ -1949,7 +2010,7 @@ async function bestellungAbsenden() {
     if (zahlungsart === 'stripe') {
       const stripeRes = await fetch(`${API_URL}/api/stripe/create-session`, {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({bestellung_id:best[0].id,items:warenkorb.map(i=>({name:i.name,gesamt_m2:i.gesamt_m2,preis:i.preis})),kundenname:`${vorname} ${nachname}`,email,netto:gesamt})
+        body:JSON.stringify({bestellung_id:best[0].id,items:warenkorb.map(i=>({name:i.name,gesamt_m2:i.gesamt_m2,preis:i.preis})),kundenname:`${vorname} ${nachname}`,email,netto:zahlbetragNetto,warenwert_netto:gesamt,lieferkosten_netto:lieferkostenNettoKunde})
       });
       const stripeData = await stripeRes.json();
       if (stripeData.url) { window.location.href = stripeData.url; return; }
@@ -1957,11 +2018,18 @@ async function bestellungAbsenden() {
     } else if (zahlungsart === 'paypal') {
       const ppRes = await fetch(`${API_URL}/api/paypal/create-order`, {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({bestellung_id:best[0].id,netto:gesamt,kundenname:`${vorname} ${nachname}`})
+        body:JSON.stringify({bestellung_id:best[0].id,netto:zahlbetragNetto,warenwert_netto:gesamt,lieferkosten_netto:lieferkostenNettoKunde,kundenname:`${vorname} ${nachname}`})
       });
       const ppData = await ppRes.json();
       if (ppData.url) { window.location.href = ppData.url; return; }
       else { throw new Error('PayPal URL fehlt'); }
+    } else if (zahlungsart === 'vorkasse') {
+      const vkRes = await fetch(`${API_URL}/api/vorkasse/bestellen`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({bestellung_id:best[0].id,netto:zahlbetragNetto,warenwert_netto:gesamt,lieferkosten_netto:lieferkostenNettoKunde,kundenname:`${vorname} ${nachname}`,email})
+      });
+      const vkData = await vkRes.json();
+      if (!vkRes.ok || !vkData.ok) { throw new Error(vkData.error || 'Vorkasse-Bestellung fehlgeschlagen'); }
     }
     warenkorb=[];
     document.getElementById('cartCount').textContent=0;
@@ -2002,6 +2070,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     if(user.first_name) document.getElementById('vorname').value=user.first_name;
     if(user.last_name) document.getElementById('nachname').value=user.last_name;
   }
+  document.getElementById('cartCount').textContent = warenkorb.length;
   checkPayPalReturn();
   ladeKategorien();
 });
