@@ -709,9 +709,10 @@
   <div class="section-title">Bestellübersicht</div>
   <div id="uebersichtContent" style="padding:0 16px 16px;display:flex;flex-direction:column;gap:16px;">
     <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:8px;flex-wrap:wrap;">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;margin-bottom:8px;">
         <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;">🏢 Rechnungsdaten</div>
-        <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;">Lieferadresse entspricht Rechnungsdaten</div>
+        ${rechnungsdatenHinweis}
+        <div></div>
       </div>
       <div style="font-size:14px;line-height:1.8;color:var(--walnut);">
         <strong>Michael Gavrilov</strong><br>
@@ -1499,6 +1500,8 @@ function toggleAbwLieferadresse() {
     if (box) box.style.display='none';
     aktualisiereFracht();
   }
+
+  pruefeCheckboxen();
 }
 
 function toggleHebebuehne() {
@@ -1564,11 +1567,38 @@ async function pruefeUstIdNr(ustIdNr, land) {
   }
 }
 
+function istAbweichendeLieferadresseVollstaendig() {
+  const abwChecked = document.getElementById('checkAbwLieferadresse')?.checked || false;
+
+  // Nur relevant, wenn Lieferung gewählt wurde und abweichende Lieferadresse aktiviert ist.
+  if (lieferart !== 'lieferung' || !abwChecked) return true;
+
+  const pflichtIds = [
+    'lief-empfaenger',
+    'lief-strasse',
+    'lief-plz',
+    'lief-ort',
+    'lief-land',
+    'lief-telefon'
+  ];
+
+  return pflichtIds.every(id => {
+    const el = document.getElementById(id);
+    if (!el) return false;
+    return el.tagName === 'SELECT' ? !!el.value : !!el.value.trim();
+  });
+}
+
 function pruefeCheckboxen() {
-  const ok = document.getElementById('checkB2B').checked &&
-             document.getElementById('checkAgb').checked &&
-             document.getElementById('checkDatenschutz').checked;
+  const agbOk = document.getElementById('checkB2B').checked &&
+                document.getElementById('checkAgb').checked &&
+                document.getElementById('checkDatenschutz').checked;
+
+  const abwAdresseOk = istAbweichendeLieferadresseVollstaendig();
+
+  const ok = agbOk && abwAdresseOk;
   const btn = document.getElementById('pruefeBtn');
+
   btn.disabled = !ok;
   btn.style.background = ok ? 'var(--oak)' : 'var(--gray)';
 }
@@ -1778,11 +1808,25 @@ function zeigeBestelluebersicht() {
   const rechOrt = document.getElementById('rech-ort')?.value.trim() || '';
   const rechLandVal = document.getElementById('rech-land')?.value || '';
   const isAusland = rechLandVal && rechLandVal !== 'DE';
+  const abwChecked = document.getElementById('checkAbwLieferadresse')?.checked || false;
   const pflichtfelder = [
     {id:'vorname'},{id:'nachname'},{id:'firma'},{id:'email'},{id:'telefon'},
     {id:'rech-strasse'},{id:'rech-plz'},{id:'rech-ort'},{id:'rech-land'},
   ];
   if (isAusland) pflichtfelder.push({id:'ustid'});
+
+  // Wenn abweichende Lieferadresse aktiviert ist, muss sie vollständig ausgefüllt sein.
+  if (lieferart === 'lieferung' && abwChecked) {
+    pflichtfelder.push(
+      {id:'lief-empfaenger'},
+      {id:'lief-strasse'},
+      {id:'lief-plz'},
+      {id:'lief-ort'},
+      {id:'lief-land'},
+      {id:'lief-telefon'}
+    );
+  }
+
   const fehler = markiereFelder(pflichtfelder);
   if (fehler > 0) {
     const erstes = document.querySelector('.field-error');
@@ -1790,11 +1834,10 @@ function zeigeBestelluebersicht() {
     return;
   }
 
-  const abwChecked = document.getElementById('checkAbwLieferadresse')?.checked || false;
-  const rechnungsdatenHinweis = (lieferart === 'lieferung' && !abwChecked)
-    ? '<div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;">Lieferadresse entspricht Rechnungsdaten</div>'
-    : '';
   const newsletter = document.getElementById('checkNewsletter')?.checked || false;
+  const rechnungsdatenHinweis = (lieferart === 'lieferung' && !abwChecked)
+    ? '<div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;text-align:center;white-space:normal;">Lieferadresse entspricht Rechnungsdaten</div>'
+    : '<div></div>';
   const zahlungLabel = getZahlungLabel();
   const lieferartLabel = lieferart === 'abholung' ? '🏭 Abholung' : '🚚 Lieferung';
 
@@ -1858,10 +1901,7 @@ function zeigeBestelluebersicht() {
   const uebersicht = document.getElementById('uebersichtContent');
   uebersicht.innerHTML = `
     <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:8px;flex-wrap:wrap;">
-        <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;">🏢 Rechnungsdaten</div>
-        ${rechnungsdatenHinweis}
-      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🏢 Rechnungsdaten</div>
       <div style="font-size:14px;line-height:1.8;color:var(--walnut);">
         <strong>${vorname} ${nachname}</strong><br>
         ${firma}<br>
@@ -2080,6 +2120,18 @@ window.addEventListener('DOMContentLoaded',()=>{
     if(user.last_name) document.getElementById('nachname').value=user.last_name;
   }
   document.getElementById('cartCount').textContent = warenkorb.length;
+
+  // Abweichende Lieferadresse live prüfen: Button "Bestellung prüfen" bleibt gesperrt,
+  // solange Pflichtfelder der abweichenden Lieferadresse fehlen.
+  ['lief-empfaenger','lief-strasse','lief-plz','lief-ort','lief-land','lief-telefon'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', pruefeCheckboxen);
+      el.addEventListener('change', pruefeCheckboxen);
+    }
+  });
+  pruefeCheckboxen();
+
   checkPayPalReturn();
   ladeKategorien();
 });
