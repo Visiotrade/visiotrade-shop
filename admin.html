@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- saved from url=(0045)file:///C:/Users/info/Downloads/admin_28.html -->
+<!-- saved from url=(0045)file:///C:/Users/info/Downloads/admin_14.html -->
 <html lang="de"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VisioTrade Admin</title>
-<link href="./admin_files/css2" rel="stylesheet">
+<link href="./Admin_files/css2" rel="stylesheet">
 <style>
   :root {
     --oak: #8B6914; --oak-light: #C49A2B; --oak-pale: #F5EDD8; --oak-dark: #4A3508;
@@ -81,6 +81,7 @@
   .badge-red { background: var(--red-light); color: var(--red); }
   .badge-gray { background: var(--gray-light); color: var(--gray); }
   .badge-blue { background: #DBEAFE; color: #1E40AF; }
+  .badge-yellow { background: #FEF3C7; color: #92400E; }
 
   /* MODAL */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
@@ -111,7 +112,7 @@
 <body>
 
 <!-- LOGIN -->
-<div id="loginScreen" style="display: none;">
+<div id="loginScreen" style="display: block;">
   <div style="background:var(--walnut);padding:16px 24px;">
     <div style="font-family:&#39;Playfair Display&#39;,serif;font-size:20px;color:var(--oak-light);">Visio<span style="color:white;font-weight:400;">Trade</span> <span style="color:rgba(255,255,255,0.5);font-size:13px;font-weight:400;">Admin</span></div>
   </div>
@@ -128,7 +129,7 @@
 </div>
 
 <!-- ADMIN PANEL -->
-<div id="adminPanel" style="display: block;">
+<div id="adminPanel" style="display: none;">
   <div class="header">
     <div class="header-logo">Visio<span>Trade</span> <span style="color:rgba(255,255,255,0.5);font-size:13px;font-weight:400;">Admin</span></div>
     <div class="header-right">
@@ -143,8 +144,6 @@
       <div class="sidebar-item" onclick="zeigeSeite(&#39;produkte&#39;)"><span class="sidebar-icon">🪵</span> Produkte</div>
       <div class="sidebar-item" onclick="zeigeSeite(&#39;kategorien&#39;)"><span class="sidebar-icon">📂</span> Kategorien</div>
       <div class="sidebar-item" onclick="zeigeSeite(&#39;bestellungen&#39;)"><span class="sidebar-icon">📦</span> Bestellungen</div>
-      <div class="sidebar-item" onclick="zeigeSeite(&#39;arten&#39;)"><span class="sidebar-icon">🌳</span> Arten</div>
-      <div class="sidebar-item" onclick="zeigeSeite(&#39;sortierungen&#39;)"><span class="sidebar-icon">🏷️</span> Sortierungen</div>
       <div class="sidebar-item" onclick="zeigeSeite(&#39;preise&#39;)"><span class="sidebar-icon">💶</span> Lieferkosten</div>
     </div>
 
@@ -154,15 +153,71 @@
       <div id="page-dashboard" class="page active">
         <div class="page-title">Dashboard</div>
         <div class="stats-grid">
-          <div class="stat-card"><div class="stat-val" id="statProdukte">39</div><div class="stat-label">Produkte</div></div>
-          <div class="stat-card"><div class="stat-val" id="statBestellungen">0</div><div class="stat-label">Bestellungen</div></div>
-          <div class="stat-card"><div class="stat-val" id="statOffen">0</div><div class="stat-label">Offene Bestellungen</div></div>
-          <div class="stat-card"><div class="stat-val" id="statUmsatz">0 €</div><div class="stat-label">Gesamtumsatz (netto)</div></div>
+          <div class="stat-card"><div class="stat-val" id="statProdukte">37</div><div class="stat-label">Produkte</div></div>
+          <div class="stat-card"><div class="stat-val" id="statBestellungen">20</div><div class="stat-label">Bestellungen</div></div>
+          <div class="stat-card"><div class="stat-val" id="statOffen">19</div><div class="stat-label">Offene Bestellungen</div></div>
+          <div class="stat-card"><div class="stat-val" id="statUmsatz">909 €</div><div class="stat-label">Gesamtumsatz (netto)</div></div>
         </div>
         <div class="table-wrap">
           <div class="table-header"><h3>Letzte Bestellungen</h3></div>
           <table><thead><tr><th>Nr.</th><th>Datum</th><th>Kunde</th><th>Betrag</th><th>Status</th></tr></thead>
-          <tbody id="dashBestellungen"><tr><td colspan="5" style="text-align:center;color:var(--gray);padding:20px;">Keine Bestellungen</td></tr></tbody></table>
+          <tbody id="dashBestellungen">
+      <tr>
+        <td><strong>#79</strong></td>
+        <td>8.5.2026</td>
+        <td>test Gavrilov</td>
+        <td><strong>63,00 €</strong></td>
+        <td><span class="badge badge-gray">offen</span></td>
+      </tr>
+      <tr>
+        <td><strong>#76</strong></td>
+        <td>30.3.2026</td>
+        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
+        <td><strong>44,54 €</strong></td>
+        <td><span class="badge badge-gray">bezahlt</span></td>
+      </tr>
+      <tr>
+        <td><strong>#75</strong></td>
+        <td>30.3.2026</td>
+        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
+        <td><strong>44,54 €</strong></td>
+        <td><span class="badge badge-gray">offen</span></td>
+      </tr>
+      <tr>
+        <td><strong>#74</strong></td>
+        <td>30.3.2026</td>
+        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
+        <td><strong>44,54 €</strong></td>
+        <td><span class="badge badge-gray">offen</span></td>
+      </tr>
+      <tr>
+        <td><strong>#73</strong></td>
+        <td>30.3.2026</td>
+        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
+        <td><strong>44,54 €</strong></td>
+        <td><span class="badge badge-gray">offen</span></td>
+      </tr>
+      <tr>
+        <td><strong>#72</strong></td>
+        <td>30.3.2026</td>
+        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
+        <td><strong>44,54 €</strong></td>
+        <td><span class="badge badge-gray">offen</span></td>
+      </tr>
+      <tr>
+        <td><strong>#71</strong></td>
+        <td>30.3.2026</td>
+        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
+        <td><strong>44,54 €</strong></td>
+        <td><span class="badge badge-gray">offen</span></td>
+      </tr>
+      <tr>
+        <td><strong>#70</strong></td>
+        <td>30.3.2026</td>
+        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
+        <td><strong>44,54 €</strong></td>
+        <td><span class="badge badge-gray">offen</span></td>
+      </tr></tbody></table>
         </div>
       </div>
 
@@ -197,7 +252,9 @@
           <select id="filterStatus" onchange="ladeBestellungen()" style="padding:9px 13px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-family:&#39;DM Sans&#39;,sans-serif;font-size:14px;background:var(--white);">
             <option value="">Alle Status</option>
             <option value="offen">Offen</option>
-            <option value="bestätigt">Bestätigt</option>
+            <option value="warte_auf_zahlung">Warte auf Zahlung</option>
+            <option value="bezahlt">Bezahlt</option>
+            <option value="bestaetigt">Bestätigt</option>
             <option value="versendet">Versendet</option>
             <option value="geliefert">Geliefert</option>
             <option value="storniert">Storniert</option>
@@ -206,30 +263,6 @@
         <div class="table-wrap">
           <table><thead><tr><th>Nr.</th><th>Datum</th><th>Kunde</th><th>Firma</th><th>Betrag</th><th>Status</th><th>Aktionen</th></tr></thead>
           <tbody id="bestellungenTable"><tr><td colspan="7" style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</td></tr></tbody></table>
-        </div>
-      </div>
-
-      <!-- ARTEN -->
-      <div id="page-arten" class="page">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-          <div class="page-title" style="margin:0;">Arten</div>
-          <button class="btn btn-green" onclick="oeffneArtModal()">+ Neue Art</button>
-        </div>
-        <div class="table-wrap">
-          <table><thead><tr><th>Name</th><th>Kategorie</th><th>Reihenfolge</th><th>Aktiv</th><th>Aktionen</th></tr></thead>
-          <tbody id="artenTable"><tr><td colspan="5" style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</td></tr></tbody></table>
-        </div>
-      </div>
-
-      <!-- SORTIERUNGEN -->
-      <div id="page-sortierungen" class="page">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-          <div class="page-title" style="margin:0;">Sortierungen</div>
-          <button class="btn btn-green" onclick="oeffneSortModal()">+ Neue Sortierung</button>
-        </div>
-        <div class="table-wrap">
-          <table><thead><tr><th>ID</th><th>Name</th><th>Produkte</th><th>Aktionen</th></tr></thead>
-          <tbody id="sortierungenTable"><tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</td></tr></tbody></table>
         </div>
       </div>
 
@@ -264,26 +297,16 @@
     <input type="hidden" id="produktId">
     <div class="field-row">
       <div class="field"><label>Name *</label><input type="text" id="pName" placeholder="Stabparkett Eiche Natur"></div>
-      <div class="field"><label>Kategorie *</label>
-        <select id="pKategorie" onchange="ladeArtenFuerKategorie()"></select>
-      </div>
-    </div>
-    <div class="field-row">
-      <div class="field"><label>Art (Holzart) *</label>
-        <select id="pArtId" onchange="ladeSortierungenFuerArt()">
-          <option value="">— erst Kategorie wählen —</option>
-        </select>
-      </div>
-      <div class="field"><label>Sortierung *</label>
-        <select id="pSortierungId">
-          <option value="">— erst Art wählen —</option>
-        </select>
-      </div>
+      <div class="field"><label>Kategorie *</label><select id="pKategorie"></select></div>
     </div>
     <div class="field"><label>Beschreibung</label><textarea id="pBeschreibung" placeholder="Produktbeschreibung…"></textarea></div>
     <div class="field-row">
+      <div class="field"><label>Holzart</label><input type="text" id="pHolzart" placeholder="Eiche"></div>
       <div class="field"><label>Oberfläche</label><input type="text" id="pOberflaeche" placeholder="roh / geölt / lackiert"></div>
+    </div>
+    <div class="field-row">
       <div class="field"><label>Stärke (mm)</label><input type="number" id="pStaerke" placeholder="22"></div>
+      <div class="field"><label>Sortierung</label><input type="text" id="pSortierung" placeholder="Natur / Rustikal"></div>
     </div>
     <div class="field-row">
       <div class="field"><label>Breite (mm)</label><input type="number" id="pBreite" placeholder="140"></div>
@@ -310,43 +333,6 @@
     <div class="modal-footer">
       <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;produktModal&#39;)">Abbrechen</button>
       <button class="btn btn-green btn-sm" onclick="speichereProdukt()">💾 Speichern</button>
-    </div>
-  </div>
-</div>
-
-<!-- ART MODAL -->
-<div class="modal-overlay" id="artModal">
-  <div class="modal" style="max-width:420px;">
-    <div class="modal-title" id="artModalTitle">Neue Art</div>
-    <input type="hidden" id="artId">
-    <div class="field"><label>Name *</label><input type="text" id="artName" placeholder="z.B. Eiche, Kiefer/Tanne"></div>
-    <div class="field"><label>Kategorie *</label><select id="artKategorie" style="width:100%;padding:11px 13px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-size:14px;font-family:&#39;DM Sans&#39;,sans-serif;color:var(--walnut);background:var(--white);outline:none;"></select></div>
-    <div class="field"><label>Reihenfolge</label><input type="number" id="artReihenfolge" placeholder="1"></div>
-    <div class="field" style="display:flex;align-items:center;gap:10px;">
-      <input type="checkbox" id="artAktiv" checked="" style="width:18px;height:18px;accent-color:var(--oak);">
-      <label for="artAktiv" style="font-size:14px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--walnut);">Art aktiv</label>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;artModal&#39;)">Abbrechen</button>
-      <button class="btn btn-green btn-sm" onclick="speichereArt()">💾 Speichern</button>
-    </div>
-  </div>
-</div>
-
-<!-- SORTIERUNG MODAL -->
-<div class="modal-overlay" id="sortModal">
-  <div class="modal" style="max-width:400px;">
-    <div class="modal-title" id="sortModalTitle">Neue Sortierung</div>
-    <input type="hidden" id="sortId">
-    <div class="field"><label>Name *</label><input type="text" id="sortName" placeholder="z.B. Natur, Rustikal, Gestreift"></div>
-    <div class="field"><label>Art (Holzart)</label>
-      <select id="sortArtId" style="width:100%;padding:11px 13px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-size:14px;font-family:&#39;DM Sans&#39;,sans-serif;color:var(--walnut);background:var(--white);outline:none;">
-        <option value="">— bitte wählen —</option>
-      </select>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;sortModal&#39;)">Abbrechen</button>
-      <button class="btn btn-green btn-sm" onclick="speichereSortierung()">💾 Speichern</button>
     </div>
   </div>
 </div>
@@ -386,11 +372,71 @@
 <script>
 const SUPABASE_URL = 'https://rvouqjhrbjsmqyzvqtxy.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_gr_VMD5No5n8McWg93vq1A_gO6pKoUQ';
-const ADMIN_EMAIL_DOMAIN = 'visiotrade'; // Nur E-Mails mit diesem Begriff sind Admin
+
+// Admin-Sicherheit: Diese Liste bitte an deine echten Admin-E-Mails anpassen.
+// Zusätzlich wird user_metadata.role === 'admin' oder user_metadata.is_admin === true akzeptiert.
+const ADMIN_ALLOWED_EMAILS = [
+  'mg@gft-studio.de',
+  'info@gft-studio.de'
+];
+const ADMIN_ALLOWED_DOMAINS = [
+  'visiotrade.de'
+];
 
 let adminToken = null;
 let adminUser = null;
 let alleKategorien = [];
+
+function istAdminUser(user) {
+  const email = (user?.email || '').toLowerCase();
+  const meta = user?.user_metadata || {};
+  const domain = email.includes('@') ? email.split('@')[1] : '';
+
+  return (
+    meta.role === 'admin' ||
+    meta.is_admin === true ||
+    ADMIN_ALLOWED_EMAILS.map(e => e.toLowerCase()).includes(email) ||
+    ADMIN_ALLOWED_DOMAINS.map(d => d.toLowerCase()).includes(domain)
+  );
+}
+
+function statusLabel(status) {
+  const labels = {
+    offen: 'Offen',
+    warte_auf_zahlung: 'Warte auf Zahlung',
+    bezahlt: 'Bezahlt',
+    bestaetigt: 'Bestätigt',
+    'bestätigt': 'Bestätigt',
+    versendet: 'Versendet',
+    geliefert: 'Geliefert',
+    storniert: 'Storniert'
+  };
+  return labels[status] || status || 'Offen';
+}
+
+function statusBadge(status) {
+  const map = {
+    offen: 'badge-gray',
+    warte_auf_zahlung: 'badge-yellow',
+    bezahlt: 'badge-green',
+    bestaetigt: 'badge-blue',
+    'bestätigt': 'badge-blue',
+    versendet: 'badge-blue',
+    geliefert: 'badge-green',
+    storniert: 'badge-red'
+  };
+  return map[status] || 'badge-gray';
+}
+
+const STATUS_OPTIONEN = [
+  'offen',
+  'warte_auf_zahlung',
+  'bezahlt',
+  'bestaetigt',
+  'versendet',
+  'geliefert',
+  'storniert'
+];
 
 // ===== AUTH =====
 async function adminLogin() {
@@ -411,7 +457,7 @@ async function adminLogin() {
     if (res.error || !res.access_token) { err.textContent = 'E-Mail oder Passwort falsch.'; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Anmelden'; return; }
     // Admin-Rolle prüfen
     const meta = res.user?.user_metadata || {};
-    const isAdmin = true; // Jeder eingeloggte User hat Zugang
+    const isAdmin = istAdminUser(res.user);
     if (!isAdmin) { err.textContent = 'Kein Adminzugang für dieses Konto.'; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Anmelden'; return; }
     adminToken = res.access_token;
     adminUser = { email: res.user?.email, name: meta.firma || res.user?.email };
@@ -499,8 +545,6 @@ function zeigeSeite(name) {
   if (name === 'dashboard') ladeDashboard();
   if (name === 'produkte') ladeProdukte();
   if (name === 'kategorien') ladeKategorienSeite();
-  if (name === 'arten') ladeArten();
-  if (name === 'sortierungen') ladeSortierungen();
   if (name === 'bestellungen') ladeBestellungen();
 }
 
@@ -509,22 +553,23 @@ async function ladeDashboard() {
   try {
     const [produkte, bestellungen] = await Promise.all([
       api('produkte', '?select=id,aktiv'),
-      api('bestellungen', '?order=erstellt_am.desc&limit=20')
+      api('bestellungen', '?select=id,erstellt_am,kundenname,gesamtbetrag,status&order=erstellt_am.desc&limit=1000')
     ]);
     document.getElementById('statProdukte').textContent = produkte?.length || 0;
     document.getElementById('statBestellungen').textContent = bestellungen?.length || 0;
-    const offen = (bestellungen || []).filter(b => b.status === 'offen').length;
+    const offen = (bestellungen || []).filter(b => b.status === 'offen' || b.status === 'warte_auf_zahlung').length;
     document.getElementById('statOffen').textContent = offen;
-    const umsatz = (bestellungen || []).reduce((s, b) => s + (b.gesamtbetrag || 0), 0);
+    const umsatz = (bestellungen || [])
+      .filter(b => b.status === 'bezahlt' || b.status === 'geliefert' || b.status === 'versendet')
+      .reduce((summe, b) => summe + Number(b.gesamtbetrag || 0), 0);
     document.getElementById('statUmsatz').textContent = umsatz.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' €';
-    const sm = { 'offen': 'badge-gray', 'bestätigt': 'badge-blue', 'versendet': 'badge-blue', 'geliefert': 'badge-green', 'storniert': 'badge-red' };
     document.getElementById('dashBestellungen').innerHTML = (bestellungen || []).slice(0, 8).map(b => `
       <tr>
         <td><strong>#${b.id}</strong></td>
         <td>${b.erstellt_am ? new Date(b.erstellt_am).toLocaleDateString('de-DE') : '—'}</td>
         <td>${b.kundenname || '—'}</td>
         <td><strong>${(b.gesamtbetrag || 0).toFixed(2).replace('.', ',')} €</strong></td>
-        <td><span class="badge ${sm[b.status] || 'badge-gray'}">${b.status || 'offen'}</span></td>
+        <td><span class="badge ${statusBadge(b.status)}">${statusLabel(b.status)}</span></td>
       </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--gray);padding:20px;">Keine Bestellungen</td></tr>';
   } catch(e) { zeigeToast('Fehler beim Laden: ' + e.message, true); }
 }
@@ -570,15 +615,15 @@ async function ladeKategorienListe() {
   } catch(e) {}
 }
 
-async function oeffneProduktModal(produkt = null) {
+function oeffneProduktModal(produkt = null) {
   document.getElementById('produktModalTitle').textContent = produkt ? 'Produkt bearbeiten' : 'Neues Produkt';
   document.getElementById('produktId').value = produkt?.id || '';
   document.getElementById('pName').value = produkt?.name || '';
   document.getElementById('pBeschreibung').value = produkt?.beschreibung || '';
-  // holzart wird aus Art-Dropdown gesetzt
+  document.getElementById('pHolzart').value = produkt?.holzart || '';
   document.getElementById('pOberflaeche').value = produkt?.oberflaeche || '';
   document.getElementById('pStaerke').value = produkt?.staerke_mm || '';
-  // sortierung text field removed - using sortierung_id dropdown instead
+  document.getElementById('pSortierung').value = produkt?.sortierung || '';
   document.getElementById('pBreite').value = produkt?.breite_mm || '';
   document.getElementById('pLaenge').value = produkt?.laenge_mm || '';
   document.getElementById('pArtikelnummer').value = produkt?.artikelnummer || '';
@@ -591,13 +636,6 @@ async function oeffneProduktModal(produkt = null) {
   document.getElementById('pFotos').value = (produkt?.bild_urls || []).join('\n');
   document.getElementById('pAktiv').checked = produkt ? !!produkt.aktiv : true;
   // Kategorien befüllen
-  // Sortierungen laden
-  try {
-    const sorts = await api('sortierungen', '?order=name');
-    const sortSel = document.getElementById('pSortierungId');
-    sortSel.innerHTML = '<option value="">— bitte wählen —</option>' + 
-      (sorts||[]).map(s => `<option value="${s.id}" ${produkt?.sortierung_id === s.id ? 'selected' : ''}>${s.name} (#${s.id})</option>`).join('');
-  } catch(e) {}
   const sel = document.getElementById('pKategorie');
   sel.innerHTML = alleKategorien.map(k => `<option value="${k.id}" ${produkt?.kategorie_id === k.id ? 'selected' : ''}>${k.name}</option>`).join('');
   document.getElementById('produktModal').classList.add('open');
@@ -605,12 +643,10 @@ async function oeffneProduktModal(produkt = null) {
 
 async function bearbeiteProdukt(id) {
   try {
-    const [produktData, paketeData, katData] = await Promise.all([
+    const [produktData, paketeData] = await Promise.all([
       api('produkte', `?id=eq.${id}`),
-      api('pakete', `?produkt_id=eq.${id}&order=menge_m2`),
-      api('kategorien', '?order=reihenfolge')
+      api('pakete', `?produkt_id=eq.${id}&order=menge_m2`)
     ]);
-    alleKategorien = katData || [];
     if (produktData?.[0]) {
       // Bestand aus pakete-Tabelle lesen (Summe aller verfügbaren Pakete)
       const gesamtBestand = (paketeData || []).reduce((s, p) => s + (p.verfuegbare_pakete || 0), 0);
@@ -707,12 +743,11 @@ async function speichereProdukt() {
   const body = {
     name: document.getElementById('pName').value.trim(),
     kategorie_id: parseInt(document.getElementById('pKategorie').value),
-    holzart: document.getElementById('pArtId').selectedOptions[0]?.text || null,
     beschreibung: document.getElementById('pBeschreibung').value.trim(),
-    holzart: document.getElementById('pArtId').selectedOptions[0]?.text || null,
+    holzart: document.getElementById('pHolzart').value.trim(),
     oberflaeche: document.getElementById('pOberflaeche').value.trim(),
     staerke_mm: parseFloat(document.getElementById('pStaerke').value) || null,
-    sortierung_id: parseInt(document.getElementById('pSortierungId').value) || null,
+    sortierung: document.getElementById('pSortierung').value.trim(),
     breite_mm: parseInt(document.getElementById('pBreite').value) || null,
     laenge_mm: parseInt(document.getElementById('pLaenge').value) || null,
     artikelnummer: document.getElementById('pArtikelnummer').value.trim() || null,
@@ -722,51 +757,36 @@ async function speichereProdukt() {
     lagerort: document.getElementById('pLagerort').value.trim() || null,
     ve_m2: parseFloat(document.getElementById('pM2').value) || null,
     m2_pro_palette: parseFloat(document.getElementById('pMindest').value) || null,
-    bestand_pakete: document.getElementById('pBestand').value !== '' ? parseInt(document.getElementById('pBestand').value) : null,
-    lagerort: document.getElementById('pLagerort').value.trim() || null,
     bild_urls: fotos,
     aktiv: document.getElementById('pAktiv').checked
   };
   if (!body.name) { zeigeToast('Name ist Pflichtfeld', true); return; }
-  if (!body.preis_pro_m2) { zeigeToast('Preis pro m² ist Pflichtfeld', true); return; }
   try {
     const bestandWert = document.getElementById('pBestand').value;
     if (id) {
       await api('produkte', `?id=eq.${id}`, 'PATCH', body);
       const m2Wert = parseFloat(document.getElementById('pM2').value) || null;
-      const preisWert = parseFloat(document.getElementById('pPreis').value) || null;
+      // menge_m2 immer updaten wenn VE ausgefüllt
       if (m2Wert) {
-        const paketUpdate = { menge_m2: m2Wert };
-        if (preisWert) paketUpdate.preis = Math.round(m2Wert * preisWert * 100) / 100;
-        await api('pakete', `?produkt_id=eq.${id}`, 'PATCH', paketUpdate);
+        await api('pakete', `?produkt_id=eq.${id}`, 'PATCH', { menge_m2: m2Wert });
       }
+      // Bestand auf alle Pakete verteilen
       if (bestandWert !== '') {
-        const gesamtBestand = parseInt(bestandWert) || 0;
         const pakete = await api('pakete', `?produkt_id=eq.${id}`);
         if (pakete && pakete.length > 0) {
+          const gesamtBestand = parseInt(bestandWert) || 0;
+          // Bestand gleichmäßig verteilen
           const proPacket = Math.floor(gesamtBestand / pakete.length);
           const rest = gesamtBestand % pakete.length;
           for (let i = 0; i < pakete.length; i++) {
             const anteil = proPacket + (i === 0 ? rest : 0);
             await api('pakete', `?id=eq.${pakete[i].id}`, 'PATCH', { verfuegbare_pakete: anteil });
           }
-        } else {
-          const m2Val = parseFloat(document.getElementById('pM2').value) || 1;
-          const preisVal = parseFloat(document.getElementById('pPreis').value) || 0;
-          const paketPreis = Math.round(m2Val * preisVal * 100) / 100;
-          await api('pakete', '', 'POST', {
-            produkt_id: parseInt(id),
-            menge_m2: m2Val,
-            preis: paketPreis,
-            verfuegbare_pakete: gesamtBestand,
-            aktiv: true
-          });
-          zeigeToast('✅ Paket automatisch angelegt');
         }
       }
       zeigeToast('✅ Produkt & Bestand aktualisiert');
     } else {
-      await api('produkte', '', 'POST', body);
+      const neu = await api('produkte', '', 'POST', body);
       zeigeToast('✅ Produkt erstellt');
     }
     schliesseModal('produktModal');
@@ -837,157 +857,12 @@ async function loescheKat(id, name) {
   catch(e) { zeigeToast('Fehler: ' + e.message, true); }
 }
 
-
-
-// ===== ARTEN =====
-async function ladeArten() {
-  try {
-    const [data, kats] = await Promise.all([
-      api('arten', '?select=*&order=kategorie_id,reihenfolge'),
-      api('kategorien', '?order=reihenfolge')
-    ]);
-    const katMap = {};
-    (kats||[]).forEach(k => katMap[k.id] = k.name);
-    document.getElementById('artenTable').innerHTML = (data||[]).map(a => `
-      <tr>
-        <td><strong>${a.name}</strong></td>
-        <td>${katMap[a.kategorie_id] || '—'}</td>
-        <td>${a.reihenfolge || '—'}</td>
-        <td><span class="badge ${a.aktiv ? 'badge-green' : 'badge-red'}">${a.aktiv ? 'Aktiv' : 'Inaktiv'}</span></td>
-        <td style="display:flex;gap:6px;">
-          <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="bearbeiteArt(${a.id})">✏️ Edit</button>
-          <button class="btn btn-red btn-sm" onclick="loescheArt(${a.id},'${a.name.replace(/'/g,"\'")}')">🗑</button>
-        </td>
-      </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--gray);padding:20px;">Keine Arten</td></tr>';
-  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
-}
-
-async function oeffneArtModal(art = null) {
-  document.getElementById('artModalTitle').textContent = art ? 'Art bearbeiten' : 'Neue Art';
-  document.getElementById('artId').value = art?.id || '';
-  document.getElementById('artName').value = art?.name || '';
-  document.getElementById('artReihenfolge').value = art?.reihenfolge || '';
-  document.getElementById('artAktiv').checked = art ? !!art.aktiv : true;
-  const kats = await api('kategorien', '?order=reihenfolge');
-  document.getElementById('artKategorie').innerHTML = (kats||[]).map(k => 
-    `<option value="${k.id}" ${art?.kategorie_id === k.id ? 'selected' : ''}>${k.name}</option>`
-  ).join('');
-  document.getElementById('artModal').classList.add('open');
-}
-
-async function bearbeiteArt(id) {
-  try {
-    const data = await api('arten', `?id=eq.${id}`);
-    if (data?.[0]) oeffneArtModal(data[0]);
-  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
-}
-
-async function speichereArt() {
-  const id = document.getElementById('artId').value;
-  const name = document.getElementById('artName').value.trim();
-  const kat = document.getElementById('artKategorie').value;
-  if (!name) { zeigeToast('Name ist Pflichtfeld', true); return; }
-  if (!kat) { zeigeToast('Kategorie ist Pflichtfeld', true); return; }
-  const body = {
-    name,
-    kategorie_id: parseInt(kat),
-    reihenfolge: parseInt(document.getElementById('artReihenfolge').value) || 1,
-    aktiv: document.getElementById('artAktiv').checked
-  };
-  try {
-    if (id) { await api('arten', `?id=eq.${id}`, 'PATCH', body); zeigeToast('✅ Art aktualisiert'); }
-    else { await api('arten', '', 'POST', body); zeigeToast('✅ Art erstellt'); }
-    schliesseModal('artModal');
-    ladeArten();
-  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
-}
-
-async function loescheArt(id, name) {
-  if (!confirm(`Art "${name}" wirklich löschen?\nAchtung: Sortierungen dieser Art werden nicht mehr angezeigt!`)) return;
-  try {
-    await api('arten', `?id=eq.${id}`, 'DELETE');
-    zeigeToast('✅ Art gelöscht');
-    ladeArten();
-  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
-}
-
-// ===== SORTIERUNGEN =====
-async function ladeSortierungen() {
-  try {
-    const [data, produkte] = await Promise.all([
-      api('sortierungen', '?order=id'),
-      api('produkte', '?select=sortierung_id')
-    ]);
-    // Anzahl Produkte pro Sortierung
-    const anzMap = {};
-    (produkte||[]).forEach(p => { if(p.sortierung_id) anzMap[p.sortierung_id] = (anzMap[p.sortierung_id]||0)+1; });
-    document.getElementById('sortierungenTable').innerHTML = (data||[]).map(s => `
-      <tr>
-        <td style="color:var(--gray);font-size:12px;">#${s.id}</td>
-        <td><strong>${s.name}</strong></td>
-        <td><span style="font-size:13px;color:var(--gray);">${anzMap[s.id]||0} Produkte</span></td>
-        <td style="display:flex;gap:6px;">
-          <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="bearbeiteSortierung(${s.id},'${s.name.replace(/'/g,"\'")}')">✏️ Edit</button>
-          <button class="btn btn-red btn-sm" onclick="loescheSortierung(${s.id},'${s.name.replace(/'/g,"\'")}')">🗑</button>
-        </td>
-      </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px;">Keine Sortierungen</td></tr>';
-  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
-}
-
-async function oeffneSortModal(sort = null) {
-  document.getElementById('sortModalTitle').textContent = sort ? 'Sortierung bearbeiten' : 'Neue Sortierung';
-  document.getElementById('sortId').value = sort?.id || '';
-  document.getElementById('sortName').value = sort?.name || '';
-  // Arten laden
-  try {
-    const kats = await api('kategorien', '?order=reihenfolge');
-    const arten = await api('arten', '?order=kategorie_id,name');
-    const katMap = {}; (kats||[]).forEach(k => katMap[k.id] = k.name);
-    document.getElementById('sortArtId').innerHTML = '<option value="">— bitte wählen —</option>' +
-      (arten||[]).map(a => `<option value="${a.id}" ${sort?.art_id === a.id ? 'selected' : ''}>${katMap[a.kategorie_id] || '?'} · ${a.name}</option>`).join('');
-  } catch(e) {}
-  document.getElementById('sortModal').classList.add('open');
-}
-
-function bearbeiteSortierung(id, name) {
-  oeffneSortModal({id, name});
-}
-
-async function speichereSortierung() {
-  const id = document.getElementById('sortId').value;
-  const name = document.getElementById('sortName').value.trim();
-  const artId = document.getElementById('sortArtId').value;
-  if (!name) { zeigeToast('Name ist Pflichtfeld', true); return; }
-  const body = { name, art_id: artId ? parseInt(artId) : null };
-  try {
-    if (id) {
-      await api('sortierungen', `?id=eq.${id}`, 'PATCH', body);
-      zeigeToast('✅ Sortierung aktualisiert');
-    } else {
-      await api('sortierungen', '', 'POST', body);
-      zeigeToast('✅ Sortierung erstellt');
-    }
-    schliesseModal('sortModal');
-    ladeSortierungen();
-  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
-}
-
-async function loescheSortierung(id, name) {
-  if (!confirm(`Sortierung "${name}" wirklich löschen?\nAchtung: Produkte mit dieser Sortierung werden nicht mehr korrekt angezeigt!`)) return;
-  try {
-    await api('sortierungen', `?id=eq.${id}`, 'DELETE');
-    zeigeToast('✅ Sortierung gelöscht');
-    ladeSortierungen();
-  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
-}
-
 // ===== BESTELLUNGEN =====
 async function ladeBestellungen() {
   const status = document.getElementById('filterStatus').value;
   const params = status ? `?status=eq.${encodeURIComponent(status)}&order=erstellt_am.desc` : '?order=erstellt_am.desc';
   try {
     const data = await api('bestellungen', params) || [];
-    const sm = { 'offen': 'badge-gray', 'bestätigt': 'badge-blue', 'versendet': 'badge-blue', 'geliefert': 'badge-green', 'storniert': 'badge-red' };
     document.getElementById('bestellungenTable').innerHTML = data.map(b => `
       <tr>
         <td><strong>#${b.id}</strong></td>
@@ -995,24 +870,14 @@ async function ladeBestellungen() {
         <td>${b.kundenname || '—'}</td>
         <td style="font-size:13px;">${b.firma || '—'}</td>
         <td><strong>${(b.gesamtbetrag || 0).toFixed(2).replace('.', ',')} €</strong></td>
-        <td><span class="badge ${sm[b.status] || 'badge-gray'}">${b.status || 'offen'}</span></td>
+        <td><span class="badge ${statusBadge(b.status)}">${statusLabel(b.status)}</span></td>
         <td style="display:flex;gap:6px;">
           <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="zeigeBestellung(${b.id})">👁 Details</button>
           <select onchange="aktualisiereStatus(${b.id}, this.value)" style="padding:6px 8px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-size:12px;font-family:'DM Sans',sans-serif;">
-            ${['offen','bestätigt','versendet','geliefert','storniert'].map(s => `<option value="${s}" ${b.status===s?'selected':''}>${s}</option>`).join('')}
+            ${STATUS_OPTIONEN.map(s => `<option value="${s}" ${(b.status === s || (b.status === 'bestätigt' && s === 'bestaetigt')) ? 'selected' : ''}>${statusLabel(s)}</option>`).join('')}
           </select>
-          <button class="btn btn-red btn-sm" onclick="loescheBestellung(${b.id})" title="Bestellung löschen">🗑</button>
         </td>
       </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--gray);padding:20px;">Keine Bestellungen</td></tr>';
-  } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
-}
-
-async function loescheBestellung(id) {
-  if (!confirm(`Bestellung #${id} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden!`)) return;
-  try {
-    await api('bestellungen', `?id=eq.${id}`, 'DELETE');
-    zeigeToast('✅ Bestellung gelöscht');
-    ladeBestellungen();
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
 }
 
@@ -1028,6 +893,20 @@ async function zeigeBestellung(id) {
     const data = await api('bestellungen', `?id=eq.${id}`);
     const b = data?.[0];
     if (!b) return;
+
+    const zahlungsart = b.zahlungsart || '—';
+    const verwendungszweck = 'VT-' + String(b.id).padStart(4, '0');
+    const zahlungsLabel = zahlungsart === 'vorkasse'
+      ? `🏦 Vorkasse / Überweisung`
+      : zahlungsart === 'stripe'
+        ? '💳 Kreditkarte / Stripe'
+        : zahlungsart === 'paypal'
+          ? '🅿️ PayPal'
+          : zahlungsart;
+    const zahlungsInfo = zahlungsart === 'vorkasse'
+      ? `<strong>${zahlungsLabel}</strong><br>Verwendungszweck: <strong style="color:var(--oak);">${verwendungszweck}</strong><br>Status: <strong>${statusLabel(b.status)}</strong>`
+      : `<strong>${zahlungsLabel}</strong>${b.zahlungs_id ? '<br>Zahlungs-ID: <strong>' + b.zahlungs_id + '</strong>' : ''}<br>Status: <strong>${statusLabel(b.status)}</strong>`;
+
     document.getElementById('bestellModalTitle').textContent = `Bestellung #${b.id}`;
     document.getElementById('bestellModalContent').innerHTML = `
       <div style="display:grid;gap:12px;">
@@ -1048,6 +927,10 @@ async function zeigeBestellung(id) {
             <div>Lieferkosten: <strong>${b.lieferkosten_spediteur ? (b.lieferkosten_intern||0).toFixed(2).replace('.',',') + ' €' : '—'}</strong></div>
             <div>Spediteur: <strong>${b.lieferkosten_spediteur||'—'}</strong></div>
           </div>
+        </div>
+        <div style="background:var(--cream);padding:14px;border-radius:var(--radius-sm);">
+          <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;margin-bottom:6px;">Zahlung</div>
+          <div style="font-size:14px;line-height:1.8;">${zahlungsInfo}</div>
         </div>
         <div style="background:var(--cream);padding:14px;border-radius:var(--radius-sm);">
           <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;margin-bottom:6px;">Tracking</div>
