@@ -709,7 +709,10 @@
   <div class="section-title">Bestellübersicht</div>
   <div id="uebersichtContent" style="padding:0 16px 16px;display:flex;flex-direction:column;gap:16px;">
     <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🏢 Rechnungsdaten</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:8px;flex-wrap:wrap;">
+        <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;">🏢 Rechnungsdaten</div>
+        <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;">Lieferadresse entspricht Rechnungsdaten</div>
+      </div>
       <div style="font-size:14px;line-height:1.8;color:var(--walnut);">
         <strong>Michael Gavrilov</strong><br>
         Gavrilov Fussbodentechnik GmbH &amp; Co KG<br>
@@ -1788,6 +1791,9 @@ function zeigeBestelluebersicht() {
   }
 
   const abwChecked = document.getElementById('checkAbwLieferadresse')?.checked || false;
+  const rechnungsdatenHinweis = (lieferart === 'lieferung' && !abwChecked)
+    ? '<div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;">Lieferadresse entspricht Rechnungsdaten</div>'
+    : '';
   const newsletter = document.getElementById('checkNewsletter')?.checked || false;
   const zahlungLabel = getZahlungLabel();
   const lieferartLabel = lieferart === 'abholung' ? '🏭 Abholung' : '🚚 Lieferung';
@@ -1852,7 +1858,10 @@ function zeigeBestelluebersicht() {
   const uebersicht = document.getElementById('uebersichtContent');
   uebersicht.innerHTML = `
     <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🏢 Rechnungsdaten</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:8px;flex-wrap:wrap;">
+        <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;">🏢 Rechnungsdaten</div>
+        ${rechnungsdatenHinweis}
+      </div>
       <div style="font-size:14px;line-height:1.8;color:var(--walnut);">
         <strong>${vorname} ${nachname}</strong><br>
         ${firma}<br>
