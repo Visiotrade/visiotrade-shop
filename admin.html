@@ -372,6 +372,7 @@
 <script>
 const SUPABASE_URL = 'https://rvouqjhrbjsmqyzvqtxy.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_gr_VMD5No5n8McWg93vq1A_gO6pKoUQ';
+const BACKEND_API_URL = 'https://visiotrade-backend-production.up.railway.app';
 
 // Admin-Sicherheit: Diese Liste bitte an deine echten Admin-E-Mails anpassen.
 // Zusätzlich wird user_metadata.role === 'admin' oder user_metadata.is_admin === true akzeptiert.
@@ -894,15 +895,24 @@ async function zeigeBestellung(id) {
     const zahlungsart = b.zahlungsart || '—';
     const verwendungszweck = 'VT-' + String(b.id).padStart(4, '0');
     const zahlungsLabel = zahlungsart === 'vorkasse'
-      ? `🏦 Vorkasse / Überweisung`
+      ? '🏦 Vorkasse / Überweisung'
       : zahlungsart === 'stripe'
         ? '💳 Kreditkarte / Stripe'
         : zahlungsart === 'paypal'
           ? '🅿️ PayPal'
           : zahlungsart;
+
     const zahlungsInfo = zahlungsart === 'vorkasse'
       ? `<strong>${zahlungsLabel}</strong><br>Verwendungszweck: <strong style="color:var(--oak);">${verwendungszweck}</strong><br>Status: <strong>${statusLabel(b.status)}</strong>`
       : `<strong>${zahlungsLabel}</strong>${b.zahlungs_id ? '<br>Zahlungs-ID: <strong>' + b.zahlungs_id + '</strong>' : ''}<br>Status: <strong>${statusLabel(b.status)}</strong>`;
+
+    const vorkasseButton = b.zahlungsart === 'vorkasse' && b.status === 'warte_auf_zahlung'
+      ? `<div style="margin-top:12px;">
+          <button class="btn btn-green btn-sm" onclick="vorkasseZahlungErhalten(${b.id})">
+            ✅ Zahlung erhalten & echte Rechnung erstellen
+          </button>
+        </div>`
+      : '';
 
     document.getElementById('bestellModalTitle').textContent = `Bestellung #${b.id}`;
     document.getElementById('bestellModalContent').innerHTML = `
@@ -917,6 +927,13 @@ async function zeigeBestellung(id) {
             <div style="font-size:14px;line-height:1.8;">${b.lieferadresse_strasse||b.rechnungsadresse_strasse||'—'}<br>${b.lieferadresse_plz||b.rechnungsadresse_plz||''} ${b.lieferadresse_ort||b.rechnungsadresse_ort||''}<br>${b.lieferart||''}</div>
           </div>
         </div>
+
+        <div style="background:var(--cream);padding:14px;border-radius:var(--radius-sm);">
+          <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;margin-bottom:6px;">Zahlung</div>
+          <div style="font-size:14px;line-height:1.8;">${zahlungsInfo}</div>
+          ${vorkasseButton}
+        </div>
+
         <div style="background:var(--cream);padding:14px;border-radius:var(--radius-sm);">
           <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;margin-bottom:6px;">Beträge</div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:14px;">
@@ -925,10 +942,7 @@ async function zeigeBestellung(id) {
             <div>Spediteur: <strong>${b.lieferkosten_spediteur||'—'}</strong></div>
           </div>
         </div>
-        <div style="background:var(--cream);padding:14px;border-radius:var(--radius-sm);">
-          <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;margin-bottom:6px;">Zahlung</div>
-          <div style="font-size:14px;line-height:1.8;">${zahlungsInfo}</div>
-        </div>
+
         <div style="background:var(--cream);padding:14px;border-radius:var(--radius-sm);">
           <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;margin-bottom:6px;">Tracking</div>
           <div style="display:flex;gap:10px;align-items:center;">
@@ -947,6 +961,38 @@ async function speichereTracking(id) {
     await api('bestellungen', `?id=eq.${id}`, 'PATCH', { tracking_nr: nr, spediteur: 'Raben' });
     zeigeToast('✅ Tracking gespeichert');
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
+}
+
+async function vorkasseZahlungErhalten(bestellungId) {
+  if (!confirm('Zahlung wirklich als erhalten markieren und echte Rechnung erstellen?')) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`${BACKEND_API_URL}/api/admin/vorkasse/zahlung-erhalten`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({
+        bestellung_id: bestellungId
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || 'Unbekannter Fehler');
+    }
+
+    zeigeToast('✅ Zahlung markiert, Rechnung erstellt und E-Mail gesendet');
+    schliesseModal('bestellModal');
+    ladeBestellungen();
+    ladeDashboard();
+  } catch (err) {
+    zeigeToast('Fehler: ' + err.message, true);
+  }
 }
 
 async function speichereEinstellungen() {
