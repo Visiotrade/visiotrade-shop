@@ -281,6 +281,22 @@
   .kb-stat-label { font-size:12px; color:var(--gray); margin-top:4px; }
   .kb-logout { width:100%; margin-top:16px; padding:12px; background:var(--red-light); color:var(--red); border:none; border-radius:var(--radius-sm); font-size:14px; font-weight:700; font-family:'DM Sans',sans-serif; cursor:pointer; }
 
+
+  /* ===== KUNDENKONTO ADRESSEN BEARBEITEN ===== */
+  .kb-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .kb-form-grid .full { grid-column:1 / -1; }
+  .kb-form-group label { display:block; font-size:11px; font-weight:800; color:var(--oak); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
+  .kb-form-group input, .kb-form-group textarea, .kb-form-group select {
+    width:100%; padding:11px 12px; border:2px solid var(--gray-light); border-radius:var(--radius-sm);
+    font-size:14px; font-family:'DM Sans',sans-serif; color:var(--walnut); background:white; outline:none;
+  }
+  .kb-form-group textarea { resize:vertical; min-height:70px; }
+  .kb-form-group input:focus, .kb-form-group textarea:focus, .kb-form-group select:focus { border-color:var(--oak); }
+  .kb-form-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:14px; flex-wrap:wrap; }
+  .kb-danger-btn { border:none; border-radius:var(--radius-sm); padding:9px 13px; font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; background:var(--red-light); color:var(--red); font-weight:700; }
+  .kb-mini-badge { display:inline-block; font-size:11px; font-weight:800; padding:3px 8px; border-radius:999px; background:var(--green-light); color:var(--green); margin-left:6px; }
+  .kb-note { font-size:12px; color:var(--gray); line-height:1.5; margin-top:8px; }
+
   @media (max-width: 820px) {
     .kb-account-wrap { grid-template-columns:1fr; padding:16px; gap:14px; }
     .kb-sidebar { position:static; display:flex; overflow-x:auto; padding:8px; gap:6px; border-radius:var(--radius); }
@@ -1094,6 +1110,74 @@ async function dbAuth(table, params, token) {
   } catch(e) { return null; }
 }
 
+
+async function dbAuthInsert(table, data, token) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method:'POST',
+    headers:{
+      'apikey':SUPABASE_KEY,
+      'Authorization':`Bearer ${token}`,
+      'Content-Type':'application/json',
+      'Prefer':'return=representation'
+    },
+    body:JSON.stringify(data)
+  });
+  const txt = await r.text();
+  const parsed = txt ? JSON.parse(txt) : null;
+  if (!r.ok) throw new Error(parsed?.message || txt || 'Speichern fehlgeschlagen');
+  return parsed;
+}
+
+async function dbAuthUpdate(table, params, data, token) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
+    method:'PATCH',
+    headers:{
+      'apikey':SUPABASE_KEY,
+      'Authorization':`Bearer ${token}`,
+      'Content-Type':'application/json',
+      'Prefer':'return=representation'
+    },
+    body:JSON.stringify(data)
+  });
+  const txt = await r.text();
+  const parsed = txt ? JSON.parse(txt) : null;
+  if (!r.ok) throw new Error(parsed?.message || txt || 'Aktualisieren fehlgeschlagen');
+  return parsed;
+}
+
+async function dbAuthDelete(table, params, token) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
+    method:'DELETE',
+    headers:{
+      'apikey':SUPABASE_KEY,
+      'Authorization':`Bearer ${token}`,
+      'Prefer':'return=minimal'
+    }
+  });
+  if (!r.ok) {
+    const txt = await r.text();
+    throw new Error(txt || 'Löschen fehlgeschlagen');
+  }
+  return true;
+}
+
+async function kbEnsureUserId() {
+  if (kbUser?.id) return kbUser.id;
+  if (!kbUser?.access_token) throw new Error('Nicht angemeldet');
+
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${kbUser.access_token}`}
+  });
+  const user = await r.json();
+  if (!r.ok || !user.id) throw new Error('Benutzerdaten konnten nicht geladen werden');
+
+  kbUser.id = user.id;
+  kbUser.email = user.email || kbUser.email;
+  kbUser.firma = user.user_metadata?.firma || kbUser.firma || '';
+  localStorage.setItem('vt_kb', JSON.stringify(kbUser));
+  return kbUser.id;
+}
+
 function zeigeKonto() {
   if (kbUser) { zeigeKundenbuero(); return; }
   showScreen('login');
@@ -1137,7 +1221,7 @@ async function authAktion() {
     const res = await supabaseAuth('token?grant_type=password', {email, password:pass});
     btn.disabled=false; btn.textContent='Anmelden';
     if (res.error || !res.access_token) { kbError('E-Mail oder Passwort falsch.'); return; }
-    kbUser = {access_token:res.access_token, email:res.user?.email, firma:res.user?.user_metadata?.firma||''};
+    kbUser = {access_token:res.access_token, id:res.user?.id, email:res.user?.email, firma:res.user?.user_metadata?.firma||''};
     localStorage.setItem('vt_kb', JSON.stringify(kbUser));
     zeigeKundenbuero();
   }
@@ -1157,11 +1241,14 @@ function zeigeKundenbuero() {
   document.getElementById('kbKontoFirma').textContent = kbUser.firma || '—';
   document.getElementById('kontoIcon').textContent = '✅';
   showScreen('kundenbuero');
+  kbEnsureUserId().catch(() => {});
   kbZeige('uebersicht');
 }
 
 const KB_SECTIONS = ['uebersicht','bestellungen','tracking','reklamation','rechnungen','adressen','zugangsdaten'];
 let kbOrdersCache = null;
+let kbProfilCache = null;
+let kbLieferadressenCache = null;
 
 function kbZeige(bereich) {
   KB_SECTIONS.forEach(b => {
@@ -1556,64 +1643,292 @@ function renderKbRechnungen() {
   }).join('');
 }
 
+async function ladeKundenProfil(force = false) {
+  if (kbProfilCache && !force) return kbProfilCache;
+  const userId = await kbEnsureUserId();
+
+  const rows = await dbAuth(
+    'kundenprofil',
+    `?user_id=eq.${encodeURIComponent(userId)}&limit=1`,
+    kbUser.access_token
+  );
+
+  kbProfilCache = Array.isArray(rows) && rows[0] ? rows[0] : null;
+  return kbProfilCache;
+}
+
+async function ladeKundenLieferadressen(force = false) {
+  if (kbLieferadressenCache && !force) return kbLieferadressenCache;
+  const userId = await kbEnsureUserId();
+
+  const rows = await dbAuth(
+    'kunden_lieferadressen',
+    `?user_id=eq.${encodeURIComponent(userId)}&order=ist_standard.desc,erstellt_am.desc`,
+    kbUser.access_token
+  );
+
+  kbLieferadressenCache = Array.isArray(rows) ? rows : [];
+  return kbLieferadressenCache;
+}
+
+function landName(code) {
+  const map = {DE:'Deutschland', NL:'Niederlande', AT:'Österreich', CH:'Schweiz'};
+  return map[code] || code || 'Deutschland';
+}
+
+function profilAdresseHtml(p) {
+  if (!p) return 'Noch keine Rechnungsadresse gespeichert.';
+  const name = [p.vorname, p.nachname].filter(Boolean).join(' ');
+  return [
+    p.firma ? escapeHtml(p.firma) : '',
+    name ? escapeHtml(name) : '',
+    p.strasse ? escapeHtml(p.strasse) : '',
+    (p.plz || p.ort) ? `${escapeHtml(p.plz || '')} ${escapeHtml(p.ort || '')}`.trim() : '',
+    p.land ? escapeHtml(landName(p.land)) : '',
+    p.telefon ? 'Telefon: ' + escapeHtml(p.telefon) : '',
+    p.ustid ? 'USt-IdNr.: ' + escapeHtml(p.ustid) : ''
+  ].filter(Boolean).join('<br>');
+}
+
+function lieferadresseProfilHtml(a) {
+  return [
+    a.firma ? escapeHtml(a.firma) : '',
+    a.empfaenger ? escapeHtml(a.empfaenger) : '',
+    a.strasse ? escapeHtml(a.strasse) : '',
+    (a.plz || a.ort) ? `${escapeHtml(a.plz || '')} ${escapeHtml(a.ort || '')}`.trim() : '',
+    a.land ? escapeHtml(landName(a.land)) : '',
+    a.telefon ? 'Telefon vor Ort: ' + escapeHtml(a.telefon) : '',
+    a.hinweis ? 'Hinweis: ' + escapeHtml(a.hinweis) : '',
+    a.hebebuehne ? '✓ Anlieferung mit Hebebühne' : '',
+    a.eigenabladen ? '✓ Eigenständige Entladung' : ''
+  ].filter(Boolean).join('<br>');
+}
+
+function valueOrEmpty(v) {
+  return escapeHtml(v || '');
+}
+
 async function ladeAdressen() {
   const el = document.getElementById('kbAdressenContent');
-  const orders = await ladeKundenBestellungen();
-  const latest = orders[0];
+  el.innerHTML = '<div class="kb-empty">Wird geladen…</div>';
 
-  if (!latest) {
+  try {
+    const [profil, lieferadressen] = await Promise.all([
+      ladeKundenProfil(true),
+      ladeKundenLieferadressen(true)
+    ]);
+
     el.innerHTML = `
       <div class="kb-box">
-        <div class="kb-box-label">Rechnungsadresse</div>
-        <div class="kb-box-val">Noch keine Adresse aus einer Bestellung vorhanden.</div>
-      </div>`;
-    return;
-  }
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+          <div>
+            <div class="kb-box-label">Rechnungsadresse</div>
+            <div class="kb-box-val">${profilAdresseHtml(profil)}</div>
+            <div class="kb-note">Diese Adresse wird später automatisch in der Kasse als Rechnungsadresse vorgeschlagen.</div>
+          </div>
+          <button class="kb-gray-btn" type="button" onclick="zeigeRechnungsadresseFormular()">Bearbeiten</button>
+        </div>
+      </div>
 
-  const lieferadressen = [];
-  orders.forEach(b => {
-    const key = [b.lieferadresse_strasse, b.lieferadresse_plz, b.lieferadresse_ort].filter(Boolean).join('|');
-    if (key && !lieferadressen.some(a => a.key === key)) {
-      lieferadressen.push({ key, order: b });
-    }
-  });
+      <div class="kb-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:12px;">
+          <div>
+            <div class="kb-box-label" style="margin:0;">Lieferadressen</div>
+            <div class="kb-note">Hier können mehrere Lieferadressen gespeichert werden.</div>
+          </div>
+          <button class="kb-yellow-btn" type="button" onclick="zeigeLieferadresseFormular()">+ Neue Lieferadresse</button>
+        </div>
+        ${lieferadressen.length ? lieferadressen.map(a => `
+          <div class="kb-address-row">
+            <div>
+              <strong>${escapeHtml(a.firma || a.empfaenger || 'Lieferadresse')}</strong>
+              ${a.ist_standard ? '<span class="kb-mini-badge">Standard</span>' : ''}
+              <div class="kb-box-val" style="margin-top:4px;">${lieferadresseProfilHtml(a)}</div>
+            </div>
+            <button class="kb-gray-btn" type="button" onclick="zeigeLieferadresseFormular(${Number(a.id)})">Bearbeiten</button>
+            <button class="kb-danger-btn" type="button" onclick="loescheLieferadresse(${Number(a.id)})">Löschen</button>
+          </div>
+        `).join('') : '<div class="kb-muted">Noch keine Lieferadresse gespeichert.</div>'}
+      </div>
+    `;
+  } catch (err) {
+    el.innerHTML = `<div class="kb-empty">Adressen konnten nicht geladen werden.<br>${escapeHtml(err.message)}</div>`;
+  }
+}
+
+async function zeigeRechnungsadresseFormular() {
+  const p = await ladeKundenProfil();
+  const el = document.getElementById('kbAdressenContent');
 
   el.innerHTML = `
     <div class="kb-box">
-      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
-        <div>
-          <div class="kb-box-label">Rechnungsadresse</div>
-          <div class="kb-box-val">${rechnungsAdresseHtml(latest) || '—'}<br>
-            ${latest.telefon ? 'Telefon: ' + escapeHtml(latest.telefon) + '<br>' : ''}
-            ${latest.ust_idnr ? 'USt-IdNr.: ' + escapeHtml(latest.ust_idnr) : ''}
-          </div>
-        </div>
-        <button class="kb-gray-btn" type="button" onclick="alert('Adressbearbeitung folgt in der nächsten Version.')">Bearbeiten</button>
+      <div class="kb-box-label">Rechnungsadresse bearbeiten</div>
+      <div class="kb-form-grid">
+        <div class="kb-form-group"><label>Firma *</label><input id="kpFirma" value="${valueOrEmpty(p?.firma)}" placeholder="Muster GmbH"></div>
+        <div class="kb-form-group"><label>USt-IdNr.</label><input id="kpUstid" value="${valueOrEmpty(p?.ustid)}" placeholder="DE123456789"></div>
+        <div class="kb-form-group"><label>Vorname *</label><input id="kpVorname" value="${valueOrEmpty(p?.vorname)}" placeholder="Max"></div>
+        <div class="kb-form-group"><label>Nachname *</label><input id="kpNachname" value="${valueOrEmpty(p?.nachname)}" placeholder="Mustermann"></div>
+        <div class="kb-form-group full"><label>Straße + Hausnummer *</label><input id="kpStrasse" value="${valueOrEmpty(p?.strasse)}" placeholder="Musterstraße 1"></div>
+        <div class="kb-form-group"><label>PLZ *</label><input id="kpPlz" value="${valueOrEmpty(p?.plz)}" placeholder="12345"></div>
+        <div class="kb-form-group"><label>Ort *</label><input id="kpOrt" value="${valueOrEmpty(p?.ort)}" placeholder="Musterstadt"></div>
+        <div class="kb-form-group"><label>Land *</label><input id="kpLand" value="${valueOrEmpty(p?.land || 'DE')}" placeholder="DE"></div>
+        <div class="kb-form-group"><label>Telefon *</label><input id="kpTelefon" value="${valueOrEmpty(p?.telefon)}" placeholder="+49 171 1234567"></div>
       </div>
-    </div>
-    <div class="kb-box">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <div class="kb-box-label" style="margin:0;">Lieferadressen</div>
-        <button class="kb-yellow-btn" type="button" onclick="alert('Neue Lieferadresse folgt in der nächsten Version.')">+ Neue Lieferadresse</button>
+      <div class="kb-form-actions">
+        <button class="kb-gray-btn" type="button" onclick="ladeAdressen()">Abbrechen</button>
+        <button class="kb-yellow-btn" type="button" onclick="speichereRechnungsadresse()">Speichern</button>
       </div>
-      ${lieferadressen.length ? lieferadressen.map(a => `
-        <div class="kb-address-row">
-          <div>${lieferAdresseHtml(a.order)}</div>
-          <button class="kb-gray-btn" type="button" onclick="alert('Bearbeiten folgt in der nächsten Version.')">Bearbeiten</button>
-          <button class="kb-gray-btn" type="button" onclick="alert('Löschen folgt in der nächsten Version.')">Löschen</button>
-        </div>
-      `).join('') : '<div class="kb-muted">Keine separate Lieferadresse gespeichert.</div>'}
     </div>
   `;
 }
 
+function leseInput(id) {
+  return document.getElementById(id)?.value?.trim() || '';
+}
+
+async function speichereRechnungsadresse() {
+  try {
+    const userId = await kbEnsureUserId();
+
+    const data = {
+      user_id: userId,
+      firma: leseInput('kpFirma'),
+      vorname: leseInput('kpVorname'),
+      nachname: leseInput('kpNachname'),
+      strasse: leseInput('kpStrasse'),
+      plz: leseInput('kpPlz'),
+      ort: leseInput('kpOrt'),
+      land: leseInput('kpLand') || 'DE',
+      telefon: leseInput('kpTelefon'),
+      ustid: leseInput('kpUstid')
+    };
+
+    if (!data.firma || !data.vorname || !data.nachname || !data.strasse || !data.plz || !data.ort || !data.telefon) {
+      alert('Bitte alle Pflichtfelder ausfüllen.');
+      return;
+    }
+
+    const existing = await ladeKundenProfil();
+
+    if (existing?.id) {
+      await dbAuthUpdate('kundenprofil', `?id=eq.${encodeURIComponent(existing.id)}`, data, kbUser.access_token);
+    } else {
+      await dbAuthInsert('kundenprofil', { id: crypto.randomUUID(), ...data }, kbUser.access_token);
+    }
+
+    kbProfilCache = null;
+    kbUser.firma = data.firma;
+    localStorage.setItem('vt_kb', JSON.stringify(kbUser));
+    document.getElementById('kbName').textContent = data.firma || kbUser.email.split('@')[0];
+    document.getElementById('kbKontoFirma').textContent = data.firma || '—';
+
+    alert('✅ Rechnungsadresse gespeichert.');
+    await ladeAdressen();
+  } catch (err) {
+    alert('Fehler beim Speichern: ' + err.message);
+  }
+}
+
+async function zeigeLieferadresseFormular(id = null) {
+  const adressen = await ladeKundenLieferadressen();
+  const a = id ? adressen.find(x => Number(x.id) === Number(id)) : null;
+  const el = document.getElementById('kbAdressenContent');
+
+  el.innerHTML = `
+    <div class="kb-box">
+      <div class="kb-box-label">${id ? 'Lieferadresse bearbeiten' : 'Neue Lieferadresse'}</div>
+      <div class="kb-form-grid">
+        <div class="kb-form-group"><label>Firma</label><input id="klFirma" value="${valueOrEmpty(a?.firma)}" placeholder="Muster GmbH"></div>
+        <div class="kb-form-group"><label>Empfänger / Ansprechpartner *</label><input id="klEmpfaenger" value="${valueOrEmpty(a?.empfaenger)}" placeholder="Max Mustermann"></div>
+        <div class="kb-form-group full"><label>Straße + Hausnummer *</label><input id="klStrasse" value="${valueOrEmpty(a?.strasse)}" placeholder="Lieferstraße 1"></div>
+        <div class="kb-form-group"><label>PLZ *</label><input id="klPlz" value="${valueOrEmpty(a?.plz)}" placeholder="12345"></div>
+        <div class="kb-form-group"><label>Ort *</label><input id="klOrt" value="${valueOrEmpty(a?.ort)}" placeholder="Lieferort"></div>
+        <div class="kb-form-group"><label>Land *</label><input id="klLand" value="${valueOrEmpty(a?.land || 'DE')}" placeholder="DE"></div>
+        <div class="kb-form-group"><label>Telefon vor Ort *</label><input id="klTelefon" value="${valueOrEmpty(a?.telefon)}" placeholder="+49 171 1234567"></div>
+        <div class="kb-form-group full"><label>Lieferhinweis</label><textarea id="klHinweis" placeholder="z. B. Tor-Code, Anlieferzeit, Rampe ...">${valueOrEmpty(a?.hinweis)}</textarea></div>
+        <label class="checkbox-row"><input type="checkbox" id="klHebebuehne" ${a?.hebebuehne ? 'checked' : ''}><span>🏗️ Anlieferung mit Hebebühne</span></label>
+        <label class="checkbox-row"><input type="checkbox" id="klEigenabladen" ${a?.eigenabladen ? 'checked' : ''}><span>💪 Eigenständige Entladung</span></label>
+        <label class="checkbox-row full"><input type="checkbox" id="klStandard" ${a?.ist_standard ? 'checked' : ''}><span>Als Standard-Lieferadresse verwenden</span></label>
+      </div>
+      <div class="kb-form-actions">
+        <button class="kb-gray-btn" type="button" onclick="ladeAdressen()">Abbrechen</button>
+        <button class="kb-yellow-btn" type="button" onclick="speichereLieferadresse(${id ? Number(id) : 'null'})">Speichern</button>
+      </div>
+    </div>
+  `;
+}
+
+async function speichereLieferadresse(id = null) {
+  try {
+    const userId = await kbEnsureUserId();
+
+    const data = {
+      user_id: userId,
+      email: kbUser.email,
+      firma: leseInput('klFirma'),
+      empfaenger: leseInput('klEmpfaenger'),
+      strasse: leseInput('klStrasse'),
+      plz: leseInput('klPlz'),
+      ort: leseInput('klOrt'),
+      land: leseInput('klLand') || 'DE',
+      telefon: leseInput('klTelefon'),
+      hinweis: leseInput('klHinweis'),
+      hebebuehne: !!document.getElementById('klHebebuehne')?.checked,
+      eigenabladen: !!document.getElementById('klEigenabladen')?.checked,
+      ist_standard: !!document.getElementById('klStandard')?.checked
+    };
+
+    if (!data.empfaenger || !data.strasse || !data.plz || !data.ort || !data.telefon) {
+      alert('Bitte alle Pflichtfelder ausfüllen.');
+      return;
+    }
+
+    if (data.ist_standard) {
+      await dbAuthUpdate('kunden_lieferadressen', `?user_id=eq.${encodeURIComponent(userId)}`, { ist_standard:false }, kbUser.access_token);
+    }
+
+    if (id) {
+      await dbAuthUpdate('kunden_lieferadressen', `?id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(userId)}`, data, kbUser.access_token);
+    } else {
+      await dbAuthInsert('kunden_lieferadressen', data, kbUser.access_token);
+    }
+
+    kbLieferadressenCache = null;
+    alert('✅ Lieferadresse gespeichert.');
+    await ladeAdressen();
+  } catch (err) {
+    alert('Fehler beim Speichern: ' + err.message);
+  }
+}
+
+async function loescheLieferadresse(id) {
+  if (!confirm('Lieferadresse wirklich löschen?')) return;
+
+  try {
+    const userId = await kbEnsureUserId();
+    await dbAuthDelete('kunden_lieferadressen', `?id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(userId)}`, kbUser.access_token);
+    kbLieferadressenCache = null;
+    alert('✅ Lieferadresse gelöscht.');
+    await ladeAdressen();
+  } catch (err) {
+    alert('Fehler beim Löschen: ' + err.message);
+  }
+}
+
+
+
 async function ladeZugangsdaten() {
-  const orders = await ladeKundenBestellungen();
+  const [orders, profil] = await Promise.all([
+    ladeKundenBestellungen(),
+    ladeKundenProfil().catch(() => null)
+  ]);
+
   const latest = orders[0];
   document.getElementById('kbKontoEmail').textContent = kbUser.email;
-  document.getElementById('kbKontoFirma').textContent = latest?.firma || kbUser.firma || '—';
+  document.getElementById('kbKontoFirma').textContent = profil?.firma || latest?.firma || kbUser.firma || '—';
   document.getElementById('kbKundennummer').textContent = latest ? ('VT-KD-' + String(latest.id).padStart(5, '0')) : '—';
 }
+
 
 
 async function passwortAendern() {
