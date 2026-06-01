@@ -198,7 +198,7 @@
   .impressum-content h3 { font-size: 15px; font-weight: 600; margin: 16px 0 6px; color: var(--oak); }
   .impressum-content p { margin-bottom: 8px; color: var(--gray); }
 
-  /* ===== KUNDENBÜRO CSS ===== */
+  /* ===== KUNDENBÜRO CSS – BÖTTCHER-ÄHNLICH / VISIOTRADE ===== */
   .kb-login-wrap { max-width:420px; margin:40px auto; padding:0 20px; }
   .kb-card { background:var(--white); border-radius:var(--radius); padding:28px 24px; box-shadow:var(--shadow); }
   .kb-title { font-family:'Playfair Display',serif; font-size:22px; color:var(--walnut); margin-bottom:6px; }
@@ -213,19 +213,53 @@
   .kb-toggle a { color:var(--oak); font-weight:600; cursor:pointer; }
   .kb-error { background:var(--red-light); color:var(--red); padding:10px 14px; border-radius:var(--radius-sm); font-size:13px; margin-bottom:16px; display:none; }
   .kb-success { background:var(--green-light); color:var(--green); padding:10px 14px; border-radius:var(--radius-sm); font-size:13px; margin-bottom:16px; display:none; }
+
   .kb-dash-header { background:linear-gradient(135deg,var(--walnut) 0%,var(--oak-dark) 100%); padding:24px 20px; color:white; }
-  .kb-dash-name { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; }
+  .kb-dash-name { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; }
   .kb-dash-email { font-size:13px; color:rgba(255,255,255,0.65); margin-top:2px; }
-  .kb-nav { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:20px; }
-  .kb-nav-btn { background:var(--white); border:2px solid transparent; border-radius:var(--radius); padding:18px 14px; display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer; box-shadow:var(--shadow); font-family:'DM Sans',sans-serif; transition:transform 0.15s; }
-  .kb-nav-btn:active { transform:scale(0.97); }
-  .kb-nav-btn.active { border-color:var(--oak); background:var(--oak-pale); }
-  .kb-nav-icon { font-size:28px; }
-  .kb-nav-label { font-size:13px; font-weight:600; color:var(--walnut); }
-  .kb-section { padding:0 20px 24px; }
-  .kb-section-title { font-size:11px; font-weight:700; color:var(--oak); text-transform:uppercase; letter-spacing:1px; margin:4px 0 12px; }
-  .kb-bestellung { background:var(--white); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); margin-bottom:12px; }
-  .kb-status { font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; }
+
+  .kb-account-wrap { display:grid; grid-template-columns:260px 1fr; gap:24px; max-width:1180px; margin:0 auto; padding:24px 20px 36px; }
+  .kb-sidebar { background:#F4F2EF; border-radius:var(--radius-sm); padding:14px 0; align-self:start; position:sticky; top:82px; }
+  .kb-side-link { width:100%; border:none; background:transparent; text-align:left; padding:9px 18px 9px 26px; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--walnut); cursor:pointer; display:block; }
+  .kb-side-link:hover { background:rgba(139,105,20,0.10); }
+  .kb-side-link.active { background:var(--oak-pale); color:var(--oak-dark); font-weight:700; border-left:4px solid var(--oak); padding-left:22px; }
+  .kb-side-head { padding:13px 18px 6px; font-size:14px; font-weight:800; color:var(--walnut); }
+  .kb-side-sub { padding:6px 18px 5px 32px; font-size:13px; color:var(--walnut); cursor:pointer; border:none; background:transparent; text-align:left; width:100%; font-family:'DM Sans',sans-serif; }
+  .kb-side-sub.active { background:var(--oak-pale); color:var(--oak-dark); font-weight:700; }
+
+  .kb-content { min-width:0; }
+  .kb-page-head { display:flex; justify-content:space-between; align-items:center; gap:14px; border-bottom:1px solid var(--gray-light); padding-bottom:12px; margin-bottom:16px; }
+  .kb-page-title { font-family:'Playfair Display',serif; font-size:24px; color:var(--walnut); font-weight:700; }
+  .kb-search { max-width:360px; width:100%; display:flex; border:1px solid #d7d2ca; border-radius:var(--radius-sm); overflow:hidden; background:white; }
+  .kb-search input { flex:1; border:none; padding:10px 12px; font-family:'DM Sans',sans-serif; outline:none; font-size:14px; }
+  .kb-search button { width:46px; border:none; background:#F3F0EB; font-size:18px; cursor:pointer; }
+
+  .kb-pane { display:none; }
+  .kb-pane.active { display:block; }
+  .kb-muted { color:var(--gray); font-size:14px; line-height:1.6; }
+  .kb-empty { color:var(--gray); font-size:14px; text-align:center; padding:28px 0; background:white; border-radius:var(--radius-sm); border:1px solid var(--gray-light); }
+  .kb-card-line { background:white; border:1px solid #E5E0D8; border-radius:var(--radius-sm); margin-bottom:12px; overflow:hidden; }
+  .kb-order-top { display:grid; grid-template-columns:130px 1fr 180px 190px; gap:14px; padding:13px 14px; background:#F7F5F1; align-items:start; }
+  .kb-order-label { font-size:12px; font-weight:800; color:var(--walnut); margin-bottom:3px; }
+  .kb-order-value { font-size:14px; color:var(--walnut); line-height:1.45; }
+  .kb-order-body { display:grid; grid-template-columns:80px 1fr 240px; gap:14px; padding:12px 14px; align-items:center; }
+  .kb-order-thumb { width:64px; height:64px; border-radius:var(--radius-sm); background:var(--oak-pale); display:flex; align-items:center; justify-content:center; font-size:28px; }
+  .kb-order-product { font-size:14px; color:var(--walnut); line-height:1.45; }
+  .kb-action-col { display:flex; flex-direction:column; gap:8px; align-items:stretch; }
+  .kb-yellow-btn, .kb-gray-btn, .kb-link-btn { border:none; border-radius:var(--radius-sm); padding:9px 13px; font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; text-align:center; text-decoration:none; }
+  .kb-yellow-btn { background:var(--oak-light); color:var(--walnut); font-weight:700; }
+  .kb-gray-btn { background:var(--gray-light); color:var(--walnut); }
+  .kb-link-btn { background:transparent; color:#2B6E86; text-align:left; padding-left:0; }
+  .kb-detail { display:none; border-top:1px solid var(--gray-light); padding:14px; background:white; }
+  .kb-detail.open { display:block; }
+  .kb-detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .kb-detail-box { background:var(--cream); border-radius:var(--radius-sm); padding:12px; }
+  .kb-detail-title { font-size:11px; font-weight:800; color:var(--oak); text-transform:uppercase; letter-spacing:1px; margin-bottom:7px; }
+  .kb-detail-text { font-size:13px; color:var(--walnut); line-height:1.65; }
+  .kb-pay-box { background:#FFF7E6; border:1px solid #F4C56B; border-radius:var(--radius-sm); padding:12px; margin-top:10px; font-size:13px; line-height:1.65; }
+  .kb-pay-box strong { color:var(--oak-dark); }
+
+  .kb-status { font-size:12px; font-weight:800; padding:4px 10px; border-radius:20px; display:inline-block; }
   .kb-status.offen { background:#FEF3C7; color:#92400E; }
   .kb-status.warte_auf_zahlung { background:#FFEDD5; color:#9A3412; }
   .kb-status.bezahlt { background:var(--green-light); color:var(--green); }
@@ -233,10 +267,35 @@
   .kb-status.versendet { background:#DBEAFE; color:#1E40AF; }
   .kb-status.geliefert { background:var(--green-light); color:var(--green); }
   .kb-status.storniert { background:var(--red-light); color:var(--red); }
-  .kb-box { background:var(--white); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); margin-bottom:12px; }
-  .kb-box-label { font-size:11px; font-weight:700; color:var(--oak); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+
+  .kb-table { width:100%; border-collapse:collapse; background:white; border:1px solid #E5E0D8; border-radius:var(--radius-sm); overflow:hidden; }
+  .kb-table th { text-align:left; font-size:13px; padding:12px; background:#F7F5F1; color:var(--walnut); }
+  .kb-table td { padding:12px; border-top:1px solid var(--gray-light); font-size:14px; vertical-align:top; }
+  .kb-address-row { display:grid; grid-template-columns:1fr auto auto; gap:12px; align-items:center; padding:12px 0; border-top:1px solid var(--gray-light); }
+  .kb-box { background:var(--white); border-radius:var(--radius-sm); padding:16px; border:1px solid var(--gray-light); margin-bottom:12px; }
+  .kb-box-label { font-size:11px; font-weight:800; color:var(--oak); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
   .kb-box-val { font-size:14px; color:var(--walnut); line-height:1.7; }
-  .kb-logout { width:calc(100% - 40px); margin:0 20px 30px; padding:13px; background:var(--red-light); color:var(--red); border:none; border-radius:var(--radius-sm); font-size:15px; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer; }
+  .kb-dashboard-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:18px; }
+  .kb-stat { background:white; border:1px solid var(--gray-light); border-radius:var(--radius-sm); padding:16px; }
+  .kb-stat-num { font-size:24px; color:var(--oak); font-weight:800; }
+  .kb-stat-label { font-size:12px; color:var(--gray); margin-top:4px; }
+  .kb-logout { width:100%; margin-top:16px; padding:12px; background:var(--red-light); color:var(--red); border:none; border-radius:var(--radius-sm); font-size:14px; font-weight:700; font-family:'DM Sans',sans-serif; cursor:pointer; }
+
+  @media (max-width: 820px) {
+    .kb-account-wrap { grid-template-columns:1fr; padding:16px; gap:14px; }
+    .kb-sidebar { position:static; display:flex; overflow-x:auto; padding:8px; gap:6px; border-radius:var(--radius); }
+    .kb-side-head { display:none; }
+    .kb-side-link, .kb-side-sub { white-space:nowrap; padding:9px 13px; border-radius:var(--radius-sm); background:white; font-size:13px; width:auto; }
+    .kb-side-link.active, .kb-side-sub.active { border-left:none; padding-left:13px; background:var(--oak-pale); }
+    .kb-page-head { flex-direction:column; align-items:stretch; }
+    .kb-order-top { grid-template-columns:1fr 1fr; }
+    .kb-order-body { grid-template-columns:52px 1fr; }
+    .kb-action-col { grid-column:1 / -1; }
+    .kb-detail-grid { grid-template-columns:1fr; }
+    .kb-dashboard-grid { grid-template-columns:1fr; }
+    .kb-address-row { grid-template-columns:1fr; }
+  }
+
 </style>
 </head>
 <body>
@@ -777,13 +836,29 @@
   <div class="pb-safe"></div>
 </div>
 
-<!-- ERFOLG -->
+<!-- ERFOLG ONLINE-ZAHLUNG -->
 <div id="screen-erfolg" class="screen">
   <div class="erfolg-screen">
     <div class="erfolg-icon">✅</div>
     <h2>Vielen Dank!</h2>
-    <p>Ihre Bestellung wurde erfolgreich aufgenommen.<br>Sie erhalten in Kürze Ihre Rechnung per E-Mail.</p>
+    <p>Ihre Bestellung wurde erfolgreich aufgenommen.<br>Die Zahlungsbestätigung und Ihre Rechnung werden per E-Mail versendet.</p>
     <button class="weiter-btn" onclick="showScreen(&#39;home&#39;)">Zurück zum Shop</button>
+  </div>
+</div>
+
+<!-- ERFOLG VORKASSE -->
+<div id="screen-vorkasse-erfolg" class="screen">
+  <div class="erfolg-screen" style="padding:42px 20px;">
+    <div class="erfolg-icon">🏦</div>
+    <h2>Bestellung aufgenommen</h2>
+    <p style="margin-bottom:18px;">Bitte überweisen Sie den Gesamtbetrag mit dem untenstehenden Verwendungszweck. Die offizielle Rechnung erhalten Sie nach Zahlungseingang per E-Mail.</p>
+    <div id="vorkasseErfolgBox" style="max-width:560px;margin:0 auto 22px;text-align:left;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;">
+      <div style="font-size:13px;color:var(--gray);">Zahlungsdaten werden geladen ...</div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <button class="weiter-btn" onclick="zeigeKonto()">Zum Kundenkonto</button>
+      <button class="weiter-btn" style="background:var(--oak);" onclick="showScreen(&#39;home&#39;)">Zurück zum Shop</button>
+    </div>
   </div>
 </div>
 
@@ -853,51 +928,117 @@
 
 <!-- KUNDENBÜRO -->
 <div id="screen-kundenbuero" class="screen">
-  <div class="back-bar" onclick="showScreen(&#39;home&#39;)">← Zurück zum Shop</div>
+  <div class="back-bar" onclick="showScreen('home')">← Zurück zum Shop</div>
   <div class="kb-dash-header">
-    <div class="kb-dash-name" id="kbName">Willkommen</div>
+    <div class="kb-dash-name" id="kbName">Mein Konto</div>
     <div class="kb-dash-email" id="kbEmail"></div>
   </div>
-  <div class="kb-nav">
-    <button class="kb-nav-btn active" id="kbBtnBestellungen" onclick="kbZeige(&#39;bestellungen&#39;)">
-      <div class="kb-nav-icon">📦</div><div class="kb-nav-label">Bestellungen</div>
-    </button>
-    <button class="kb-nav-btn" id="kbBtnTracking" onclick="kbZeige(&#39;tracking&#39;)">
-      <div class="kb-nav-icon">🚚</div><div class="kb-nav-label">Lieferverfolgung</div>
-    </button>
-    <button class="kb-nav-btn" id="kbBtnRechnungen" onclick="kbZeige(&#39;rechnungen&#39;)">
-      <div class="kb-nav-icon">🧾</div><div class="kb-nav-label">Rechnungen</div>
-    </button>
-    <button class="kb-nav-btn" id="kbBtnKonto" onclick="kbZeige(&#39;konto&#39;)">
-      <div class="kb-nav-icon">⚙️</div><div class="kb-nav-label">Kontodaten</div>
-    </button>
-  </div>
-  <div id="kbSectionBestellungen" class="kb-section">
-    <div class="kb-section-title">Meine Bestellungen</div>
-    <div id="kbBestellungenList"><div style="color:var(--gray);font-size:14px;text-align:center;padding:20px 0;">Wird geladen…</div></div>
-  </div>
-  <div id="kbSectionTracking" class="kb-section" style="display:none;">
-    <div class="kb-section-title">Lieferverfolgung</div>
-    <div id="kbTrackingList"><div style="color:var(--gray);font-size:14px;text-align:center;padding:20px 0;">Wird geladen…</div></div>
-  </div>
-  <div id="kbSectionRechnungen" class="kb-section" style="display:none;">
-    <div class="kb-section-title">Rechnungen</div>
-    <div id="kbRechnungenList"><div style="color:var(--gray);font-size:14px;text-align:center;padding:20px 0;">Wird geladen…</div></div>
-  </div>
-  <div id="kbSectionKonto" class="kb-section" style="display:none;">
-    <div class="kb-section-title">Kontodaten</div>
-    <div class="kb-box"><div class="kb-box-label">E-Mail</div><div class="kb-box-val" id="kbKontoEmail"></div></div>
-    <div class="kb-box"><div class="kb-box-label">Firma</div><div class="kb-box-val" id="kbKontoFirma">—</div></div>
-    <div class="kb-box" style="background:var(--oak-pale);">
-      <div class="kb-box-label">Passwort ändern</div>
-      <div class="kb-input-group" style="margin-bottom:10px;">
-        <label>Neues Passwort</label>
-        <input type="password" id="kbNeuesPasswort" placeholder="Mindestens 6 Zeichen">
+
+  <div class="kb-account-wrap">
+    <aside class="kb-sidebar">
+      <button class="kb-side-link active" id="kbBtnUebersicht" onclick="kbZeige('uebersicht')">Übersicht</button>
+
+      <div class="kb-side-head">Bestellungen</div>
+      <button class="kb-side-sub" id="kbBtnBestellungen" onclick="kbZeige('bestellungen')">Meine Bestellungen</button>
+      <button class="kb-side-sub" id="kbBtnTracking" onclick="kbZeige('tracking')">Sendungsverfolgung</button>
+      <button class="kb-side-sub" id="kbBtnReklamation" onclick="kbZeige('reklamation')">Rücksendung & Reklamation</button>
+      <button class="kb-side-sub" id="kbBtnRechnungen" onclick="kbZeige('rechnungen')">Rechnungen</button>
+
+      <div class="kb-side-head">Persönliche Kontodaten</div>
+      <button class="kb-side-sub" id="kbBtnAdressen" onclick="kbZeige('adressen')">Adressen</button>
+      <button class="kb-side-sub" id="kbBtnZugangsdaten" onclick="kbZeige('zugangsdaten')">Zugangsdaten</button>
+
+      <div style="padding:0 14px;">
+        <button class="kb-logout" onclick="abmelden()">Abmelden</button>
       </div>
-      <button class="kb-btn" onclick="passwortAendern()" style="margin-top:0;">Passwort speichern</button>
-    </div>
+    </aside>
+
+    <main class="kb-content">
+      <section id="kbSectionUebersicht" class="kb-pane active">
+        <div class="kb-page-head">
+          <div class="kb-page-title">Übersicht</div>
+        </div>
+        <div id="kbUebersichtContent">
+          <div class="kb-empty">Wird geladen…</div>
+        </div>
+      </section>
+
+      <section id="kbSectionBestellungen" class="kb-pane">
+        <div class="kb-page-head">
+          <div class="kb-page-title">Meine Bestellungen</div>
+          <div class="kb-search">
+            <input id="kbBestellSuche" placeholder="Bestellungen / Artikel suchen" oninput="renderKbBestellungen()">
+            <button onclick="renderKbBestellungen()">🔍</button>
+          </div>
+        </div>
+        <div id="kbBestellungenList"><div class="kb-empty">Wird geladen…</div></div>
+      </section>
+
+      <section id="kbSectionTracking" class="kb-pane">
+        <div class="kb-page-head">
+          <div class="kb-page-title">Sendungsverfolgung</div>
+        </div>
+        <p class="kb-muted" style="margin-bottom:16px;">Hier sehen Sie Ihre Lieferungen und Sendungsnummern, sobald die Ware versendet wurde.</p>
+        <div id="kbTrackingList"><div class="kb-empty">Wird geladen…</div></div>
+      </section>
+
+      <section id="kbSectionReklamation" class="kb-pane">
+        <div class="kb-page-head">
+          <div class="kb-page-title">Rücksendung & Reklamation</div>
+          <div class="kb-search">
+            <input id="kbReklamationSuche" placeholder="Bestellungen / Artikel suchen" oninput="renderKbReklamation()">
+            <button onclick="renderKbReklamation()">🔍</button>
+          </div>
+        </div>
+        <p class="kb-muted" style="margin-bottom:16px;">Für Parkett und Speditionsware prüfen wir jede Rücksendung oder Reklamation individuell.</p>
+        <div id="kbReklamationList"><div class="kb-empty">Wird geladen…</div></div>
+      </section>
+
+      <section id="kbSectionRechnungen" class="kb-pane">
+        <div class="kb-page-head">
+          <div class="kb-page-title">Rechnungen</div>
+          <div class="kb-search">
+            <input id="kbRechnungsSuche" placeholder="Rechnungsnummer / Bestellung suchen" oninput="renderKbRechnungen()">
+            <button onclick="renderKbRechnungen()">🔍</button>
+          </div>
+        </div>
+        <div id="kbRechnungenList"><div class="kb-empty">Wird geladen…</div></div>
+      </section>
+
+      <section id="kbSectionAdressen" class="kb-pane">
+        <div class="kb-page-head">
+          <div class="kb-page-title">Adressen</div>
+        </div>
+        <div id="kbAdressenContent"><div class="kb-empty">Wird geladen…</div></div>
+      </section>
+
+      <section id="kbSectionZugangsdaten" class="kb-pane">
+        <div class="kb-page-head">
+          <div class="kb-page-title">Zugangsdaten</div>
+        </div>
+        <div class="kb-box">
+          <div class="kb-box-label">E-Mail</div>
+          <div class="kb-box-val" id="kbKontoEmail"></div>
+        </div>
+        <div class="kb-box">
+          <div class="kb-box-label">Kundennummer</div>
+          <div class="kb-box-val" id="kbKundennummer">—</div>
+        </div>
+        <div class="kb-box">
+          <div class="kb-box-label">Firma</div>
+          <div class="kb-box-val" id="kbKontoFirma">—</div>
+        </div>
+        <div class="kb-box" style="background:var(--oak-pale);">
+          <div class="kb-box-label">Passwort ändern</div>
+          <div class="kb-input-group" style="margin-bottom:10px;">
+            <label>Neues Passwort</label>
+            <input type="password" id="kbNeuesPasswort" placeholder="Mindestens 6 Zeichen">
+          </div>
+          <button class="kb-btn" onclick="passwortAendern()" style="margin-top:0;">Passwort speichern</button>
+        </div>
+      </section>
+    </main>
   </div>
-  <button class="kb-logout" onclick="abmelden()">🚪 Abmelden</button>
   <div class="pb-safe"></div>
 </div>
 
@@ -1016,21 +1157,65 @@ function zeigeKundenbuero() {
   document.getElementById('kbKontoFirma').textContent = kbUser.firma || '—';
   document.getElementById('kontoIcon').textContent = '✅';
   showScreen('kundenbuero');
-  kbZeige('bestellungen');
+  kbZeige('uebersicht');
 }
+
+const KB_SECTIONS = ['uebersicht','bestellungen','tracking','reklamation','rechnungen','adressen','zugangsdaten'];
+let kbOrdersCache = null;
 
 function kbZeige(bereich) {
-  ['bestellungen','tracking','rechnungen','konto'].forEach(b => {
+  KB_SECTIONS.forEach(b => {
     const sec = document.getElementById('kbSection' + b[0].toUpperCase() + b.slice(1));
     const btn = document.getElementById('kbBtn' + b[0].toUpperCase() + b.slice(1));
-    if (sec) sec.style.display = b === bereich ? 'block' : 'none';
+    if (sec) sec.classList.toggle('active', b === bereich);
     if (btn) btn.classList.toggle('active', b === bereich);
   });
+
+  if (bereich === 'uebersicht') ladeUebersicht();
   if (bereich === 'bestellungen') ladeBestellungen();
   if (bereich === 'tracking') ladeTracking();
+  if (bereich === 'reklamation') ladeReklamation();
   if (bereich === 'rechnungen') ladeRechnungen();
+  if (bereich === 'adressen') ladeAdressen();
+  if (bereich === 'zugangsdaten') ladeZugangsdaten();
 }
 
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#039;'
+  }[char]));
+}
+
+function formatDateDE(value) {
+  return value ? new Date(value).toLocaleDateString('de-DE') : '—';
+}
+
+function formatEuro(value) {
+  const n = Number(value || 0);
+  return n.toFixed(2).replace('.', ',') + ' €';
+}
+
+function bestellBrutto(b) {
+  if (b.gesamt_brutto !== null && b.gesamt_brutto !== undefined) return Number(b.gesamt_brutto);
+  if (b.gesamtbetrag !== null && b.gesamtbetrag !== undefined) return Number(b.gesamtbetrag) * 1.19;
+  return 0;
+}
+
+function verwendungszweck(b) {
+  return 'VT-' + String(b.id).padStart(4, '0');
+}
+
+function zahlungsLabelBestellung(b) {
+  const z = b.zahlungsart || '';
+  if (z === 'vorkasse') return '🏦 Vorkasse / Überweisung';
+  if (z === 'paypal') return '🅿️ PayPal';
+  if (z === 'stripe') return '💳 Kreditkarte / Debitkarte';
+  return z || '—';
+}
 
 function statusClass(status) {
   const classes = {
@@ -1081,58 +1266,355 @@ function getZahlungLabel() {
   return labels[zahlungsart] || zahlungsart;
 }
 
+async function ladeKundenBestellungen(force = false) {
+  if (kbOrdersCache && !force) return kbOrdersCache;
+
+  const orders = await dbAuth(
+    'bestellungen',
+    `?email=eq.${encodeURIComponent(kbUser.email)}&order=erstellt_am.desc`,
+    kbUser.access_token
+  );
+
+  if (!orders || !orders.length) {
+    kbOrdersCache = [];
+    return kbOrdersCache;
+  }
+
+  const ids = orders.map(o => o.id).filter(Boolean);
+  let pos = [];
+  if (ids.length) {
+    pos = await dbAuth(
+      'bestellpositionen',
+      `?bestellung_id=in.(${ids.join(',')})&order=id.asc`,
+      kbUser.access_token
+    ) || [];
+  }
+
+  kbOrdersCache = orders.map(o => ({
+    ...o,
+    positionen: pos.filter(p => Number(p.bestellung_id) === Number(o.id))
+  }));
+
+  return kbOrdersCache;
+}
+
+function filterOrders(orders, inputId) {
+  const q = (document.getElementById(inputId)?.value || '').trim().toLowerCase();
+  if (!q) return orders;
+  return orders.filter(b => {
+    const text = [
+      b.id,
+      b.kundenname,
+      b.firma,
+      b.status,
+      b.zahlungsart,
+      b.lexoffice_id,
+      b.rechnung_pdf_url,
+      ...(b.positionen || []).map(p => p.produktname)
+    ].join(' ').toLowerCase();
+    return text.includes(q);
+  });
+}
+
+function orderPositionsSummary(b) {
+  const pos = b.positionen || [];
+  if (!pos.length) return 'Keine Positionsdaten verfügbar';
+  const grouped = {};
+  pos.forEach(p => {
+    const name = p.produktname || 'Parkett';
+    if (!grouped[name]) grouped[name] = { name, m2: 0, preis: 0, pakete: 0 };
+    grouped[name].m2 += Number(p.menge_m2_gesamt || 0);
+    grouped[name].preis += Number(p.gesamtpreis || 0);
+    grouped[name].pakete += Number(p.anzahl_pakete || 0);
+  });
+  return Object.values(grouped).map(p =>
+    `${escapeHtml(p.name)}<br><span style="font-size:12px;color:var(--gray);">${p.m2.toFixed(2)} m² · ${p.pakete} Paket(e)</span>`
+  ).join('<br><br>');
+}
+
+function orderPositionsDetails(b) {
+  const pos = b.positionen || [];
+  if (!pos.length) return '<div class="kb-muted">Keine Positionsdaten verfügbar.</div>';
+  return pos.map(p => `
+    <div style="display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--gray-light);padding:7px 0;">
+      <div>${escapeHtml(p.produktname || 'Parkett')}<br>
+        <span style="font-size:12px;color:var(--gray);">${Number(p.menge_m2_gesamt || 0).toFixed(2)} m² · ${Number(p.anzahl_pakete || 0)} Paket(e)</span>
+      </div>
+      <strong>${formatEuro(p.gesamtpreis || 0)}</strong>
+    </div>
+  `).join('');
+}
+
+function rechnungsAdresseHtml(b) {
+  return [
+    b.firma ? escapeHtml(b.firma) : '',
+    b.kundenname ? escapeHtml(b.kundenname) : '',
+    b.rechnungsadresse_strasse ? escapeHtml(b.rechnungsadresse_strasse) : '',
+    (b.rechnungsadresse_plz || b.rechnungsadresse_ort) ? `${escapeHtml(b.rechnungsadresse_plz || '')} ${escapeHtml(b.rechnungsadresse_ort || '')}`.trim() : '',
+    b.rechnungsadresse_land ? escapeHtml(b.rechnungsadresse_land) : ''
+  ].filter(Boolean).join('<br>');
+}
+
+function lieferAdresseHtml(b) {
+  return [
+    b.lieferadresse_strasse ? escapeHtml(b.lieferadresse_strasse) : '',
+    (b.lieferadresse_plz || b.lieferadresse_ort) ? `${escapeHtml(b.lieferadresse_plz || '')} ${escapeHtml(b.lieferadresse_ort || '')}`.trim() : '',
+    b.lieferadresse_land ? escapeHtml(b.lieferadresse_land) : '',
+    b.lieferadresse_telefon ? 'Telefon vor Ort: ' + escapeHtml(b.lieferadresse_telefon) : ''
+  ].filter(Boolean).join('<br>') || 'Entspricht der Rechnungsadresse';
+}
+
+function trackingLink(b) {
+  const nr = b.tracking_nr || '';
+  if (!nr) return '';
+  return `https://www.raben-group.com/de/tracking/?q=${encodeURIComponent(nr)}`;
+}
+
+function renderOrderCard(b, context = 'bestellungen') {
+  const d = formatDateDE(b.erstellt_am);
+  const brutto = formatEuro(bestellBrutto(b));
+  const sk = statusClass(b.status);
+  const sl = statusLabel(b.status);
+  const invoiceNo = b.lexoffice_id || b.rechnung_pdf_url || '—';
+  const firstProduct = orderPositionsSummary(b);
+  const detailId = `kbDetail${context}${b.id}`;
+  const isVorkasseOffen = b.zahlungsart === 'vorkasse' && b.status === 'warte_auf_zahlung';
+
+  let primaryButton = '';
+  if (context === 'rechnungen') {
+    if (b.rechnung_pdf_url) {
+      primaryButton = `<a class="kb-yellow-btn" href="${escapeHtml(b.rechnung_pdf_url)}" target="_blank">Rechnungskopie ⓘ</a>`;
+    } else if (b.lexoffice_id || b.status === 'bezahlt') {
+      primaryButton = `<button class="kb-yellow-btn" type="button">Rechnung per E-Mail gesendet</button>`;
+    } else if (isVorkasseOffen) {
+      primaryButton = `<button class="kb-yellow-btn" type="button" onclick="toggleBestellDetails('${detailId}')">Zahlungsdaten anzeigen</button>`;
+    }
+  } else if (context === 'tracking') {
+    primaryButton = b.tracking_nr
+      ? `<a class="kb-yellow-btn" href="${trackingLink(b)}" target="_blank">Sendung verfolgen</a>`
+      : `<button class="kb-gray-btn" type="button">Sendung wird vorbereitet</button>`;
+  } else if (context === 'reklamation') {
+    primaryButton = `<button class="kb-yellow-btn" type="button" onclick="alert('Bitte senden Sie uns Ihre Reklamation mit Bestellnummer #${b.id} und Fotos per E-Mail an visiotradegmbh@gmail.com.')">Rücksendung/Reklamation anfragen</button>`;
+  } else {
+    primaryButton = isVorkasseOffen
+      ? `<button class="kb-yellow-btn" type="button" onclick="toggleBestellDetails('${detailId}')">Zahlungsdaten anzeigen</button>`
+      : `<button class="kb-yellow-btn" type="button" onclick="zeigeProduktliste(1,'Stabparkett')">Erneut kaufen</button>`;
+  }
+
+  return `<div class="kb-card-line">
+    <div class="kb-order-top">
+      <div>
+        <div class="kb-order-label">Datum</div>
+        <div class="kb-order-value">${d}</div>
+      </div>
+      <div>
+        <div class="kb-order-label">Bestellsumme</div>
+        <div class="kb-order-value"><strong>${brutto}</strong> <span style="font-size:12px;color:var(--gray);">(inkl. MwSt.)</span></div>
+      </div>
+      <div>
+        <div class="kb-order-label">Rechnungsnummer</div>
+        <div class="kb-order-value">${escapeHtml(invoiceNo)}</div>
+      </div>
+      <div>
+        <div class="kb-order-label">Status</div>
+        <div class="kb-order-value"><span class="kb-status ${sk}">${sl}</span></div>
+      </div>
+    </div>
+    <div class="kb-order-body">
+      <div class="kb-order-thumb">🪵</div>
+      <div class="kb-order-product">
+        <strong>Bestellung #${b.id}</strong><br>
+        ${firstProduct}
+      </div>
+      <div class="kb-action-col">
+        ${primaryButton || ''}
+        <button class="kb-link-btn" type="button" onclick="toggleBestellDetails('${detailId}')">⌄ Bestelldetails anzeigen</button>
+      </div>
+    </div>
+    <div class="kb-detail" id="${detailId}">
+      <div class="kb-detail-grid">
+        <div class="kb-detail-box">
+          <div class="kb-detail-title">Bestellpositionen</div>
+          <div class="kb-detail-text">${orderPositionsDetails(b)}</div>
+        </div>
+        <div class="kb-detail-box">
+          <div class="kb-detail-title">Lieferung & Zahlung</div>
+          <div class="kb-detail-text">
+            Lieferart: <strong>${escapeHtml(b.lieferart || '—')}</strong><br>
+            Zahlungsart: <strong>${zahlungLabelBestellung(b)}</strong><br>
+            Lieferadresse:<br>${lieferAdresseHtml(b)}
+            ${b.tracking_nr ? `<br><br>Sendungsnummer: <strong>${escapeHtml(b.tracking_nr)}</strong>` : ''}
+          </div>
+        </div>
+      </div>
+      ${isVorkasseOffen ? `
+        <div class="kb-pay-box">
+          <strong>Vorkasse offen</strong><br>
+          Bitte überweisen Sie <strong>${brutto}</strong> mit dem Verwendungszweck <strong>${verwendungszweck(b)}</strong>.<br>
+          Empfänger: <strong>VISIO TRADE GMBH</strong><br>
+          IBAN: <strong>DE49 2665 0001 1060 0159 95</strong><br>
+          BIC: <strong>NOLADE21EMS</strong> · Sparkasse Emsland<br>
+          Die offizielle Rechnung erhalten Sie nach Zahlungseingang.
+        </div>` : ''}
+    </div>
+  </div>`;
+}
+
+function toggleBestellDetails(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+async function ladeUebersicht() {
+  const el = document.getElementById('kbUebersichtContent');
+  const orders = await ladeKundenBestellungen();
+
+  if (!orders.length) {
+    el.innerHTML = '<div class="kb-empty">Noch keine Bestellungen vorhanden.</div>';
+    return;
+  }
+
+  const offen = orders.filter(b => b.status === 'offen' || b.status === 'warte_auf_zahlung').length;
+  const bezahlt = orders.filter(b => b.status === 'bezahlt' || b.status === 'versendet' || b.status === 'geliefert').length;
+  const tracking = orders.filter(b => b.tracking_nr).length;
+  const aktuelle = orders[0];
+
+  el.innerHTML = `
+    <div class="kb-dashboard-grid">
+      <div class="kb-stat"><div class="kb-stat-num">${offen}</div><div class="kb-stat-label">Offene Zahlung / Bearbeitung</div></div>
+      <div class="kb-stat"><div class="kb-stat-num">${bezahlt}</div><div class="kb-stat-label">Bezahlte Bestellungen</div></div>
+      <div class="kb-stat"><div class="kb-stat-num">${tracking}</div><div class="kb-stat-label">Sendungen mit Tracking</div></div>
+    </div>
+    <div class="kb-page-head" style="margin-top:8px;">
+      <div class="kb-page-title" style="font-size:19px;">Aktuelle Bestellung</div>
+    </div>
+    ${renderOrderCard(aktuelle, 'uebersicht')}
+  `;
+}
+
 async function ladeBestellungen() {
+  await ladeKundenBestellungen();
+  renderKbBestellungen();
+}
+
+function renderKbBestellungen() {
   const el = document.getElementById('kbBestellungenList');
-  const data = await dbAuth('bestellungen', `?email=eq.${encodeURIComponent(kbUser.email)}&order=erstellt_am.desc`, kbUser.access_token);
-  if (!data || !data.length) { el.innerHTML='<div style="color:var(--gray);font-size:14px;text-align:center;padding:20px 0;">Noch keine Bestellungen vorhanden.</div>'; return; }
-  el.innerHTML = data.map(b => {
-    const d = b.erstellt_am ? new Date(b.erstellt_am).toLocaleDateString('de-DE') : '—';
-    const g = b.gesamt_brutto ? b.gesamt_brutto.toFixed(2).replace('.',',') + ' €' : (b.gesamtbetrag ? (Number(b.gesamtbetrag) * 1.19).toFixed(2).replace('.',',') + ' €' : '—');
-    const sk = statusClass(b.status);
-    const sl = statusLabel(b.status);
-    return `<div class="kb-bestellung">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <div><div style="font-weight:700;font-size:14px;">Bestellung #${b.id}</div><div style="font-size:12px;color:var(--gray);margin-top:2px;">${d}</div></div>
-        <span class="kb-status ${sk}">${sl}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;margin-top:10px;">
-        <span style="font-size:13px;color:var(--gray);">${(b.positionen||[]).length||'—'} Position(en)</span>
-        <span style="font-weight:700;color:var(--oak);">${g}</span>
-      </div>
-    </div>`;
-  }).join('');
+  const orders = filterOrders(kbOrdersCache || [], 'kbBestellSuche');
+  if (!orders.length) {
+    el.innerHTML = '<div class="kb-empty">Noch keine Bestellungen vorhanden.</div>';
+    return;
+  }
+  el.innerHTML = orders.map(b => renderOrderCard(b, 'bestellungen')).join('');
 }
 
 async function ladeTracking() {
+  const orders = await ladeKundenBestellungen();
   const el = document.getElementById('kbTrackingList');
-  const data = await dbAuth('bestellungen', `?email=eq.${encodeURIComponent(kbUser.email)}&status=in.(versendet,geliefert)&order=erstellt_am.desc`, kbUser.access_token);
-  if (!data || !data.length) { el.innerHTML='<div style="color:var(--gray);font-size:14px;text-align:center;padding:20px 0;">Keine versendeten Bestellungen.</div>'; return; }
-  el.innerHTML = data.map(b => `<div class="kb-box">
-    <div class="kb-box-label">Bestellung #${b.id} · <span class="kb-status ${statusClass(b.status)}" style="vertical-align:middle;">${statusLabel(b.status)}</span></div>
-    <div class="kb-box-val">${b.tracking_nr
-      ? `Sendungsnummer: <strong>${b.tracking_nr}</strong><br><br>
-         <a href="https://www.raben-group.com/de/tracking/?q=${b.tracking_nr}" target="_blank"
-            style="background:var(--oak);color:white;padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;text-decoration:none;display:inline-block;margin-top:4px;">
-           🔍 Sendung verfolgen
-         </a>`
-      : '<span style="color:var(--gray);">Tracking-Nummer noch nicht verfügbar.</span>'
-    }</div>
-  </div>`).join('');
+  const trackingOrders = orders.filter(b => b.lieferart === 'lieferung' || b.tracking_nr || ['versendet','geliefert'].includes(b.status));
+  if (!trackingOrders.length) {
+    el.innerHTML = '<div class="kb-empty">Noch keine Lieferungen vorhanden.</div>';
+    return;
+  }
+  el.innerHTML = trackingOrders.map(b => renderOrderCard(b, 'tracking')).join('');
+}
+
+async function ladeReklamation() {
+  await ladeKundenBestellungen();
+  renderKbReklamation();
+}
+
+function renderKbReklamation() {
+  const el = document.getElementById('kbReklamationList');
+  const orders = filterOrders(kbOrdersCache || [], 'kbReklamationSuche').filter(b => b.status !== 'storniert');
+  if (!orders.length) {
+    el.innerHTML = '<div class="kb-empty">Keine reklamierbaren Bestellungen vorhanden.</div>';
+    return;
+  }
+  el.innerHTML = orders.map(b => renderOrderCard(b, 'reklamation')).join('');
 }
 
 async function ladeRechnungen() {
+  await ladeKundenBestellungen();
+  renderKbRechnungen();
+}
+
+function renderKbRechnungen() {
   const el = document.getElementById('kbRechnungenList');
-  const data = await dbAuth('bestellungen', `?email=eq.${encodeURIComponent(kbUser.email)}&rechnung_url=not.is.null&order=erstellt_am.desc`, kbUser.access_token);
-  if (!data || !data.length) { el.innerHTML='<div style="color:var(--gray);font-size:14px;text-align:center;padding:20px 0;">Noch keine Rechnungen vorhanden.</div>'; return; }
-  el.innerHTML = data.map(b => {
-    const d = new Date(b.erstellt_am).toLocaleDateString('de-DE');
-    const g = b.gesamt_brutto ? b.gesamt_brutto.toFixed(2).replace('.',',') + ' €' : '—';
-    return `<div class="kb-box" style="display:flex;justify-content:space-between;align-items:center;">
-      <div><div style="font-weight:700;font-size:14px;">Rechnung #${b.id}</div><div style="font-size:12px;color:var(--gray);margin-top:2px;">${d} · ${g}</div></div>
-      <a href="${b.rechnung_url}" target="_blank" style="background:var(--oak);color:white;padding:8px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;text-decoration:none;">⬇ PDF</a>
-    </div>`;
+  const orders = filterOrders(kbOrdersCache || [], 'kbRechnungsSuche')
+    .filter(b => b.zahlungsart === 'vorkasse' || b.lexoffice_id || b.rechnung_pdf_url || b.status === 'bezahlt' || b.status === 'versendet' || b.status === 'geliefert');
+
+  if (!orders.length) {
+    el.innerHTML = '<div class="kb-empty">Noch keine Rechnungen oder Zahlungsaufforderungen vorhanden.</div>';
+    return;
+  }
+
+  el.innerHTML = orders.map(b => {
+    const isVorkasseOffen = b.zahlungsart === 'vorkasse' && b.status === 'warte_auf_zahlung';
+    return renderOrderCard(b, 'rechnungen') + (isVorkasseOffen
+      ? `<div class="kb-pay-box" style="margin-top:-6px;margin-bottom:12px;">Zahlungsaufforderung vorhanden · offizielle Rechnung folgt nach Zahlungseingang.</div>`
+      : '');
   }).join('');
 }
+
+async function ladeAdressen() {
+  const el = document.getElementById('kbAdressenContent');
+  const orders = await ladeKundenBestellungen();
+  const latest = orders[0];
+
+  if (!latest) {
+    el.innerHTML = `
+      <div class="kb-box">
+        <div class="kb-box-label">Rechnungsadresse</div>
+        <div class="kb-box-val">Noch keine Adresse aus einer Bestellung vorhanden.</div>
+      </div>`;
+    return;
+  }
+
+  const lieferadressen = [];
+  orders.forEach(b => {
+    const key = [b.lieferadresse_strasse, b.lieferadresse_plz, b.lieferadresse_ort].filter(Boolean).join('|');
+    if (key && !lieferadressen.some(a => a.key === key)) {
+      lieferadressen.push({ key, order: b });
+    }
+  });
+
+  el.innerHTML = `
+    <div class="kb-box">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+        <div>
+          <div class="kb-box-label">Rechnungsadresse</div>
+          <div class="kb-box-val">${rechnungsAdresseHtml(latest) || '—'}<br>
+            ${latest.telefon ? 'Telefon: ' + escapeHtml(latest.telefon) + '<br>' : ''}
+            ${latest.ust_idnr ? 'USt-IdNr.: ' + escapeHtml(latest.ust_idnr) : ''}
+          </div>
+        </div>
+        <button class="kb-gray-btn" type="button" onclick="alert('Adressbearbeitung folgt in der nächsten Version.')">Bearbeiten</button>
+      </div>
+    </div>
+    <div class="kb-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div class="kb-box-label" style="margin:0;">Lieferadressen</div>
+        <button class="kb-yellow-btn" type="button" onclick="alert('Neue Lieferadresse folgt in der nächsten Version.')">+ Neue Lieferadresse</button>
+      </div>
+      ${lieferadressen.length ? lieferadressen.map(a => `
+        <div class="kb-address-row">
+          <div>${lieferAdresseHtml(a.order)}</div>
+          <button class="kb-gray-btn" type="button" onclick="alert('Bearbeiten folgt in der nächsten Version.')">Bearbeiten</button>
+          <button class="kb-gray-btn" type="button" onclick="alert('Löschen folgt in der nächsten Version.')">Löschen</button>
+        </div>
+      `).join('') : '<div class="kb-muted">Keine separate Lieferadresse gespeichert.</div>'}
+    </div>
+  `;
+}
+
+async function ladeZugangsdaten() {
+  const orders = await ladeKundenBestellungen();
+  const latest = orders[0];
+  document.getElementById('kbKontoEmail').textContent = kbUser.email;
+  document.getElementById('kbKontoFirma').textContent = latest?.firma || kbUser.firma || '—';
+  document.getElementById('kbKundennummer').textContent = latest ? ('VT-KD-' + String(latest.id).padStart(5, '0')) : '—';
+}
+
 
 async function passwortAendern() {
   const neues = document.getElementById('kbNeuesPasswort').value;
@@ -1949,6 +2431,30 @@ function zeigeBestelluebersicht() {
   showScreen('uebersicht');
 }
 
+function zeigeVorkasseErfolg(bestellungId, bruttoBetrag) {
+  const verwendung = 'VT-' + String(bestellungId).padStart(4, '0');
+  const betragText = Number(bruttoBetrag || 0).toFixed(2).replace('.', ',') + ' €';
+  const box = document.getElementById('vorkasseErfolgBox');
+  if (box) {
+    box.innerHTML = `
+      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Vorkasse / Überweisung</div>
+      <div style="display:grid;grid-template-columns:150px 1fr;gap:8px 12px;font-size:14px;line-height:1.6;color:var(--walnut);">
+        <div style="color:var(--gray);">Bestellnummer</div><div><strong>#${bestellungId}</strong></div>
+        <div style="color:var(--gray);">Betrag</div><div><strong style="color:var(--oak);font-size:16px;">${betragText}</strong></div>
+        <div style="color:var(--gray);">Empfänger</div><div><strong>VISIO TRADE GMBH</strong></div>
+        <div style="color:var(--gray);">IBAN</div><div><strong>DE49 2665 0001 1060 0159 95</strong></div>
+        <div style="color:var(--gray);">BIC</div><div>NOLADE21EMS</div>
+        <div style="color:var(--gray);">Bank</div><div>Sparkasse Emsland</div>
+        <div style="color:var(--gray);">Verwendungszweck</div><div><strong style="color:var(--oak);font-size:16px;">${verwendung}</strong></div>
+      </div>
+      <div style="margin-top:14px;background:#FFFBEB;border:1px solid #FBBF24;border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:#92400E;line-height:1.5;">
+        Wichtig: Die Bestellung wird nach Zahlungseingang weiterbearbeitet. Die offizielle Rechnung wird erst nach Zahlungseingang erstellt und per E-Mail versendet.
+      </div>
+    `;
+  }
+  showScreen('vorkasse-erfolg');
+}
+
 async function bestellungAbsenden() {
   if (!document.getElementById('checkB2B').checked || !document.getElementById('checkAgb').checked || !document.getElementById('checkDatenschutz').checked) {
     alert('Bitte alle Bestätigungen ankreuzen.'); return;
@@ -2079,6 +2585,11 @@ async function bestellungAbsenden() {
       });
       const vkData = await vkRes.json();
       if (!vkRes.ok || !vkData.ok) { throw new Error(vkData.error || 'Vorkasse-Bestellung fehlgeschlagen'); }
+
+      warenkorb=[];
+      document.getElementById('cartCount').textContent=0;
+      zeigeVorkasseErfolg(best[0].id, zahlbetragNetto * 1.19);
+      return;
     }
     warenkorb=[];
     document.getElementById('cartCount').textContent=0;
