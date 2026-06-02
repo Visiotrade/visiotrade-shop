@@ -1245,6 +1245,20 @@ function statusLabel(status) {
   return labels[status] || status || 'Offen';
 }
 
+function zahlungLabelBestellung(b) {
+  const zahlungsart = String(b?.zahlungsart || '').toLowerCase();
+
+  const labels = {
+    stripe: 'Kreditkarte / Debitkarte',
+    paypal: 'PayPal',
+    vorkasse: 'Vorkasse / Überweisung',
+    ueberweisung: 'Vorkasse / Überweisung',
+    überweisung: 'Vorkasse / Überweisung'
+  };
+
+  return labels[zahlungsart] || b?.zahlungsart || '—';
+}
+
 function getLieferkostenNettoKunde() {
   return (lieferart === 'lieferung' && aktuellerFrachtKunde) ? Number(aktuellerFrachtKunde) : 0;
 }
