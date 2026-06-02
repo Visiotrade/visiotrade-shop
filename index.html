@@ -1098,16 +1098,117 @@ async function supabaseAuth(path, body) {
   } catch(e) { return {error:{message:'Keine Verbindung.'}}; }
 }
 
+
+function kbIstJwtAbgelaufenText(text) {
+  return String(text || '').toLowerCase().includes('jwt expired');
+}
+
+function kbAktualisiereLokalenUser(res) {
+  if (!res) return;
+  kbUser = {
+    id: res.user?.id || kbUser?.id || null,
+    access_token: res.access_token || kbUser?.access_token || null,
+    refresh_token: res.refresh_token || kbUser?.refresh_token || null,
+    email: res.user?.email || kbUser?.email || '',
+    firma: res.user?.user_metadata?.firma || kbUser?.firma || ''
+  };
+  localStorage.setItem('vt_kb', JSON.stringify(kbUser));
+}
+
+async function kbRefreshSession() {
+  if (!kbUser?.refresh_token) return false;
+
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ refresh_token: kbUser.refresh_token })
+  });
+
+  const res = await r.json().catch(() => ({}));
+  if (!r.ok || res.error || !res.access_token) return false;
+
+  kbAktualisiereLokalenUser(res);
+  return true;
+}
+
+async function kbSessionAbgelaufen() {
+  kbUser = null;
+  kbOrdersCache = null;
+  kbProfilCache = null;
+  kbLieferadressenCache = null;
+  localStorage.removeItem('vt_kb');
+  const icon = document.getElementById('kontoIcon');
+  if (icon) icon.textContent = '👤';
+  showScreen('login');
+  kbError('Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.');
+}
+
+async function kbRequireValidSession() {
+  if (!kbUser?.access_token) throw new Error('Bitte erneut anmelden.');
+
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${kbUser.access_token}`
+    }
+  });
+
+  if (r.ok) {
+    const user = await r.json().catch(() => null);
+    if (user?.id) {
+      kbUser.id = user.id;
+      kbUser.email = user.email || kbUser.email;
+      kbUser.firma = user.user_metadata?.firma || kbUser.firma || '';
+      localStorage.setItem('vt_kb', JSON.stringify(kbUser));
+    }
+    return kbUser.access_token;
+  }
+
+  const txt = await r.text().catch(() => '');
+  if (r.status === 401 || kbIstJwtAbgelaufenText(txt)) {
+    const refreshed = await kbRefreshSession();
+    if (refreshed) return kbUser.access_token;
+    await kbSessionAbgelaufen();
+    throw new Error('Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.');
+  }
+
+  throw new Error('Sitzung konnte nicht geprüft werden.');
+}
+
+function kbAuthFehlerBehandeln(err) {
+  if (kbIstJwtAbgelaufenText(err?.message) || String(err?.message || '').includes('Bitte erneut anmelden')) {
+    kbSessionAbgelaufen();
+    return true;
+  }
+  return false;
+}
+
 async function dbAuth(table, params, token) {
   try {
+    token = await kbRequireValidSession();
     const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
       headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${token}`}
     });
-    return r.ok ? r.json() : null;
-  } catch(e) { return null; }
+    if (!r.ok) {
+      const txt = await r.text().catch(() => '');
+      if (r.status === 401 || kbIstJwtAbgelaufenText(txt)) {
+        const refreshed = await kbRefreshSession();
+        if (refreshed) return dbAuth(table, params, kbUser.access_token);
+        await kbSessionAbgelaufen();
+      }
+      return null;
+    }
+    return r.json();
+  } catch(e) {
+    if (!kbAuthFehlerBehandeln(e)) console.error('dbAuth Fehler:', e);
+    return null;
+  }
 }
-
 async function dbAuthInsert(table, data, token) {
+  token = await kbRequireValidSession();
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
     method:'POST',
     headers:{
@@ -1120,11 +1221,18 @@ async function dbAuthInsert(table, data, token) {
   });
   const txt = await r.text();
   const parsed = txt ? JSON.parse(txt) : null;
-  if (!r.ok) throw new Error(parsed?.message || txt || 'Speichern fehlgeschlagen');
+  if (!r.ok) {
+    if (r.status === 401 || kbIstJwtAbgelaufenText(txt) || kbIstJwtAbgelaufenText(parsed?.message)) {
+      const refreshed = await kbRefreshSession();
+      if (refreshed) return dbAuthInsert(table, data, kbUser.access_token);
+      await kbSessionAbgelaufen();
+    }
+    throw new Error(parsed?.message || txt || 'Speichern fehlgeschlagen');
+  }
   return parsed;
 }
-
 async function dbAuthUpdate(table, params, data, token) {
+  token = await kbRequireValidSession();
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
     method:'PATCH',
     headers:{
@@ -1137,11 +1245,18 @@ async function dbAuthUpdate(table, params, data, token) {
   });
   const txt = await r.text();
   const parsed = txt ? JSON.parse(txt) : null;
-  if (!r.ok) throw new Error(parsed?.message || txt || 'Aktualisieren fehlgeschlagen');
+  if (!r.ok) {
+    if (r.status === 401 || kbIstJwtAbgelaufenText(txt) || kbIstJwtAbgelaufenText(parsed?.message)) {
+      const refreshed = await kbRefreshSession();
+      if (refreshed) return dbAuthUpdate(table, params, data, kbUser.access_token);
+      await kbSessionAbgelaufen();
+    }
+    throw new Error(parsed?.message || txt || 'Aktualisieren fehlgeschlagen');
+  }
   return parsed;
 }
-
 async function dbAuthDelete(table, params, token) {
+  token = await kbRequireValidSession();
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
     method:'DELETE',
     headers:{
@@ -1152,28 +1267,21 @@ async function dbAuthDelete(table, params, token) {
   });
   if (!r.ok) {
     const txt = await r.text();
+    if (r.status === 401 || kbIstJwtAbgelaufenText(txt)) {
+      const refreshed = await kbRefreshSession();
+      if (refreshed) return dbAuthDelete(table, params, kbUser.access_token);
+      await kbSessionAbgelaufen();
+    }
     throw new Error(txt || 'Löschen fehlgeschlagen');
   }
   return true;
 }
-
 async function kbEnsureUserId() {
   if (kbUser?.id) return kbUser.id;
-  if (!kbUser?.access_token) throw new Error('Nicht angemeldet');
-
-  const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-    headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${kbUser.access_token}`}
-  });
-  const user = await r.json();
-  if (!r.ok || !user.id) throw new Error('Benutzerdaten konnten nicht geladen werden');
-
-  kbUser.id = user.id;
-  kbUser.email = user.email || kbUser.email;
-  kbUser.firma = user.user_metadata?.firma || kbUser.firma || '';
-  localStorage.setItem('vt_kb', JSON.stringify(kbUser));
+  await kbRequireValidSession();
+  if (!kbUser?.id) throw new Error('Benutzerdaten konnten nicht geladen werden');
   return kbUser.id;
 }
-
 
 function zeigeKonto() {
   if (kbUser) { zeigeKundenbuero(); return; }
@@ -1212,14 +1320,19 @@ async function authAktion() {
     const res = await supabaseAuth('signup', {email, password:pass, data:{firma}});
     btn.disabled=false; btn.textContent='Konto erstellen';
     if (res.error) { kbError(res.error.message || 'Fehler.'); return; }
-    kbSuccess('✅ Registrierung erfolgreich! Bitte E-Mail bestätigen.');
+    if (res.access_token) {
+      kbAktualisiereLokalenUser(res);
+      kbSuccess('✅ Registrierung erfolgreich. Sie sind jetzt angemeldet.');
+      zeigeKundenbuero();
+      return;
+    }
+    kbSuccess('✅ Registrierung erfolgreich! Bitte bestätigen Sie Ihre E-Mail und melden Sie sich danach an.');
     toggleLoginMode();
   } else {
     const res = await supabaseAuth('token?grant_type=password', {email, password:pass});
     btn.disabled=false; btn.textContent='Anmelden';
     if (res.error || !res.access_token) { kbError('E-Mail oder Passwort falsch.'); return; }
-    kbUser = {id:res.user?.id || null, access_token:res.access_token, email:res.user?.email, firma:res.user?.user_metadata?.firma||''};
-    localStorage.setItem('vt_kb', JSON.stringify(kbUser));
+    kbAktualisiereLokalenUser(res);
     zeigeKundenbuero();
   }
 }
@@ -1873,7 +1986,7 @@ async function speichereRechnungsadresse() {
     alert('✅ Rechnungsadresse gespeichert.');
     await ladeAdressen();
   } catch (err) {
-    alert('Fehler beim Speichern: ' + err.message);
+    if (!kbAuthFehlerBehandeln(err)) alert('Fehler beim Speichern: ' + err.message);
   }
 }
 
@@ -1945,7 +2058,7 @@ async function speichereLieferadresse(id = null) {
     alert('✅ Lieferadresse gespeichert.');
     await ladeAdressen();
   } catch (err) {
-    alert('Fehler beim Speichern: ' + err.message);
+    if (!kbAuthFehlerBehandeln(err)) alert('Fehler beim Speichern: ' + err.message);
   }
 }
 
@@ -1959,7 +2072,7 @@ async function loescheLieferadresse(id) {
     alert('✅ Lieferadresse gelöscht.');
     await ladeAdressen();
   } catch (err) {
-    alert('Fehler beim Löschen: ' + err.message);
+    if (!kbAuthFehlerBehandeln(err)) alert('Fehler beim Löschen: ' + err.message);
   }
 }
 
@@ -1982,8 +2095,9 @@ async function ladeZugangsdaten() {
 async function passwortAendern() {
   const neues = document.getElementById('kbNeuesPasswort').value;
   if (neues.length < 6) { alert('Passwort mindestens 6 Zeichen.'); return; }
+  const token = await kbRequireValidSession();
   const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-    method:'PUT', headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${kbUser.access_token}`,'Content-Type':'application/json'},
+    method:'PUT', headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
     body:JSON.stringify({password:neues})
   });
   const res = await r.json();
