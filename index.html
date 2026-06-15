@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0063)file:///C:/Users/info/Downloads/index_passwort_reset_fixed.html -->
+<!-- saved from url=(0068)file:///C:/Users/info/Downloads/index_warenkorb_mengen_loeschen.html -->
 <html lang="de" style="--tg-viewport-height: 100vh; --tg-viewport-stable-height: 100vh;"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -127,6 +127,14 @@
   .wk-item-detail { font-size: 12px; color: var(--gray); }
   .wk-item-preis { font-size: 15px; font-weight: 700; color: var(--oak); margin-top: 4px; }
   .wk-remove { background: none; border: none; color: var(--gray); font-size: 18px; cursor: pointer; padding: 2px 4px; flex-shrink: 0; }
+  .wk-controls { display:flex; align-items:center; gap:8px; margin-top:10px; }
+  .wk-qty-btn { width:30px; height:30px; border:1px solid var(--gray-light); border-radius:var(--radius-sm); background:var(--white); color:var(--walnut); font-size:18px; font-weight:700; cursor:pointer; line-height:1; }
+  .wk-qty-btn:active { background:var(--oak-pale); border-color:var(--oak); }
+  .wk-qty-input { width:54px; height:30px; border:1px solid var(--gray-light); border-radius:var(--radius-sm); text-align:center; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; color:var(--walnut); outline:none; }
+  .wk-qty-input:focus { border-color:var(--oak); }
+  .wk-remove-text { background:var(--red-light); border:none; color:var(--red); border-radius:var(--radius-sm); padding:7px 10px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; cursor:pointer; margin-left:auto; }
+  .wk-line-meta { font-size:12px; color:var(--gray); margin-top:2px; line-height:1.4; }
+
   .wk-summary { margin: 0 16px; background: var(--white); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
   .wk-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; color: var(--gray); }
   .wk-row.total { font-size: 18px; font-weight: 700; color: var(--walnut); border-top: 1px solid var(--gray-light); margin-top: 6px; padding-top: 12px; }
@@ -2603,6 +2611,59 @@ function optimierePakete(benoetigt, pakete) {
   return rest>0 ? null : kombi;
 }
 
+function formatPreisDE(value) {
+  return Number(value || 0).toFixed(2).replace('.', ',') + ' €';
+}
+
+function normalisiereWarenkorbItem(item) {
+  if (!item) return item;
+  const menge = Math.max(1, parseInt(item.menge || 1, 10) || 1);
+
+  if (item.einzelPreis === undefined || item.einzelPreis === null) {
+    item.einzelPreis = Number(item.preis || 0) / menge;
+  }
+  if (item.einzelM2 === undefined || item.einzelM2 === null) {
+    item.einzelM2 = Number(item.gesamt_m2 || 0) / menge;
+  }
+  if (item.einzelGewicht === undefined || item.einzelGewicht === null) {
+    item.einzelGewicht = Number(item.gewicht || 0) / menge;
+  }
+
+  item.menge = menge;
+  item.preis = Number(item.einzelPreis || 0) * item.menge;
+  item.gesamt_m2 = Number(item.einzelM2 || 0) * item.menge;
+  item.gewicht = Number(item.einzelGewicht || 0) * item.menge;
+  return item;
+}
+
+function normalisiereWarenkorb() {
+  warenkorb = (warenkorb || []).map(normalisiereWarenkorbItem).filter(Boolean);
+}
+
+function getCartCountTotal() {
+  normalisiereWarenkorb();
+  return warenkorb.reduce((summe, item) => summe + (parseInt(item.menge || 1, 10) || 1), 0);
+}
+
+function updateCartCount() {
+  const el = document.getElementById('cartCount');
+  if (el) el.textContent = getCartCountTotal();
+}
+
+function nachWarenkorbAenderung(neuRendern = false) {
+  normalisiereWarenkorb();
+  updateCartCount();
+  pruefeHebebuehneGewicht();
+
+  if (lieferart === 'lieferung') {
+    const abwChecked = document.getElementById('checkAbwLieferadresse')?.checked || false;
+    if (abwChecked) aktualisiereFrachtAbw();
+    else aktualisiereFracht();
+  }
+
+  if (neuRendern) renderWarenkorb();
+}
+
 function addToCart() {
   const btn = document.getElementById('addBtn');
   const kombi = JSON.parse(btn.dataset.kombi||'[]');
@@ -2612,9 +2673,24 @@ function addToCart() {
   const name = document.getElementById('produktName').textContent;
   // Gesamtgewicht berechnen
   const gesamtGewicht = kombi.reduce((s,k)=>s+k.anzahl*(aktProdukt.gewicht_pro_paket_kg||0),0);
-  warenkorb.push({id:Date.now(),produktId:aktProdukt.id,name,icon:ICONS[aktKat.name]||'🪵',kombi,benoetigt_m2:parseFloat(btn.dataset.m2),gesamt_m2:gesamtM2,preis:gesamtPreis,gewicht:gesamtGewicht});
-  pruefeHebebuehneGewicht();
-  document.getElementById('cartCount').textContent=warenkorb.length;
+
+  warenkorb.push({
+    id: Date.now(),
+    produktId: aktProdukt.id,
+    name,
+    icon: ICONS[aktKat.name] || '🪵',
+    kombi,
+    benoetigt_m2: parseFloat(btn.dataset.m2),
+    menge: 1,
+    einzelPreis: gesamtPreis,
+    einzelM2: gesamtM2,
+    einzelGewicht: gesamtGewicht,
+    gesamt_m2: gesamtM2,
+    preis: gesamtPreis,
+    gewicht: gesamtGewicht
+  });
+
+  nachWarenkorbAenderung(false);
   btn.textContent='✓ Hinzugefügt!';
   btn.style.background='var(--green)';
   setTimeout(()=>{btn.textContent=`In den Warenkorb — ${gesamtPreis.toFixed(2).replace('.',',')} €`;btn.style.background='';},1500);
@@ -2623,13 +2699,77 @@ function addToCart() {
 function zeigeWarenkorb() { renderWarenkorb(); showScreen('warenkorb'); }
 
 function renderWarenkorb() {
+  normalisiereWarenkorb();
   const cont = document.getElementById('warenkorbContent');
-  if (!warenkorb.length) { cont.innerHTML=`<div class="warenkorb-leer"><div class="warenkorb-leer-icon">🛒</div><h3>Warenkorb ist leer</h3><p>Entdecken Sie unser Sortiment.</p></div>`; return; }
-  const gesamt = warenkorb.reduce((s,i)=>s+i.preis,0);
-  cont.innerHTML=`<div class="warenkorb-items">${warenkorb.map(item=>`<div class="wk-item"><div class="wk-item-icon">${item.icon}</div><div class="wk-item-info"><div class="wk-item-name">${item.name}</div><div class="wk-item-detail">${item.gesamt_m2.toFixed(2)} m²</div><div class="wk-item-preis">${item.preis.toFixed(2).replace('.',',')} €</div></div><button class="wk-remove" onclick="removeFromCart(${item.id})">✕</button></div>`).join('')}</div><div class="wk-summary"><div class="wk-row"><span>Nettobetrag</span><span>${gesamt.toFixed(2).replace('.',',')} €</span></div><div class="wk-row"><span>MwSt. 19%</span><span>${(gesamt*0.19).toFixed(2).replace('.',',')} €</span></div><div class="wk-row"><span>Lieferkosten</span><span>auf Anfrage</span></div><div class="wk-row total"><span>Gesamtbetrag inkl. MwSt.</span><span>${(gesamt*1.19).toFixed(2).replace('.',',')} €</span></div></div><button class="checkout-btn" onclick="showScreen('kasse')">Zur Kasse →</button><div class="pb-safe"></div>`;
+  if (!warenkorb.length) {
+    cont.innerHTML=`<div class="warenkorb-leer"><div class="warenkorb-leer-icon">🛒</div><h3>Warenkorb ist leer</h3><p>Entdecken Sie unser Sortiment.</p></div>`;
+    updateCartCount();
+    return;
+  }
+
+  const gesamt = warenkorb.reduce((s,i)=>s+Number(i.preis || 0),0);
+  const gesamtM2 = warenkorb.reduce((s,i)=>s+Number(i.gesamt_m2 || 0),0);
+  const gesamtGewicht = warenkorb.reduce((s,i)=>s+Number(i.gewicht || 0),0);
+
+  cont.innerHTML = `
+    <div class="warenkorb-items">
+      ${warenkorb.map(item => `
+        <div class="wk-item">
+          <div class="wk-item-icon">${item.icon}</div>
+          <div class="wk-item-info">
+            <div class="wk-item-name">${item.name}</div>
+            <div class="wk-item-detail">${Number(item.gesamt_m2 || 0).toFixed(2)} m² · ${Number(item.gewicht || 0).toFixed(0)} kg</div>
+            <div class="wk-line-meta">Einzelposition: ${Number(item.einzelM2 || 0).toFixed(2)} m² · ${formatPreisDE(item.einzelPreis)}</div>
+            <div class="wk-controls">
+              <button class="wk-qty-btn" type="button" onclick="changeCartItemQty(${item.id}, -1)">−</button>
+              <input class="wk-qty-input" type="number" min="1" step="1" value="${item.menge}" onchange="setCartItemQty(${item.id}, this.value)" oninput="setCartItemQty(${item.id}, this.value, true)">
+              <button class="wk-qty-btn" type="button" onclick="changeCartItemQty(${item.id}, 1)">+</button>
+              <button class="wk-remove-text" type="button" onclick="removeFromCart(${item.id})">Löschen</button>
+            </div>
+            <div class="wk-item-preis">${formatPreisDE(item.preis)}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="wk-summary">
+      <div class="wk-row"><span>Gesamtfläche</span><span>${gesamtM2.toFixed(2)} m²</span></div>
+      <div class="wk-row"><span>Gesamtgewicht</span><span>${gesamtGewicht.toFixed(0)} kg</span></div>
+      <div class="wk-row"><span>Nettobetrag</span><span>${formatPreisDE(gesamt)}</span></div>
+      <div class="wk-row"><span>MwSt. 19%</span><span>${formatPreisDE(gesamt*0.19)}</span></div>
+      <div class="wk-row"><span>Lieferkosten</span><span>werden in der Kasse berechnet</span></div>
+      <div class="wk-row total"><span>Gesamtbetrag inkl. MwSt.</span><span>${formatPreisDE(gesamt*1.19)}</span></div>
+    </div>
+    <button class="checkout-btn" onclick="showScreen('kasse')">Zur Kasse →</button>
+    <div class="pb-safe"></div>
+  `;
+  updateCartCount();
 }
 
-function removeFromCart(id) { warenkorb=warenkorb.filter(i=>i.id!==id); document.getElementById('cartCount').textContent=warenkorb.length; renderWarenkorb(); pruefeHebebuehneGewicht(); }
+function setCartItemQty(id, value, silent = false) {
+  const item = warenkorb.find(i => Number(i.id) === Number(id));
+  if (!item) return;
+
+  const qty = Math.max(1, parseInt(value, 10) || 1);
+  item.menge = qty;
+  normalisiereWarenkorbItem(item);
+
+  if (!silent) renderWarenkorb();
+  else {
+    nachWarenkorbAenderung(false);
+  }
+}
+
+function changeCartItemQty(id, delta) {
+  const item = warenkorb.find(i => Number(i.id) === Number(id));
+  if (!item) return;
+  const current = Math.max(1, parseInt(item.menge || 1, 10) || 1);
+  setCartItemQty(id, current + delta);
+}
+
+function removeFromCart(id) {
+  warenkorb = warenkorb.filter(i => Number(i.id) !== Number(id));
+  nachWarenkorbAenderung(true);
+}
 
 function setLieferart(art) {
   lieferart=art;
@@ -3241,16 +3381,17 @@ async function bestellungAbsenden() {
     });
     if (!best||!best[0]) throw new Error('Bestellung konnte nicht gespeichert werden');
     for (const item of warenkorb) {
+      const faktor = Math.max(1, parseInt(item.menge || 1, 10) || 1);
       for (const k of item.kombi) {
         await dbInsert('bestellpositionen',{
           bestellung_id:best[0].id,
           produkt_id:item.produktId,
           produktname:item.name,
           paket_id:k.paket.id,
-          anzahl_pakete:k.anzahl,
-          menge_m2_gesamt:k.anzahl*k.paket.menge_m2,
+          anzahl_pakete:k.anzahl * faktor,
+          menge_m2_gesamt:k.anzahl * faktor * k.paket.menge_m2,
           preis_je_paket:k.paket.preis,
-          gesamtpreis:k.anzahl*k.paket.preis
+          gesamtpreis:k.anzahl * faktor * k.paket.preis
         });
       }
     }
@@ -3279,7 +3420,7 @@ async function bestellungAbsenden() {
       if (!vkRes.ok || !vkData.ok) { throw new Error(vkData.error || 'Vorkasse-Bestellung fehlgeschlagen'); }
 
       warenkorb=[];
-      document.getElementById('cartCount').textContent=0;
+      updateCartCount();
       zeigeVorkasseErfolg(best[0].id, zahlbetragNetto * 1.19);
       return;
     }
@@ -3304,9 +3445,9 @@ function checkPayPalReturn() {
       fetch(`${API_URL}/api/paypal/capture/${token}`, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({bestellung_id:bestellungId})
-      }).then(()=>{ warenkorb=[]; document.getElementById('cartCount').textContent=0; showScreen('erfolg'); });
+      }).then(()=>{ warenkorb=[]; updateCartCount(); showScreen('erfolg'); });
     } else {
-      warenkorb=[]; document.getElementById('cartCount').textContent=0; showScreen('erfolg');
+      warenkorb=[]; updateCartCount(); showScreen('erfolg');
     }
     window.history.replaceState({}, document.title, window.location.pathname);
   }
@@ -3322,7 +3463,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     if(user.first_name) document.getElementById('vorname').value=user.first_name;
     if(user.last_name) document.getElementById('nachname').value=user.last_name;
   }
-  document.getElementById('cartCount').textContent = warenkorb.length;
+  updateCartCount();
 
   // Abweichende Lieferadresse live prüfen: Button "Bestellung prüfen" bleibt gesperrt,
   // solange Pflichtfelder der abweichenden Lieferadresse fehlen.
