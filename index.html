@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0045)file:///C:/Users/info/Downloads/index_57.html -->
+<!-- saved from url=(0057)file:///C:/Users/info/Downloads/index_passwort_reset.html -->
 <html lang="de" style="--tg-viewport-height: 100vh; --tg-viewport-stable-height: 100vh;"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -745,7 +745,7 @@
         </div>
         <div class="zahlung-opt" id="zOpt-vorkasse" onclick="setZahlung(&#39;vorkasse&#39;)">
           <span class="zahlung-opt-icon">🏦</span>
-          <div><div style="font-weight:600">Vorkasse / Überweisung</div><div style="font-size:12px;color:var(--gray);margin-top:2px">Rechnung & Bankdaten per E-Mail</div></div>
+          <div><div style="font-weight:600">Vorkasse / Überweisung</div><div style="font-size:12px;color:var(--gray);margin-top:2px">Rechnung &amp; Bankdaten per E-Mail</div></div>
         </div>
       </div>
     </div>
@@ -939,9 +939,36 @@
   <div class="pb-safe"></div>
 </div>
 
+
+<!-- PASSWORT ZURÜCKSETZEN -->
+<div id="screen-passwort-reset" class="screen">
+  <div class="back-bar" onclick="showScreen(&#39;login&#39;)">← Zur Anmeldung</div>
+  <div class="kb-login-wrap">
+    <div class="kb-card">
+      <div class="kb-title">Neues Passwort vergeben</div>
+      <div class="kb-sub">Bitte geben Sie Ihr neues Passwort ein.</div>
+      <div id="resetError" class="kb-error"></div>
+      <div id="resetSuccess" class="kb-success"></div>
+      <div class="kb-input-group">
+        <label>Neues Passwort</label>
+        <input type="password" id="resetPass1" placeholder="Mindestens 6 Zeichen" autocomplete="new-password">
+      </div>
+      <div class="kb-input-group">
+        <label>Neues Passwort bestätigen</label>
+        <input type="password" id="resetPass2" placeholder="Wiederholen" autocomplete="new-password">
+      </div>
+      <button class="kb-btn" id="resetBtn" onclick="passwortZuruecksetzen()">Passwort speichern</button>
+      <div class="kb-toggle">
+        <a onclick="showScreen(&#39;login&#39;)">Zurück zur Anmeldung</a>
+      </div>
+    </div>
+  </div>
+  <div class="pb-safe"></div>
+</div>
+
 <!-- KUNDENBÜRO -->
 <div id="screen-kundenbuero" class="screen">
-  <div class="back-bar" onclick="showScreen('home')">← Zurück zum Shop</div>
+  <div class="back-bar" onclick="showScreen(&#39;home&#39;)">← Zurück zum Shop</div>
   <div class="kb-dash-header">
     <div class="kb-dash-name" id="kbName">Mein Konto</div>
     <div class="kb-dash-email" id="kbEmail"></div>
@@ -949,17 +976,17 @@
 
   <div class="kb-account-wrap">
     <aside class="kb-sidebar">
-      <button class="kb-side-link active" id="kbBtnUebersicht" onclick="kbZeige('uebersicht')">Übersicht</button>
+      <button class="kb-side-link active" id="kbBtnUebersicht" onclick="kbZeige(&#39;uebersicht&#39;)">Übersicht</button>
 
       <div class="kb-side-head">Bestellungen</div>
-      <button class="kb-side-sub" id="kbBtnBestellungen" onclick="kbZeige('bestellungen')">Meine Bestellungen</button>
-      <button class="kb-side-sub" id="kbBtnTracking" onclick="kbZeige('tracking')">Sendungsverfolgung</button>
-      <button class="kb-side-sub" id="kbBtnReklamation" onclick="kbZeige('reklamation')">Rücksendung & Reklamation</button>
-      <button class="kb-side-sub" id="kbBtnRechnungen" onclick="kbZeige('rechnungen')">Rechnungen</button>
+      <button class="kb-side-sub" id="kbBtnBestellungen" onclick="kbZeige(&#39;bestellungen&#39;)">Meine Bestellungen</button>
+      <button class="kb-side-sub" id="kbBtnTracking" onclick="kbZeige(&#39;tracking&#39;)">Sendungsverfolgung</button>
+      <button class="kb-side-sub" id="kbBtnReklamation" onclick="kbZeige(&#39;reklamation&#39;)">Rücksendung &amp; Reklamation</button>
+      <button class="kb-side-sub" id="kbBtnRechnungen" onclick="kbZeige(&#39;rechnungen&#39;)">Rechnungen</button>
 
       <div class="kb-side-head">Persönliche Kontodaten</div>
-      <button class="kb-side-sub" id="kbBtnAdressen" onclick="kbZeige('adressen')">Adressen</button>
-      <button class="kb-side-sub" id="kbBtnZugangsdaten" onclick="kbZeige('zugangsdaten')">Zugangsdaten</button>
+      <button class="kb-side-sub" id="kbBtnAdressen" onclick="kbZeige(&#39;adressen&#39;)">Adressen</button>
+      <button class="kb-side-sub" id="kbBtnZugangsdaten" onclick="kbZeige(&#39;zugangsdaten&#39;)">Zugangsdaten</button>
 
       <div style="padding:0 14px;">
         <button class="kb-logout" onclick="abmelden()">Abmelden</button>
@@ -997,7 +1024,7 @@
 
       <section id="kbSectionReklamation" class="kb-pane">
         <div class="kb-page-head">
-          <div class="kb-page-title">Rücksendung & Reklamation</div>
+          <div class="kb-page-title">Rücksendung &amp; Reklamation</div>
           <div class="kb-search">
             <input id="kbReklamationSuche" placeholder="Bestellungen / Artikel suchen" oninput="renderKbReklamation()">
             <button onclick="renderKbReklamation()">🔍</button>
@@ -1096,6 +1123,105 @@ async function supabaseAuth(path, body) {
     });
     return r.json();
   } catch(e) { return {error:{message:'Keine Verbindung.'}}; }
+}
+
+function kbAuthRedirectUrl() {
+  // Supabase darf auf beide Domains umleiten, sofern sie in Supabase URL Configuration erlaubt sind.
+  return window.location.origin + window.location.pathname;
+}
+
+function kbAuthFehlerText(message) {
+  const m = String(message || '').toLowerCase();
+  if (m.includes('email not confirmed') || m.includes('email_not_confirmed') || m.includes('not confirmed')) {
+    return 'Ihre E-Mail-Adresse wurde noch nicht bestätigt. Bitte prüfen Sie Ihr Postfach.';
+  }
+  if (m.includes('invalid login') || m.includes('invalid credentials') || m.includes('invalid grant') || m.includes('wrong password')) {
+    return 'E-Mail oder Passwort ist falsch.';
+  }
+  if (m.includes('user already registered') || m.includes('already registered') || m.includes('already exists')) {
+    return 'Diese E-Mail-Adresse ist bereits registriert. Bitte melden Sie sich an oder setzen Sie Ihr Passwort zurück.';
+  }
+  if (m.includes('password') && (m.includes('weak') || m.includes('least') || m.includes('short'))) {
+    return 'Das Passwort muss mindestens 6 Zeichen lang sein.';
+  }
+  if (m.includes('rate limit')) {
+    return 'Bitte warten Sie kurz und versuchen Sie es danach erneut.';
+  }
+  if (m.includes('jwt expired')) {
+    return 'Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.';
+  }
+  return 'Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.';
+}
+
+function resetError(msg) {
+  const e = document.getElementById('resetError');
+  const s = document.getElementById('resetSuccess');
+  if (e) { e.textContent = msg; e.style.display = 'block'; }
+  if (s) s.style.display = 'none';
+}
+
+function resetSuccess(msg) {
+  const e = document.getElementById('resetSuccess');
+  const s = document.getElementById('resetError');
+  if (e) { e.textContent = msg; e.style.display = 'block'; }
+  if (s) s.style.display = 'none';
+}
+
+let kbRecoverySession = null;
+
+async function kbHoleUserMitToken(accessToken) {
+  if (!accessToken) return null;
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${accessToken}`
+    }
+  });
+  if (!r.ok) return null;
+  return r.json().catch(() => null);
+}
+
+async function handleSupabaseAuthCallback() {
+  const raw = (window.location.hash || '').replace(/^#/, '');
+  const query = (window.location.search || '').replace(/^\?/, '');
+  const params = new URLSearchParams(raw || query);
+  const type = params.get('type');
+  const accessToken = params.get('access_token');
+  const refreshToken = params.get('refresh_token');
+
+  if (!type && !accessToken) return false;
+
+  if (accessToken) {
+    const user = await kbHoleUserMitToken(accessToken);
+
+    if (type === 'recovery') {
+      kbRecoverySession = { access_token: accessToken, refresh_token: refreshToken || '', user };
+      history.replaceState(null, '', kbAuthRedirectUrl());
+      showScreen('passwort-reset');
+      return true;
+    }
+
+    if (user?.id) {
+      kbAktualisiereLokalenUser({
+        access_token: accessToken,
+        refresh_token: refreshToken || '',
+        user
+      });
+      history.replaceState(null, '', kbAuthRedirectUrl());
+      zeigeKundenbuero();
+      return true;
+    }
+  }
+
+  if (type === 'signup') {
+    history.replaceState(null, '', kbAuthRedirectUrl());
+    showScreen('login');
+    kbSuccess('Ihre E-Mail-Adresse wurde bestätigt. Sie können sich jetzt anmelden.');
+    return true;
+  }
+
+  history.replaceState(null, '', kbAuthRedirectUrl());
+  return false;
 }
 
 
@@ -1288,8 +1414,8 @@ function zeigeKonto() {
   showScreen('login');
 }
 
-function toggleLoginMode() {
-  kbModus = kbModus === 'login' ? 'register' : 'login';
+function toggleLoginMode(forceMode) {
+  kbModus = forceMode || (kbModus === 'login' ? 'register' : 'login');
   const isR = kbModus === 'register';
   document.getElementById('loginTitle').textContent = isR ? 'Registrieren' : 'Anmelden';
   document.getElementById('loginSub').textContent = isR ? 'Neues Kundenkonto erstellen' : 'Ihr persönliches Kundenbüro';
@@ -1310,38 +1436,117 @@ async function authAktion() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPass').value;
   const btn = document.getElementById('loginBtn');
+
   if (!email || !pass) { kbError('Bitte E-Mail und Passwort eingeben.'); return; }
-  btn.disabled = true; btn.textContent = '…';
-  if (kbModus === 'register') {
-    const pass2 = document.getElementById('loginPass2').value;
-    const firma = document.getElementById('loginFirma').value.trim();
-    if (pass !== pass2) { kbError('Passwörter stimmen nicht überein.'); btn.disabled=false; btn.textContent='Konto erstellen'; return; }
-    if (pass.length < 6) { kbError('Passwort mindestens 6 Zeichen.'); btn.disabled=false; btn.textContent='Konto erstellen'; return; }
-    const res = await supabaseAuth('signup', {email, password:pass, data:{firma}});
-    btn.disabled=false; btn.textContent='Konto erstellen';
-    if (res.error) { kbError(res.error.message || 'Fehler.'); return; }
-    if (res.access_token) {
-      kbAktualisiereLokalenUser(res);
-      kbSuccess('✅ Registrierung erfolgreich. Sie sind jetzt angemeldet.');
-      zeigeKundenbuero();
+
+  btn.disabled = true;
+  btn.textContent = 'Bitte warten …';
+
+  try {
+    if (kbModus === 'register') {
+      const pass2 = document.getElementById('loginPass2').value;
+      const firma = document.getElementById('loginFirma').value.trim();
+
+      if (pass !== pass2) { kbError('Passwörter stimmen nicht überein.'); return; }
+      if (pass.length < 6) { kbError('Passwort mindestens 6 Zeichen.'); return; }
+      if (!firma) { kbError('Bitte Firma eintragen.'); return; }
+
+      const res = await supabaseAuth('signup', {
+        email,
+        password: pass,
+        data: { firma },
+        email_redirect_to: kbAuthRedirectUrl()
+      });
+
+      if (res.error) { kbError(kbAuthFehlerText(res.error.message)); return; }
+
+      // Auch wenn Supabase bei deaktivierter Bestätigung eine Session zurückgibt:
+      // Kunde soll nach Registrierung sauber auf die E-Mail-Bestätigung hingewiesen werden.
+      kbSuccess('Registrierung erfolgreich. Bitte bestätigen Sie Ihre E-Mail-Adresse über den Link in Ihrem Postfach. Danach können Sie sich einloggen.');
+      toggleLoginMode('login');
+      document.getElementById('loginEmail').value = email;
+      document.getElementById('loginPass').value = '';
       return;
     }
-    kbSuccess('✅ Registrierung erfolgreich! Bitte bestätigen Sie Ihre E-Mail und melden Sie sich danach an.');
-    toggleLoginMode();
-  } else {
-    const res = await supabaseAuth('token?grant_type=password', {email, password:pass});
-    btn.disabled=false; btn.textContent='Anmelden';
-    if (res.error || !res.access_token) { kbError('E-Mail oder Passwort falsch.'); return; }
+
+    const res = await supabaseAuth('token?grant_type=password', { email, password: pass });
+
+    if (res.error || !res.access_token) {
+      kbError(kbAuthFehlerText(res.error?.message));
+      return;
+    }
+
     kbAktualisiereLokalenUser(res);
     zeigeKundenbuero();
+
+  } catch(e) {
+    kbError('Keine Verbindung. Bitte versuchen Sie es erneut.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = kbModus === 'register' ? 'Konto erstellen' : 'Anmelden';
   }
 }
 
 async function passwortVergessen() {
   const email = document.getElementById('loginEmail').value.trim();
-  if (!email) { kbError('Bitte zuerst E-Mail eingeben.'); return; }
-  await supabaseAuth('recover', {email});
-  kbSuccess('✅ Reset-Link wurde gesendet (falls Konto existiert).');
+  if (!email) { kbError('Bitte zuerst Ihre E-Mail-Adresse eingeben.'); return; }
+
+  try {
+    const res = await supabaseAuth(`recover?redirect_to=${encodeURIComponent(kbAuthRedirectUrl())}`, { email });
+    if (res.error) { kbError(kbAuthFehlerText(res.error.message)); return; }
+    kbSuccess('Wenn ein Konto zu dieser E-Mail-Adresse existiert, wurde ein Link zum Zurücksetzen des Passworts gesendet.');
+  } catch(e) {
+    kbError('Reset-Link konnte nicht gesendet werden. Bitte versuchen Sie es erneut.');
+  }
+}
+
+async function passwortZuruecksetzen() {
+  const p1 = document.getElementById('resetPass1').value;
+  const p2 = document.getElementById('resetPass2').value;
+  const btn = document.getElementById('resetBtn');
+
+  if (!kbRecoverySession?.access_token) {
+    resetError('Der Reset-Link ist ungültig oder abgelaufen. Bitte fordern Sie einen neuen Link an.');
+    return;
+  }
+  if (p1.length < 6) { resetError('Das Passwort muss mindestens 6 Zeichen lang sein.'); return; }
+  if (p1 !== p2) { resetError('Die Passwörter stimmen nicht überein.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Speichern …';
+
+  try {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      method: 'PUT',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${kbRecoverySession.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ password: p1 })
+    });
+    const res = await r.json().catch(() => ({}));
+
+    if (!r.ok || res.error) {
+      resetError(kbAuthFehlerText(res.error?.message));
+      return;
+    }
+
+    kbRecoverySession = null;
+    localStorage.removeItem('vt_kb');
+    resetSuccess('Ihr Passwort wurde geändert. Bitte melden Sie sich erneut an.');
+    setTimeout(() => {
+      showScreen('login');
+      kbSuccess('Ihr Passwort wurde geändert. Bitte melden Sie sich erneut an.');
+      document.getElementById('loginPass').value = '';
+    }, 1200);
+
+  } catch(e) {
+    resetError('Passwort konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Passwort speichern';
+  }
 }
 
 function zeigeKundenbuero() {
@@ -2095,15 +2300,21 @@ async function ladeZugangsdaten() {
 async function passwortAendern() {
   const neues = document.getElementById('kbNeuesPasswort').value;
   if (neues.length < 6) { alert('Passwort mindestens 6 Zeichen.'); return; }
-  const token = await kbRequireValidSession();
-  const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-    method:'PUT', headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
-    body:JSON.stringify({password:neues})
-  });
-  const res = await r.json();
-  if (res.error) { alert('Fehler: ' + res.error.message); return; }
-  alert('✅ Passwort erfolgreich geändert.');
-  document.getElementById('kbNeuesPasswort').value='';
+
+  try {
+    const token = await kbRequireValidSession();
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      method:'PUT',
+      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
+      body:JSON.stringify({password:neues})
+    });
+    const res = await r.json().catch(() => ({}));
+    if (!r.ok || res.error) { alert(kbAuthFehlerText(res.error?.message)); return; }
+    alert('✅ Passwort erfolgreich geändert.');
+    document.getElementById('kbNeuesPasswort').value='';
+  } catch(e) {
+    if (!kbAuthFehlerBehandeln(e)) alert('Passwort konnte nicht geändert werden. Bitte melden Sie sich erneut an.');
+  }
 }
 
 function abmelden() {
