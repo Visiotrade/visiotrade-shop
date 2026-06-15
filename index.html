@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0057)file:///C:/Users/info/Downloads/index_passwort_reset.html -->
+<!-- saved from url=(0063)file:///C:/Users/info/Downloads/index_passwort_reset_fixed.html -->
 <html lang="de" style="--tg-viewport-height: 100vh; --tg-viewport-stable-height: 100vh;"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -3312,7 +3312,7 @@ function checkPayPalReturn() {
   }
 }
 
-window.addEventListener('DOMContentLoaded',()=>{
+window.addEventListener('DOMContentLoaded', async ()=>{
   if (window.Telegram?.WebApp) {
     window.Telegram.WebApp.expand();
     window.Telegram.WebApp.setHeaderColor('#3D2B1F');
@@ -3335,7 +3335,14 @@ window.addEventListener('DOMContentLoaded',()=>{
   });
   pruefeCheckboxen();
 
-  checkPayPalReturn();
+  // WICHTIG: Supabase Auth-Rücksprünge zuerst auswerten.
+  // Sonst landet der Passwort-Reset-Link nur auf der normalen Startseite.
+  const authCallbackVerarbeitet = await handleSupabaseAuthCallback();
+
+  if (!authCallbackVerarbeitet) {
+    checkPayPalReturn();
+  }
+
   ladeKategorien();
 });
 </script>
