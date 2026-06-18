@@ -2123,6 +2123,14 @@ function optimierePakete(benoetigt, pakete) {
   return rest>0 ? null : kombi;
 }
 
+function warenkorbSignatur(produktId, kombi) {
+  return produktId + '|' + (kombi || [])
+    .map(k => k.paket && k.paket.id)
+    .filter(Boolean)
+    .sort((a, b) => a - b)
+    .join(',');
+}
+
 function addToCart() {
   const btn = document.getElementById('addBtn');
   const kombi = JSON.parse(btn.dataset.kombi||'[]');
@@ -2132,7 +2140,26 @@ function addToCart() {
   const name = document.getElementById('produktName').textContent;
   // Gesamtgewicht berechnen
   const gesamtGewicht = kombi.reduce((s,k)=>s+k.anzahl*(aktProdukt.gewicht_pro_paket_kg||0),0);
-  warenkorb.push({id:Date.now(),produktId:aktProdukt.id,name,icon:ICONS[aktKat.name]||'🪵',kombi,benoetigt_m2:parseFloat(btn.dataset.m2),gesamt_m2:gesamtM2,preis:gesamtPreis,gewicht:gesamtGewicht});
+  const benoetigt = parseFloat(btn.dataset.m2);
+
+  // Identische Position (gleiches Produkt + gleiche Paket-Zusammensetzung) zusammenführen,
+  // statt eine zweite identische Zeile anzulegen. Mengen werden summiert.
+  const signatur = warenkorbSignatur(aktProdukt.id, kombi);
+  const vorhanden = warenkorb.find(i => warenkorbSignatur(i.produktId, i.kombi) === signatur);
+  if (vorhanden) {
+    for (const neu of kombi) {
+      const treffer = vorhanden.kombi.find(k => k.paket.id === neu.paket.id);
+      if (treffer) treffer.anzahl += neu.anzahl;
+      else vorhanden.kombi.push(neu);
+    }
+    vorhanden.gesamt_m2 += gesamtM2;
+    vorhanden.preis += gesamtPreis;
+    vorhanden.gewicht += gesamtGewicht;
+    vorhanden.benoetigt_m2 = (vorhanden.benoetigt_m2 || 0) + (isFinite(benoetigt) ? benoetigt : 0);
+  } else {
+    warenkorb.push({id:Date.now(),produktId:aktProdukt.id,name,icon:ICONS[aktKat.name]||'🪵',kombi,benoetigt_m2:benoetigt,gesamt_m2:gesamtM2,preis:gesamtPreis,gewicht:gesamtGewicht});
+  }
+
   pruefeHebebuehneGewicht();
   document.getElementById('cartCount').textContent=warenkorb.length;
   btn.textContent='✓ Hinzugefügt!';
@@ -2146,7 +2173,7 @@ function renderWarenkorb() {
   const cont = document.getElementById('warenkorbContent');
   if (!warenkorb.length) { cont.innerHTML=`<div class="warenkorb-leer"><div class="warenkorb-leer-icon">🛒</div><h3>Warenkorb ist leer</h3><p>Entdecken Sie unser Sortiment.</p></div>`; return; }
   const gesamt = warenkorb.reduce((s,i)=>s+i.preis,0);
-  cont.innerHTML=`<div class="warenkorb-items">${warenkorb.map(item=>`<div class="wk-item"><div class="wk-item-icon">${item.icon}</div><div class="wk-item-info"><div class="wk-item-name">${item.name}</div><div class="wk-item-detail">${item.gesamt_m2.toFixed(2)} m²</div><div class="wk-item-preis">${item.preis.toFixed(2).replace('.',',')} €</div></div><button class="wk-remove" onclick="removeFromCart(${item.id})">✕</button></div>`).join('')}</div><div class="wk-summary"><div class="wk-row"><span>Nettobetrag</span><span>${gesamt.toFixed(2).replace('.',',')} €</span></div><div class="wk-row"><span>MwSt. 19%</span><span>${(gesamt*0.19).toFixed(2).replace('.',',')} €</span></div><div class="wk-row"><span>Lieferkosten</span><span>auf Anfrage</span></div><div class="wk-row total"><span>Gesamtbetrag inkl. MwSt.</span><span>${(gesamt*1.19).toFixed(2).replace('.',',')} €</span></div></div><button class="checkout-btn" onclick="showScreen('kasse')">Zur Kasse →</button><div class="pb-safe"></div>`;
+  cont.innerHTML=`<div class="warenkorb-items">${warenkorb.map(item=>`<div class="wk-item"><div class="wk-item-icon">${item.icon}</div><div class="wk-item-info"><div class="wk-item-name">${item.name}</div><div class="wk-item-detail">${item.gesamt_m2.toFixed(2)} m² · ${item.kombi.reduce((s,k)=>s+k.anzahl,0)} Paket(e)</div><div class="wk-item-preis">${item.preis.toFixed(2).replace('.',',')} €</div></div><button class="wk-remove" onclick="removeFromCart(${item.id})">✕</button></div>`).join('')}</div><div class="wk-summary"><div class="wk-row"><span>Nettobetrag</span><span>${gesamt.toFixed(2).replace('.',',')} €</span></div><div class="wk-row"><span>MwSt. 19%</span><span>${(gesamt*0.19).toFixed(2).replace('.',',')} €</span></div><div class="wk-row"><span>Lieferkosten</span><span>auf Anfrage</span></div><div class="wk-row total"><span>Gesamtbetrag inkl. MwSt.</span><span>${(gesamt*1.19).toFixed(2).replace('.',',')} €</span></div></div><button class="checkout-btn" onclick="showScreen('kasse')">Zur Kasse →</button><div class="pb-safe"></div>`;
 }
 
 function removeFromCart(id) { warenkorb=warenkorb.filter(i=>i.id!==id); document.getElementById('cartCount').textContent=warenkorb.length; renderWarenkorb(); pruefeHebebuehneGewicht(); }
