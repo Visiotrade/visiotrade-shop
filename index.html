@@ -429,6 +429,7 @@
   }
 
 </style>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileReady" async defer></script>
 </head>
 <body>
 
@@ -1230,6 +1231,7 @@
     </div>
   </div>
   <div style="padding:16px;">
+    <div id="ts-checkout" style="display:flex;justify-content:center;margin-bottom:14px;"></div>
     <button class="bestellen-btn" id="bestellBtn" onclick="bestellungAbsenden()" style="background:var(--green);">✓ Jetzt kostenpflichtig bestellen</button>
   </div>
   <div class="pb-safe"></div>
@@ -1444,6 +1446,7 @@
         <span id="loginToggleText">Noch kein Konto?</span>
         <a onclick="toggleLoginMode()"> <span id="loginToggleLink">Jetzt registrieren</span></a>
       </div>
+      <div id="ts-reset" style="display:flex;justify-content:center;margin-top:14px;"></div>
       <div style="text-align:center;margin-top:12px;">
         <a id="forgotLink" onclick="passwortVergessen()" style="font-size:12px;color:var(--gray);cursor:pointer;">Passwort vergessen?</a>
       </div>
@@ -1647,6 +1650,39 @@
 const SUPABASE_URL = 'https://rvouqjhrbjsmqyzvqtxy.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_gr_VMD5No5n8McWg93vq1A_gO6pKoUQ';
 const API_URL = 'https://visiotrade-backend-production.up.railway.app';
+
+// --- Cloudflare Turnstile (Bot-Schutz für Gast-Checkout + Passwort-Reset) ---
+// Öffentlicher Site-Key (das Secret liegt ausschließlich im Backend/Railway).
+// Widgets werden erst gerendert, wenn der jeweilige Screen sichtbar ist –
+// Rendern in versteckten Screens ist unzuverlässig.
+const TURNSTILE_SITE_KEY = '0x4AAAAAADuXfPhTbPGW7BaV';
+let _tsReady = false;
+const _tsWidgets = {};
+function onTurnstileReady() {
+  _tsReady = true;
+  if (document.getElementById('screen-uebersicht')?.classList.contains('active')) tsRender('ts-checkout');
+  if (document.getElementById('screen-login')?.classList.contains('active')) tsRender('ts-reset');
+}
+function tsRender(containerId) {
+  if (!_tsReady || !window.turnstile) return;   // Script noch nicht geladen
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  try {
+    if (_tsWidgets[containerId] != null) {
+      window.turnstile.reset(_tsWidgets[containerId]);   // frisches Token
+    } else {
+      _tsWidgets[containerId] = window.turnstile.render(el, { sitekey: TURNSTILE_SITE_KEY });
+    }
+  } catch (_) {}
+}
+function tsToken(containerId) {
+  try {
+    if (_tsReady && window.turnstile && _tsWidgets[containerId] != null) {
+      return window.turnstile.getResponse(_tsWidgets[containerId]) || '';
+    }
+  } catch (_) {}
+  return '';
+}
 // Benutzername des NEUEN Telegram-SUPPORT-Bots (ohne @).
 // Leer lassen, solange der Support-Bot noch nicht eingerichtet ist – dann erscheint kein Button.
 const TELEGRAM_SUPPORT_BOT = 'visiotradesupport_bot';
@@ -1915,13 +1951,16 @@ async function passwortVergessen() {
   if (!email) { kbError('Bitte zuerst E-Mail eingeben.'); return; }
   try {
     const r = await fetch(`${API_URL}/api/passwort-reset`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email })
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, turnstileToken: tsToken('ts-reset') })
     });
     const data = await r.json().catch(() => ({}));
+    if (r.status === 403) { kbError(data.error || 'Bot-Verifizierung fehlgeschlagen. Bitte die Seite neu laden.'); tsRender('ts-reset'); return; }
     kbSuccess(data.message || 'Falls ein Konto mit dieser E-Mail-Adresse existiert, wurde ein Link zum Zurücksetzen des Passworts versendet.');
   } catch (_) {
     kbSuccess('Falls ein Konto mit dieser E-Mail-Adresse existiert, wurde ein Link zum Zurücksetzen des Passworts versendet.');
   }
+  tsRender('ts-reset');   // Token ist einmalig – nach dem Versuch zurücksetzen
 }
 
 function zeigeKundenbuero() {
@@ -4381,6 +4420,9 @@ function showScreen(name) {
   setBreadcrumbForScreen(name);
   // Beim Betreten der Kasse: erlaubte Zahlungsarten des Kunden laden.
   if (name === 'kasse' && typeof ladeKundenkontext === 'function') ladeKundenkontext();
+  // Turnstile-Widget erst rendern, wenn der zugehörige Screen sichtbar ist.
+  if (name === 'uebersicht') tsRender('ts-checkout');
+  if (name === 'login') tsRender('ts-reset');
 }
 
 // === Globale Breadcrumb-Navigation =========================================
@@ -6166,6 +6208,7 @@ async function bestellungAbsenden() {
       method: 'POST',
       headers: checkoutHeaders,
       body: JSON.stringify({
+        turnstileToken: tsToken('ts-checkout'),
         bestellung: bestellPayload,
         positionen: positionenPayload,
         // Lieferadress-Auswahl (serverseitig geprüft): gewählte gespeicherte Adresse + Speichern-Wunsch.
@@ -6212,6 +6255,7 @@ async function bestellungAbsenden() {
     alert('Fehler beim Absenden: ' + e.message);
     btn.textContent = '✓ Jetzt kostenpflichtig bestellen';
     btn.disabled = false;
+    tsRender('ts-checkout');   // Token ist einmalig – für erneuten Versuch zurücksetzen
   }
 }
 
