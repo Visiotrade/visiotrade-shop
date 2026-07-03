@@ -1033,7 +1033,7 @@ async function ladeDashboardFallback() {
   try {
     const [produkte, bestellungen] = await Promise.all([
       api('produkte', '?select=id,aktiv'),
-      api('bestellungen', '?select=id,erstellt_am,kundenname,gesamtbetrag,status&deleted_at=is.null&order=erstellt_am.desc&limit=1000')
+      backendApi('/api/admin/bestellungen')
     ]);
     const offen = (bestellungen || []).filter(b => b.status === 'offen' || b.status === 'warte_auf_zahlung').length;
     const umsatz = (bestellungen || [])
@@ -2084,14 +2084,13 @@ async function lagerChatSenden() {
 async function ladeBestellungen() {
   const status = document.getElementById('filterStatus').value;
   const zahlungsart = document.getElementById('filterZahlungsart')?.value || '';
-  const filter = ['deleted_at=is.null'];
-  if (status === 'in_bearbeitung') { filter.push('status=eq.bezahlt'); filter.push('lager_status=eq.in_bearbeitung'); }
-  else if (status) filter.push(`status=eq.${encodeURIComponent(status)}`);
-  if (zahlungsart) filter.push(`zahlungsart=eq.${encodeURIComponent(zahlungsart)}`);
-  const params = `?${filter.join('&')}&order=erstellt_am.desc`;
+  const qp = new URLSearchParams();
+  if (status) qp.set('status', status);
+  if (zahlungsart) qp.set('zahlungsart', zahlungsart);
+  const query = qp.toString() ? `?${qp.toString()}` : '';
 
   try {
-    const data = await api('bestellungen', params) || [];
+    const data = await backendApi(`/api/admin/bestellungen${query}`) || [];
     if (darf('messages.view')) { try { await ladeAdminUngelesen(false); } catch (_) {} }
     document.getElementById('bestellungenTable').innerHTML = data.map(b => {
       const offenVorkasse = istOffeneVorkasse(b);
@@ -2157,7 +2156,7 @@ async function aktualisiereStatus(id, neuerStatus, alterStatus = '', zahlungsart
     // Bei „geliefert" auch geliefert_am setzen (für 7-Tage-Reklamationsfrist & Tracking-Filter).
     const patch = { status: neuerStatus };
     if (neuerStatus === 'geliefert') { patch.geliefert_am = new Date().toISOString(); patch.tracking_status = 'zugestellt'; }
-    await api('bestellungen', `?id=eq.${id}`, 'PATCH', patch);
+    await backendApi(`/api/admin/bestellungen/${id}`, 'PATCH', patch);
     zeigeToast('✅ Status aktualisiert');
     ladeBestellungen();
     ladeDashboard();
@@ -2166,10 +2165,10 @@ async function aktualisiereStatus(id, neuerStatus, alterStatus = '', zahlungsart
 
 async function zeigeBestellung(id) {
   try {
-    const data = await api('bestellungen', `?id=eq.${id}`);
-    const b = data?.[0];
+    const data = await backendApi(`/api/admin/bestellungen/${id}/voll`);
+    const b = data?.bestellung;
     if (!b) return;
-    const pos = await api('bestellpositionen', `?bestellung_id=eq.${id}&order=id`) || [];
+    const pos = data?.positionen || [];
 
     const zahlungsart = b.zahlungsart || '—';
     const verwendungszweck = 'VT-' + String(b.id).padStart(4, '0');
@@ -2313,7 +2312,7 @@ async function zeigeBestellung(id) {
 async function speichereTracking(id) {
   const nr = document.getElementById('trackingInput').value.trim();
   try {
-    await api('bestellungen', `?id=eq.${id}`, 'PATCH', { tracking_nr: nr, spediteur: 'Raben' });
+    await backendApi(`/api/admin/bestellungen/${id}`, 'PATCH', { tracking_nr: nr, spediteur: 'Raben' });
     zeigeToast('✅ Tracking gespeichert');
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
 }
