@@ -2744,7 +2744,8 @@ function renderThreadOrderPane(b, pos, dok) {
   if (b.status === 'bezahlt' && _darfBeauftragen && _istKommissioniert && !_istBeauftragt) docBtns.push(`<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="lagerSpeditionOeffnen(${b.id})">📦 Spedition beauftragen</button>`);
   if (b.status === 'bezahlt' && _darfBeauftragen && _istBeauftragt) docBtns.push(`<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="lagerSpeditionOeffnen(${b.id})">✏️ Abholung bearbeiten</button>`);
   if (b.status === 'bezahlt' && _darfUebergabe && _istBeauftragt) docBtns.push(`<button class="btn btn-green btn-sm" onclick="lagerUebergabeOeffnen(${b.id})">🚚 An Spedition übergeben</button>`);
-  const positions = (pos || []).map(p => `<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--gray-light);padding:4px 0;"><span>${h(p.produktname || 'Parkett')} · ${Number(p.menge_m2_gesamt || 0).toFixed(2)} m²${p.bauvorhaben ? '<br><span style="color:var(--gray);font-size:12px;">BV: ' + h(p.bauvorhaben) + '</span>' : ''}</span><strong>${euro(p.gesamtpreis)}</strong></div>`).join('') || '<span style="color:var(--gray);">—</span>';
+  const _nl = istNurLager();
+  const positions = (pos || []).map(p => `<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--gray-light);padding:4px 0;"><span>${h(p.produktname || 'Parkett')} · ${Number(p.menge_m2_gesamt || 0).toFixed(2)} m²${p.anzahl_pakete ? ' · ' + h(p.anzahl_pakete) + ' Pkt' : ''}${p.bauvorhaben ? '<br><span style="color:var(--gray);font-size:12px;">BV: ' + h(p.bauvorhaben) + '</span>' : ''}</span>${_nl ? '' : '<strong>' + euro(p.gesamtpreis) + '</strong>'}</div>`).join('') || '<span style="color:var(--gray);">—</span>';
   el.innerHTML = `
     <div style="font-weight:700;color:var(--oak);margin-bottom:6px;">Bestellung #${b.id}</div>
     <div style="line-height:1.7;">
@@ -2753,11 +2754,11 @@ function renderThreadOrderPane(b, pos, dok) {
       Firma: <strong>${h(b.firma || '—')}</strong><br>
       Bestellt von: <strong>${h(b.bestellt_von_email || b.email || '—')}</strong><br>
       Filiale: <strong>${h(b.filiale || '—')}</strong><br>
-      Zahlungsart: <strong>${zahlungsartLabel(b.zahlungsart)}</strong><br>
+      ${_nl ? '' : `Zahlungsart: <strong>${zahlungsartLabel(b.zahlungsart)}</strong><br>`}
       Status: <strong>${statusLabel(b.status)}</strong><br>
-      Rechnungsnr.: <strong>${b.rechnung_nummer ? h(b.rechnung_nummer) : '—'}</strong><br>
+      ${_nl ? '' : `Rechnungsnr.: <strong>${b.rechnung_nummer ? h(b.rechnung_nummer) : '—'}</strong><br>`}
       ${b.tracking_nr ? `Tracking: <strong>${h(b.tracking_nr)}</strong><br>` : ''}
-      Gesamt brutto: <strong>${euro(Number(b.gesamtbetrag || 0) * 1.19)}</strong>
+      ${_nl ? '' : `Gesamt brutto: <strong>${euro(Number(b.gesamtbetrag || 0) * 1.19)}</strong>`}
     </div>
     <div style="font-weight:700;color:var(--oak);margin:10px 0 4px;">Positionen</div>
     ${positions}
