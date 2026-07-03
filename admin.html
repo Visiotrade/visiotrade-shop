@@ -2004,6 +2004,8 @@ async function lagerSpeditionBeauftragen() {
     schliesseModal('lagerSpeditionModal');
     zeigeToast('📦 Spedition beauftragt – Abholung angemeldet');
     ladeLager();
+    // Falls aus dem Nachrichtenfenster ausgelöst: Thread mit-aktualisieren (neues Ereignis + Buttons).
+    if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
   finally { btn.disabled = false; btn.textContent = 'Spedition beauftragen'; }
 }
@@ -2032,6 +2034,8 @@ async function lagerUebergabeBestaetigen() {
     schliesseModal('lagerUebergabeModal');
     zeigeToast('🚚 An Spedition übergeben – Status: Versendet, Rechnung erstellt');
     ladeLager();
+    // Falls aus dem Nachrichtenfenster ausgelöst: Thread mit-aktualisieren.
+    if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
   finally { btn.disabled = false; btn.textContent = 'Übergabe bestätigen'; }
 }
@@ -2726,6 +2730,16 @@ function renderThreadOrderPane(b, pos, dok) {
   if (dok.rechnung) docBtns.push(`<button class="btn btn-sm" onclick="zeigeRechnungPdf(${b.id})">📄 Rechnung</button>`);
   if (dok.auftragsbestaetigung) docBtns.push(`<button class="btn btn-sm" onclick="zeigeAdminDokument(${b.id},'auftragsbestaetigung','Auftragsbestätigung')">📄 AB</button>`);
   if (dok.lieferschein) docBtns.push(`<button class="btn btn-sm" onclick="zeigeAdminDokument(${b.id},'lieferschein','Lieferschein')">📄 Lieferschein</button>`);
+  // Spedition-Workflow direkt aus dem Nachrichtenfenster – GLEICHE Funktionen/Modals
+  // wie in der Lageransicht (keine zweite Logik), mit derselben Workflow-Gating-Logik.
+  const _darfBeauftragen = darf('warehouse.request_spedition') || adminMe.ist_super_admin;
+  const _darfUebergabe = darf('warehouse.mark_handed_to_carrier') || adminMe.ist_super_admin;
+  const _ls = b.lager_status || '', _vs = b.versandstatus || '';
+  const _istKommissioniert = ['kommissioniert','fertig_gepackt','abgeschlossen','gepackt'].includes(_ls) || ['bereit_zur_abholung','spedition_beauftragt'].includes(_vs);
+  const _istBeauftragt = _ls === 'fertig_gepackt' || _vs === 'spedition_beauftragt';
+  if (b.status === 'bezahlt' && _darfBeauftragen && _istKommissioniert && !_istBeauftragt) docBtns.push(`<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="lagerSpeditionOeffnen(${b.id})">📦 Spedition beauftragen</button>`);
+  if (b.status === 'bezahlt' && _darfBeauftragen && _istBeauftragt) docBtns.push(`<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="lagerSpeditionOeffnen(${b.id})">✏️ Abholung bearbeiten</button>`);
+  if (b.status === 'bezahlt' && _darfUebergabe && _istBeauftragt) docBtns.push(`<button class="btn btn-green btn-sm" onclick="lagerUebergabeOeffnen(${b.id})">🚚 An Spedition übergeben</button>`);
   const positions = (pos || []).map(p => `<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--gray-light);padding:4px 0;"><span>${h(p.produktname || 'Parkett')} · ${Number(p.menge_m2_gesamt || 0).toFixed(2)} m²${p.bauvorhaben ? '<br><span style="color:var(--gray);font-size:12px;">BV: ' + h(p.bauvorhaben) + '</span>' : ''}</span><strong>${euro(p.gesamtpreis)}</strong></div>`).join('') || '<span style="color:var(--gray);">—</span>';
   el.innerHTML = `
     <div style="font-weight:700;color:var(--oak);margin-bottom:6px;">Bestellung #${b.id}</div>
