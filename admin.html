@@ -1031,10 +1031,11 @@ function renderDashboard(s) {
 // Alt-Variante (langsamer) – nur als Sicherheitsnetz, falls der Endpoint fehlt.
 async function ladeDashboardFallback() {
   try {
-    const [produkte, bestellungen] = await Promise.all([
-      api('produkte', '?select=id,aktiv'),
+    const [pResp, bestellungen] = await Promise.all([
+      backendApi('/api/admin/produkte'),
       backendApi('/api/admin/bestellungen')
     ]);
+    const produkte = pResp.produkte || [];
     const offen = (bestellungen || []).filter(b => b.status === 'offen' || b.status === 'warte_auf_zahlung').length;
     const umsatz = (bestellungen || [])
       .filter(b => b.status === 'bezahlt' || b.status === 'geliefert' || b.status === 'versendet')
@@ -1052,10 +1053,9 @@ async function ladeDashboardFallback() {
 // ===== PRODUKTE =====
 async function ladeProdukte() {
   try {
-    const [data, pakete] = await Promise.all([
-      api('produkte', '?select=*,kategorien(name)&order=id.asc'),
-      api('pakete', '?select=produkt_id,verfuegbare_pakete')
-    ]);
+    const resp = await backendApi('/api/admin/produkte');
+    const data = resp.produkte || [];
+    const pakete = resp.pakete || [];
     const bestandMap = {};
     (pakete || []).forEach(p => {
       bestandMap[p.produkt_id] = (bestandMap[p.produkt_id] || 0) + (p.verfuegbare_pakete || 0);
@@ -1087,7 +1087,7 @@ async function ladeProdukte() {
 
 async function ladeKategorienListe() {
   try {
-    alleKategorien = await api('kategorien', '?order=reihenfolge') || [];
+    alleKategorien = (await backendApi('/api/admin/kategorien')).kategorien || [];
   } catch(e) {}
 }
 
@@ -1119,10 +1119,9 @@ function oeffneProduktModal(produkt = null) {
 
 async function bearbeiteProdukt(id) {
   try {
-    const [produktData, paketeData] = await Promise.all([
-      api('produkte', `?id=eq.${id}`),
-      api('pakete', `?produkt_id=eq.${id}&order=menge_m2`)
-    ]);
+    const resp = await backendApi(`/api/admin/produkte/${id}`);
+    const produktData = resp.produkt ? [resp.produkt] : [];
+    const paketeData = resp.pakete || [];
     if (produktData?.[0]) {
       // Bestand aus pakete-Tabelle lesen (Summe aller verfügbaren Pakete)
       const gesamtBestand = (paketeData || []).reduce((s, p) => s + (p.verfuegbare_pakete || 0), 0);
@@ -1138,7 +1137,7 @@ async function ladePakete(produktId) {
   btn.style.display = 'block';
   btn.onclick = () => neuesPaket(produktId);
   try {
-    const data = await api('pakete', `?produkt_id=eq.${produktId}&order=menge_m2`);
+    const data = (await backendApi(`/api/admin/produkte/${produktId}/pakete`)).pakete;
     if (!data || !data.length) {
       sec.innerHTML = '<div style="color:var(--gray);font-size:13px;">Keine Pakete vorhanden.</div>';
       return;
@@ -1173,14 +1172,14 @@ async function ladePakete(produktId) {
 
 async function aktualisiereBestand(paketId, wert, produktId) {
   try {
-    await api('pakete', `?id=eq.${paketId}`, 'PATCH', { verfuegbare_pakete: parseInt(wert) || 0 });
+    await backendApi(`/api/admin/pakete/${paketId}`, 'PATCH', { verfuegbare_pakete: parseInt(wert) || 0 });
     zeigeToast('✅ Bestand gespeichert');
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
 }
 
 async function aktualisierePaketAktiv(paketId, aktiv, produktId) {
   try {
-    await api('pakete', `?id=eq.${paketId}`, 'PATCH', { aktiv });
+    await backendApi(`/api/admin/pakete/${paketId}`, 'PATCH', { aktiv });
     zeigeToast('✅ Gespeichert');
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
 }
@@ -1192,7 +1191,7 @@ async function neuesPaket(produktId) {
   if (!preis) return;
   const bestand = prompt('Verfügbare Pakete:') || '0';
   try {
-    await api('pakete', '', 'POST', {
+    await backendApi('/api/admin/pakete', 'POST', {
       produkt_id: produktId,
       menge_m2: parseFloat(m2),
       preis: parseFloat(preis),
@@ -1207,7 +1206,7 @@ async function neuesPaket(produktId) {
 async function loeschePaket(paketId, produktId) {
   if (!confirm('Paket wirklich löschen?')) return;
   try {
-    await api('pakete', `?id=eq.${paketId}`, 'DELETE');
+    await backendApi(`/api/admin/pakete/${paketId}`, 'DELETE');
     zeigeToast('✅ Paket gelöscht');
     ladePakete(produktId);
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
@@ -1238,31 +1237,12 @@ async function speichereProdukt() {
   };
   if (!body.name) { zeigeToast('Name ist Pflichtfeld', true); return; }
   try {
-    const bestandWert = document.getElementById('pBestand').value;
+    // Backend übernimmt: Produkt-Update + VE→menge_m2 + Bestand gleichmäßig auf Pakete verteilen.
     if (id) {
-      await api('produkte', `?id=eq.${id}`, 'PATCH', body);
-      const m2Wert = parseFloat(document.getElementById('pM2').value) || null;
-      // menge_m2 immer updaten wenn VE ausgefüllt
-      if (m2Wert) {
-        await api('pakete', `?produkt_id=eq.${id}`, 'PATCH', { menge_m2: m2Wert });
-      }
-      // Bestand auf alle Pakete verteilen
-      if (bestandWert !== '') {
-        const pakete = await api('pakete', `?produkt_id=eq.${id}`);
-        if (pakete && pakete.length > 0) {
-          const gesamtBestand = parseInt(bestandWert) || 0;
-          // Bestand gleichmäßig verteilen
-          const proPacket = Math.floor(gesamtBestand / pakete.length);
-          const rest = gesamtBestand % pakete.length;
-          for (let i = 0; i < pakete.length; i++) {
-            const anteil = proPacket + (i === 0 ? rest : 0);
-            await api('pakete', `?id=eq.${pakete[i].id}`, 'PATCH', { verfuegbare_pakete: anteil });
-          }
-        }
-      }
+      await backendApi(`/api/admin/produkte/${id}`, 'PATCH', body);
       zeigeToast('✅ Produkt & Bestand aktualisiert');
     } else {
-      const neu = await api('produkte', '', 'POST', body);
+      await backendApi('/api/admin/produkte', 'POST', body);
       zeigeToast('✅ Produkt erstellt');
     }
     schliesseModal('produktModal');
@@ -1274,7 +1254,7 @@ async function loescheProdukt(id) {
   const name = (alleProdukte.find(p => p.id === id)?.name) || `#${id}`;
   if (!confirm(`Produkt "${name}" wirklich löschen?`)) return;
   try {
-    await api('produkte', `?id=eq.${id}`, 'DELETE');
+    await backendApi(`/api/admin/produkte/${id}`, 'DELETE');
     zeigeToast('✅ Produkt gelöscht');
     ladeProdukte();
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
@@ -1283,7 +1263,7 @@ async function loescheProdukt(id) {
 // ===== KATEGORIEN =====
 async function ladeKategorienSeite() {
   try {
-    const data = await api('kategorien', '?order=reihenfolge') || [];
+    const data = (await backendApi('/api/admin/kategorien')).kategorien || [];
     alleKategorien = data;
     document.getElementById('kategorienTable').innerHTML = data.map(k => `
       <tr>
@@ -1321,8 +1301,8 @@ async function speichereKategorie() {
   };
   if (!body.name) { zeigeToast('Name ist Pflichtfeld', true); return; }
   try {
-    if (id) { await api('kategorien', `?id=eq.${id}`, 'PATCH', body); zeigeToast('✅ Kategorie aktualisiert'); }
-    else { await api('kategorien', '', 'POST', body); zeigeToast('✅ Kategorie erstellt'); }
+    if (id) { await backendApi(`/api/admin/kategorien/${id}`, 'PATCH', body); zeigeToast('✅ Kategorie aktualisiert'); }
+    else { await backendApi('/api/admin/kategorien', 'POST', body); zeigeToast('✅ Kategorie erstellt'); }
     schliesseModal('katModal');
     ladeKategorienSeite();
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
@@ -1331,17 +1311,16 @@ async function speichereKategorie() {
 async function loescheKat(id) {
   const name = (alleKategorien.find(k => k.id === id)?.name) || `#${id}`;
   if (!confirm(`Kategorie "${name}" wirklich löschen?`)) return;
-  try { await api('kategorien', `?id=eq.${id}`, 'DELETE'); zeigeToast('✅ Kategorie gelöscht'); ladeKategorienSeite(); }
+  try { await backendApi(`/api/admin/kategorien/${id}`, 'DELETE'); zeigeToast('✅ Kategorie gelöscht'); ladeKategorienSeite(); }
   catch(e) { zeigeToast('Fehler: ' + e.message, true); }
 }
 
 // ===== B2B-KUNDEN =====
 async function ladeKundenprofile() {
   try {
-    const [profile, mitarbeiter] = await Promise.all([
-      api('kundenprofil', '?select=*&deleted_at=is.null&order=firma'),
-      api('kunden_mitarbeiter', '?select=id,kundenprofil_id,email,name,rolle,aktiv&order=id')
-    ]);
+    const data = await backendApi('/api/admin/kunden');
+    const profile = data.profile || [];
+    const mitarbeiter = data.mitarbeiter || [];
     alleKundenprofile = profile || [];
     mitarbeiterNachProfil = {};
     (mitarbeiter || []).forEach(m => {
@@ -1417,17 +1396,8 @@ async function speichereKunde() {
     rechnung_erlaubt: document.getElementById('kuRechnung').checked
   };
   try {
-    const res = await api('kundenprofil', `?id=eq.${id}`, 'PATCH', body);
-    // RLS blockt Writes von Nicht-Admins lautlos (leere Antwort). Das sichtbar machen.
-    if (!Array.isArray(res) || res.length === 0) {
-      throw new Error('Nicht gespeichert – fehlende Admin-Berechtigung. Bitte sicherstellen, dass Ihre Admin-E-Mail in der Tabelle admin_users steht.');
-    }
+    await backendApi(`/api/admin/kunden/${id}`, 'PATCH', body);
     zeigeToast('✅ B2B-Kunde gespeichert');
-    auditLog('b2b_kunde_geaendert', 'kundenprofil', id, null, {
-      bonus_prozent: body.bonus_prozent,
-      rechnung_erlaubt: body.rechnung_erlaubt,
-      erlaubte_zahlungsarten: body.erlaubte_zahlungsarten
-    });
     schliesseModal('kundeModal');
     ladeKundenprofile();
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
