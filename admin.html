@@ -1543,6 +1543,8 @@ async function ladeAdminMe() {
   const nurLager = istNurLager();
   const lagerZugang = darfLagerZugang();
   setNav('navLager', lagerZugang);
+  // Lager darf zusätzlich lagerrelevante Bestell-Nachrichten sehen (Backend filtert PA + Geld raus).
+  if (nurLager) setNav('navNachrichten', darf('messages.view') || darf('warehouse.chat_view'));
   if (!nurLager) {
     // Reine Lager-Mitarbeiter bekommen KEINEN der folgenden Punkte (auch kein Dashboard).
     setNav('navDashboard',    true);
@@ -1563,6 +1565,7 @@ async function ladeAdminMe() {
 
   // Hintergrund-Funktionen nur, wenn erlaubt (keine Daten für Lager-only).
   if (!nurLager && (darf('bestellungen.ansehen') || darf('messages.view'))) { aktualisiereNachrichtenBadge(); aktualisierePreisanfrageBadge(); startNachrichtenPoller(); }
+  if (nurLager && (darf('messages.view') || darf('warehouse.chat_view'))) { aktualisiereNachrichtenBadge(); startNachrichtenPoller(); }
   if (!nurLager && (darf('produkte.ansehen') || darf('kategorien.ansehen'))) { try { ladeKategorienListe(); } catch (_) {} }
 
   // Zugriff erlaubt, wenn Super, Lager-Zugang oder mindestens ein breites Recht.
@@ -2728,9 +2731,11 @@ function renderThreadOrderPane(b, pos, dok) {
       <div style="font-size:13px;color:var(--gray);line-height:1.6;">Diese Konversation ist noch keiner Bestellung zugeordnet. Du kannst aus dem Chatverlauf erkennen, worum es geht, und sie bei Bedarf manuell zuordnen.</div>`;
     return;
   }
-  const docBtns = [`<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="oeffneBestellungAusThread(${b.id})">👁 Bestellung ansehen</button>`];
-  if (dok.rechnung) docBtns.push(`<button class="btn btn-sm" onclick="zeigeRechnungPdf(${b.id})">📄 Rechnung</button>`);
-  if (dok.auftragsbestaetigung) docBtns.push(`<button class="btn btn-sm" onclick="zeigeAdminDokument(${b.id},'auftragsbestaetigung','Auftragsbestätigung')">📄 AB</button>`);
+  const _nl = istNurLager();
+  // Lager: „Bestellung ansehen" (Geld-Modal), Rechnung und AB (enthalten Preise) ausblenden.
+  const docBtns = _nl ? [] : [`<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="oeffneBestellungAusThread(${b.id})">👁 Bestellung ansehen</button>`];
+  if (!_nl && dok.rechnung) docBtns.push(`<button class="btn btn-sm" onclick="zeigeRechnungPdf(${b.id})">📄 Rechnung</button>`);
+  if (!_nl && dok.auftragsbestaetigung) docBtns.push(`<button class="btn btn-sm" onclick="zeigeAdminDokument(${b.id},'auftragsbestaetigung','Auftragsbestätigung')">📄 AB</button>`);
   if (dok.lieferschein) docBtns.push(`<button class="btn btn-sm" onclick="zeigeAdminDokument(${b.id},'lieferschein','Lieferschein')">📄 Lieferschein</button>`);
   // Spedition-Workflow direkt aus dem Nachrichtenfenster – GLEICHE Funktionen/Modals
   // wie in der Lageransicht (keine zweite Logik), mit derselben Workflow-Gating-Logik.
@@ -2744,7 +2749,6 @@ function renderThreadOrderPane(b, pos, dok) {
   if (b.status === 'bezahlt' && _darfBeauftragen && _istKommissioniert && !_istBeauftragt) docBtns.push(`<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="lagerSpeditionOeffnen(${b.id})">📦 Spedition beauftragen</button>`);
   if (b.status === 'bezahlt' && _darfBeauftragen && _istBeauftragt) docBtns.push(`<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="lagerSpeditionOeffnen(${b.id})">✏️ Abholung bearbeiten</button>`);
   if (b.status === 'bezahlt' && _darfUebergabe && _istBeauftragt) docBtns.push(`<button class="btn btn-green btn-sm" onclick="lagerUebergabeOeffnen(${b.id})">🚚 An Spedition übergeben</button>`);
-  const _nl = istNurLager();
   const positions = (pos || []).map(p => `<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--gray-light);padding:4px 0;"><span>${h(p.produktname || 'Parkett')} · ${Number(p.menge_m2_gesamt || 0).toFixed(2)} m²${p.anzahl_pakete ? ' · ' + h(p.anzahl_pakete) + ' Pkt' : ''}${p.bauvorhaben ? '<br><span style="color:var(--gray);font-size:12px;">BV: ' + h(p.bauvorhaben) + '</span>' : ''}</span>${_nl ? '' : '<strong>' + euro(p.gesamtpreis) + '</strong>'}</div>`).join('') || '<span style="color:var(--gray);">—</span>';
   el.innerHTML = `
     <div style="font-weight:700;color:var(--oak);margin-bottom:6px;">Bestellung #${b.id}</div>
