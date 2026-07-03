@@ -4502,12 +4502,49 @@ async function zeigeProduktliste(katId, katName) {
 
   const artIds = await getArtIds(katId);
   const sortierungen = await dbCached('sortierungen',
-    `?art_id=in.(${artIds})&aktiv=eq.true&order=reihenfolge`);
+    `?art_id=in.(${artIds})&aktiv=eq.true&order=reihenfolge`) || [];
 
-  if (!sortierungen || !sortierungen.length) {
-    // Kategorie ohne (noch) hinterlegte Produkte: Zustand, Navigation UND Filter
-    // trotzdem auf DIESE Kategorie umstellen – sonst bleiben Nav-Markierung und
-    // Filter der zuvor geöffneten Kategorie stehen (Stale-State-Bug).
+  // Arten laden (für Namen-Mapping der Sortierungs-Gruppen)
+  const arten = await dbCached('arten', `?kategorie_id=eq.${katId}&aktiv=eq.true&order=reihenfolge`);
+  const artenMap = {};
+  if (arten) arten.forEach(a => artenMap[a.id] = a.name);
+
+  // Produkte laden – bevorzugt über die Sortierungen (saubere Art/Sortierung-Gruppen) …
+  const alleProdukte = [];
+  const gesehen = new Set();
+  for (const sort of sortierungen) {
+    const produkte = await dbCached('produkte',
+      `?sortierung_id=eq.${sort.id}&aktiv=eq.true&order=reihenfolge`);
+    if (!produkte || !produkte.length) continue;
+    produkte.forEach(p => {
+      p._sortName = sort.name;
+      p._artName = artenMap[sort.art_id] || '';
+      p._sortId = sort.id;
+      gesehen.add(p.id);
+    });
+    alleProdukte.push(...produkte);
+  }
+
+  // … UND zusätzlich direkt über die Kategorie-ID: aktive Produkte, die (noch) KEINE
+  // Sortierung-Verknüpfung haben (im Admin angelegt), erscheinen so trotzdem unter ihrer
+  // Kategorie. Damit gilt allgemein: neue aktive Kategorie + neues aktives Produkt = sichtbar.
+  // (sortierung_id IS NULL → nur echte „Waisen"; bewusst über inaktive Sortierungen versteckte
+  //  Produkte bleiben versteckt.)
+  const waisen = await dbCached('produkte',
+    `?kategorie_id=eq.${katId}&sortierung_id=is.null&aktiv=eq.true&order=reihenfolge`) || [];
+  waisen.forEach(p => {
+    if (gesehen.has(p.id)) return;
+    p._sortName = (p.sortierung && String(p.sortierung).trim()) || 'Standard';
+    p._artName = (p.holzart && String(p.holzart).trim()) || '';
+    p._sortId = null;
+    gesehen.add(p.id);
+    alleProdukte.push(p);
+  });
+
+  // Erst NACH beiden Lade-Wegen entscheiden, ob die Kategorie wirklich leer ist.
+  if (!alleProdukte.length) {
+    // Zustand, Navigation UND Filter trotzdem auf DIESE Kategorie umstellen – sonst bleiben
+    // Nav-Markierung und Filter der zuvor geöffneten Kategorie stehen (Stale-State-Bug).
     b2bAktKat = { id: katId, name: katName };
     b2bProdukte = [];
     b2bFilter = new Set();
@@ -4525,25 +4562,6 @@ async function zeigeProduktliste(katId, katName) {
       </div>`;
     b2bSetShellHeight();
     return;
-  }
-
-  // Arten laden
-  const arten = await dbCached('arten', `?kategorie_id=eq.${katId}&aktiv=eq.true&order=reihenfolge`);
-  const artenMap = {};
-  if (arten) arten.forEach(a => artenMap[a.id] = a.name);
-
-  // Alle Produkte laden
-  const alleProdukte = [];
-  for (const sort of sortierungen) {
-    const produkte = await dbCached('produkte',
-      `?sortierung_id=eq.${sort.id}&aktiv=eq.true&order=reihenfolge`);
-    if (!produkte || !produkte.length) continue;
-    produkte.forEach(p => {
-      p._sortName = sort.name;
-      p._artName = artenMap[sort.art_id] || '';
-      p._sortId = sort.id;
-    });
-    alleProdukte.push(...produkte);
   }
 
   // Prüfen ob Kategorie mehrere Arten hat (z.B. Mosaikparkett)
