@@ -1969,6 +1969,8 @@ async function lagerKommissioniert(id) {
     await backendApi(`/api/admin/lager/${id}/kommissioniert`, 'POST', {});
     zeigeToast('✅ Kommissionierung fertig – bitte Spedition beauftragen');
     await ladeLager();
+    // Falls aus dem Nachrichtenfenster ausgelöst: Thread mit-aktualisieren (neues Ereignis + Buttons).
+    if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
     if (darf('warehouse.request_spedition') || adminMe.ist_super_admin) lagerSpeditionOeffnen(id);
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
 }
@@ -2737,6 +2739,8 @@ function renderThreadOrderPane(b, pos, dok) {
   const _ls = b.lager_status || '', _vs = b.versandstatus || '';
   const _istKommissioniert = ['kommissioniert','fertig_gepackt','abgeschlossen','gepackt'].includes(_ls) || ['bereit_zur_abholung','spedition_beauftragt'].includes(_vs);
   const _istBeauftragt = _ls === 'fertig_gepackt' || _vs === 'spedition_beauftragt';
+  const _darfKomm = darf('warehouse.mark_ready') || adminMe.ist_super_admin;
+  if (b.status === 'bezahlt' && _darfKomm && !_istKommissioniert) docBtns.push(`<button class="btn btn-sm" style="background:#1f7a4d;color:#fff;" onclick="lagerKommissioniert(${b.id})">✅ Kommissionierung fertig</button>`);
   if (b.status === 'bezahlt' && _darfBeauftragen && _istKommissioniert && !_istBeauftragt) docBtns.push(`<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="lagerSpeditionOeffnen(${b.id})">📦 Spedition beauftragen</button>`);
   if (b.status === 'bezahlt' && _darfBeauftragen && _istBeauftragt) docBtns.push(`<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="lagerSpeditionOeffnen(${b.id})">✏️ Abholung bearbeiten</button>`);
   if (b.status === 'bezahlt' && _darfUebergabe && _istBeauftragt) docBtns.push(`<button class="btn btn-green btn-sm" onclick="lagerUebergabeOeffnen(${b.id})">🚚 An Spedition übergeben</button>`);
