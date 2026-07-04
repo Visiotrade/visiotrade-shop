@@ -3242,6 +3242,40 @@ function zeigeToast(msg, error = false) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+// ===== Passwort-Sichtbarkeits-Toggle (Auge) =====
+// Rüstet automatisch alle input[type="password"] mit einem Auge-Button nach.
+// Mehrfach aufrufbar (bereits nachgerüstete Felder werden übersprungen).
+function initPasswortToggles() {
+  const AUGE = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const AUGE_ZU = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+  document.querySelectorAll('input[type="password"]').forEach((input) => {
+    if (input.dataset.tsAuge === '1') return;
+    input.dataset.tsAuge = '1';
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;display:block;';
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+    input.style.paddingRight = '48px';
+    const btn = document.createElement('button');
+    btn.type = 'button'; // WICHTIG: verhindert Form-Submit
+    btn.setAttribute('aria-label', 'Passwort anzeigen');
+    btn.setAttribute('tabindex', '-1');
+    btn.innerHTML = AUGE;
+    btn.style.cssText = 'position:absolute;right:2px;top:50%;transform:translateY(-50%);' +
+      'width:44px;height:44px;display:flex;align-items:center;justify-content:center;' +
+      'background:none;border:none;cursor:pointer;color:#888;padding:0;';
+    btn.addEventListener('click', () => {
+      const sichtbar = input.type === 'text';
+      input.type = sichtbar ? 'password' : 'text';
+      btn.innerHTML = sichtbar ? AUGE : AUGE_ZU;
+      btn.setAttribute('aria-label', sichtbar ? 'Passwort anzeigen' : 'Passwort verbergen');
+      input.focus({ preventScroll: true });
+    });
+    wrap.appendChild(btn);
+  });
+}
+initPasswortToggles();
+
 // Session prüfen
 (function() {
   try {
