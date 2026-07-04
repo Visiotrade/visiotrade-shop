@@ -110,6 +110,20 @@
   /* MODAL */
   .modal-overlay { position: fixed; inset: 0; background: rgba(61,43,31,0.45); backdrop-filter: blur(2px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
   .modal-overlay.open { display: flex; }
+  /* Spedition-/Übergabe-Modals werden AUS dem Nachrichten-/Thread-Modal (z-index 450) heraus
+     geöffnet und müssen darüber liegen (auch über dem Rechnungs-PDF-Modal, z-index 600). */
+  #lagerSpeditionModal, #lagerUebergabeModal { z-index: 700; }
+  /* Sind BEIDE offen → nebeneinander: „Spedition beauftragen" links, „An Spedition übergeben" rechts. */
+  #lagerSpeditionModal.paired { justify-content: flex-start; padding-left: 3vw; }
+  /* Das Übergabe-Overlay liegt (DOM-Reihenfolge) über dem linken Beauftragen-Modal. Transparent +
+     pointer-events:none, damit Klicks aufs linke Modal durchgehen; nur die rechte Box bleibt aktiv. */
+  #lagerUebergabeModal.paired { justify-content: flex-end; padding-right: 3vw; background: transparent; backdrop-filter: none; pointer-events: none; }
+  #lagerUebergabeModal.paired .modal { pointer-events: auto; }
+  @media (max-width: 1000px) {
+    /* Zu schmal für nebeneinander → wieder zentriert stapeln (oberstes Fenster bleibt bedienbar). */
+    #lagerSpeditionModal.paired { justify-content: center; padding-left: 20px; }
+    #lagerUebergabeModal.paired { justify-content: center; padding-right: 20px; background: rgba(61,43,31,0.45); backdrop-filter: blur(2px); pointer-events: auto; }
+  }
   .modal { background: var(--white); border-radius: var(--radius); padding: 28px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 70px rgba(61,43,31,0.35); }
   .modal-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--walnut); margin-bottom: 20px; }
   .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
@@ -178,6 +192,7 @@
       <div id="navKategorien" class="sidebar-item" onclick="zeigeSeite(&#39;kategorien&#39;)"><span class="sidebar-icon">📂</span> Kategorien</div>
       <div id="navBestellungen" class="sidebar-item" onclick="zeigeSeite(&#39;bestellungen&#39;)"><span class="sidebar-icon">📦</span> Bestellungen</div>
       <div id="navLager" class="sidebar-item" style="display:none;" onclick="zeigeSeite(&#39;lager&#39;)"><span class="sidebar-icon">🏭</span> Lager</div>
+      <div id="navVersandplanung" class="sidebar-item" style="display:none;" onclick="zeigeSeite(&#39;versandplanung&#39;)"><span class="sidebar-icon">🚚</span> Versandplanung</div>
       <div id="navNachrichten" class="sidebar-item" onclick="zeigeSeite(&#39;nachrichten&#39;)"><span class="sidebar-icon">💬</span> Nachrichten <span id="navNachrichtenBadge" style="display:none;background:#B91C1C;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></div>
       <div id="navPreisanfragen" class="sidebar-item" onclick="zeigeSeite(&#39;preisanfragen&#39;)"><span class="sidebar-icon">📩</span> Preisanfragen <span id="navPreisanfragenBadge" style="display:none;background:#B91C1C;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></div>
       <div id="navKunden" class="sidebar-item" onclick="zeigeSeite(&#39;kunden&#39;)"><span class="sidebar-icon">🏢</span> B2B-Kunden</div>
@@ -331,6 +346,31 @@
           <span id="lagerHinweis" style="font-size:13px;color:var(--gray);">Bezahlte Bestellungen, die für den Versand vorbereitet werden müssen.</span>
         </div>
         <div id="lagerCards" style="display:flex;flex-direction:column;gap:14px;"><div style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</div></div>
+      </div>
+
+      <!-- VERSANDPLANUNG (Büro/Disposition) -->
+      <div id="page-versandplanung" class="page">
+        <div class="page-title">Versandplanung · Disposition</div>
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+          <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="ladeVersandplanung()">🔄 Aktualisieren</button>
+          <span style="font-size:13px;color:var(--gray);">Kommissionierte Bestellungen – Spedition beauftragen und Versand bestätigen.</span>
+        </div>
+        <div style="overflow-x:auto;background:var(--white);border:1px solid var(--gray-light);border-radius:12px;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead><tr style="background:var(--cream);color:var(--gray);">
+              <th style="text-align:left;padding:10px;">Bestellnr.</th>
+              <th style="text-align:left;padding:10px;">Kunde</th>
+              <th style="text-align:left;padding:10px;">Versandart</th>
+              <th style="text-align:left;padding:10px;">Pakete</th>
+              <th style="text-align:left;padding:10px;">Paletten</th>
+              <th style="text-align:left;padding:10px;">Gewicht</th>
+              <th style="text-align:left;padding:10px;">Kommissioniert</th>
+              <th style="text-align:left;padding:10px;">Phase</th>
+              <th style="text-align:left;padding:10px;">Aktion</th>
+            </tr></thead>
+            <tbody id="versandplanungTable"><tr><td colspan="9" style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</td></tr></tbody>
+          </table>
+        </div>
       </div>
 
       <!-- NACHRICHTEN (Kunden-Chat pro Bestellung) -->
@@ -566,6 +606,52 @@
   </div>
 </div>
 
+<!-- LAGER: VERSANDDATEN ERFASSEN (Kommissionierung → an Disposition) -->
+<div class="modal-overlay" id="versanddatenModal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-title">📦 Versanddaten erfassen</div>
+    <input type="hidden" id="vdId">
+    <p style="font-size:12px;color:var(--gray);margin:0 0 12px;">Bitte erfassen Sie die Versanddaten der fertig kommissionierten Ware. Diese Informationen werden an die Disposition übergeben.</p>
+    <div style="display:flex;gap:10px;">
+      <div class="field" style="flex:1;"><label>Anzahl Pakete</label><input type="number" min="0" id="vdPakete" placeholder="z. B. 8"></div>
+      <div class="field" style="flex:1;"><label>Anzahl Paletten</label><input type="number" min="0" max="50" id="vdPaletten" value="0" oninput="versanddatenPalettenRender()"></div>
+    </div>
+    <div id="vdPalettenFelder"></div>
+    <div class="field"><label>Gesamtgewicht (kg)</label><input type="number" min="0" step="0.1" id="vdGesamtgewicht" placeholder="z. B. 640"></div>
+    <div class="field"><label>Bemerkungen</label><textarea id="vdBemerkungen" rows="2" placeholder="optional" style="width:100%;padding:10px;border:2px solid var(--gray-light);border-radius:8px;font-size:14px;resize:vertical;box-sizing:border-box;font-family:'DM Sans',sans-serif;"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;versanddatenModal&#39;)">Abbrechen</button>
+      <button class="btn btn-sm" style="background:#1f7a4d;color:#fff;" id="vdBtn" onclick="versanddatenAbsenden()">An Disposition weitergeben</button>
+    </div>
+  </div>
+</div>
+
+<!-- BÜRO/DISPOSITION: SPEDITION BEAUFTRAGEN -->
+<div class="modal-overlay" id="versandSpeditionModal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-title">🚚 Spedition beauftragen</div>
+    <input type="hidden" id="vsId">
+    <div id="vsVersanddaten" style="font-size:12px;color:var(--gray);background:var(--cream);border-radius:8px;padding:10px;margin-bottom:12px;">—</div>
+    <div class="field"><label>Spedition</label>
+      <select id="vsSpediteur" style="width:100%;padding:10px;border:2px solid var(--gray-light);border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;">
+        <option value="Raben">Raben</option>
+        <option value="DHL Freight">DHL Freight</option>
+        <option value="Schenker">Schenker</option>
+        <option value="Eigene Lieferung">Eigene Lieferung</option>
+        <option value="Andere">Andere</option>
+      </select>
+    </div>
+    <div class="field"><label>Abholdatum</label><input type="date" id="vsAbholdatum"></div>
+    <div class="field"><label>Trackingnummer (optional)</label><input type="text" id="vsTrackingNr" placeholder="Sendungsnummer"></div>
+    <div class="field"><label>Tracking-Link (optional)</label><input type="text" id="vsTrackingUrl" placeholder="https://…"></div>
+    <div class="field"><label>Interne Notiz (optional)</label><input type="text" id="vsNotiz" placeholder="nur intern sichtbar"></div>
+    <div class="modal-footer">
+      <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;versandSpeditionModal&#39;)">Abbrechen</button>
+      <button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" id="vsBtn" onclick="versandSpeditionBeauftragen()">Spedition beauftragen</button>
+    </div>
+  </div>
+</div>
+
 <!-- LAGER: INTERNER BESTELL-CHAT -->
 <div class="modal-overlay" id="lagerChatModal">
   <div class="modal" style="max-width:560px;">
@@ -759,6 +845,10 @@ function statusLabel(status) {
     bestaetigt: 'Bestätigt',
     'bestätigt': 'Bestätigt',
     in_bearbeitung: 'In Bearbeitung',
+    kommissioniert: 'Kommissioniert (Disposition)',
+    spedition_beauftragt: 'Spedition beauftragt',
+    abgeholt: 'Abgeholt – bereit für Versand',
+    abholbereit: 'Abholbereit',
     versendet: 'Versendet',
     geliefert: 'Geliefert',
     storniert: 'Storniert'
@@ -766,9 +856,17 @@ function statusLabel(status) {
   return labels[status] || status || 'Offen';
 }
 
-// Anzeige-Status: bezahlt + Lager „in Bearbeitung" → „In Bearbeitung".
+// Anzeige-Status (nur intern/Admin): technischer status bleibt bezahlt bis Versand,
+// die Versandphase wird für die Anzeige abgeleitet.
 function anzeigeStatus(b) {
-  if (b.status === 'bezahlt' && b.lager_status === 'in_bearbeitung') return 'in_bearbeitung';
+  if (b.status === 'bezahlt') {
+    const vs = String(b.versandstatus || '');
+    if (vs === 'abgeholt') return 'abgeholt';
+    if (vs === 'abholbereit') return 'abholbereit';
+    if (vs === 'spedition_beauftragt') return 'spedition_beauftragt';
+    if (vs === 'an_disposition' || vs === 'bereit_zur_abholung') return 'kommissioniert';
+    if (b.lager_status === 'in_bearbeitung') return 'in_bearbeitung';
+  }
   return b.status;
 }
 
@@ -780,6 +878,10 @@ function statusBadge(status) {
     bestaetigt: 'badge-blue',
     'bestätigt': 'badge-blue',
     in_bearbeitung: 'badge-yellow',
+    kommissioniert: 'badge-yellow',
+    spedition_beauftragt: 'badge-blue',
+    abgeholt: 'badge-blue',
+    abholbereit: 'badge-yellow',
     versendet: 'badge-blue',
     geliefert: 'badge-green',
     storniert: 'badge-red'
@@ -961,7 +1063,7 @@ async function api(table, params = '', method = 'GET', body = null, token = null
 }
 
 // ===== NAVIGATION =====
-const NAV_ID_MAP = { dashboard:'navDashboard', produkte:'navProdukte', kategorien:'navKategorien', bestellungen:'navBestellungen', lager:'navLager', nachrichten:'navNachrichten', preisanfragen:'navPreisanfragen', kunden:'navKunden', preise:'navPreise', adminusers:'navAdminusers', auditlog:'navAuditlog', papierkorb:'navPapierkorb' };
+const NAV_ID_MAP = { dashboard:'navDashboard', produkte:'navProdukte', kategorien:'navKategorien', bestellungen:'navBestellungen', lager:'navLager', versandplanung:'navVersandplanung', nachrichten:'navNachrichten', preisanfragen:'navPreisanfragen', kunden:'navKunden', preise:'navPreise', adminusers:'navAdminusers', auditlog:'navAuditlog', papierkorb:'navPapierkorb' };
 
 // Vom Nutzer geklickt: prüft die Berechtigung, blockt sonst und leitet auf den
 // erlaubten Landebereich um (gegen Direktaufrufe/Stray-Clicks).
@@ -990,6 +1092,7 @@ function ladeSeitenDaten(name) {
   else if (name === 'kategorien') ladeKategorienSeite();
   else if (name === 'bestellungen') ladeBestellungen();
   else if (name === 'lager') ladeLager();
+  else if (name === 'versandplanung') ladeVersandplanung();
   else if (name === 'nachrichten') ladeNachrichten();
   else if (name === 'preisanfragen') ladePreisanfragen();
   else if (name === 'kunden') ladeKundenprofile();
@@ -1441,6 +1544,7 @@ function darfSeite(name) {
     case 'kategorien':   return darf('kategorien.ansehen');
     case 'bestellungen': return darf('bestellungen.ansehen');
     case 'lager':        return darfLagerZugang();
+    case 'versandplanung': return darf('bestellungen.ansehen');
     case 'nachrichten':  return darf('messages.view') || darf('bestellungen.ansehen');
     case 'preisanfragen': return darf('bestellungen.ansehen');
     case 'kunden':       return darf('b2b.ansehen');
@@ -1507,7 +1611,7 @@ async function ladeAdminMe() {
 
   const setNav = (id, ok) => { const el=document.getElementById(id); if (el) el.style.display = ok ? '' : 'none'; };
   // Erst ALLES verbergen, dann gezielt freigeben.
-  ['navDashboard','navProdukte','navKategorien','navBestellungen','navLager','navNachrichten','navKunden','navPreise','navAdminusers','navAuditlog','navPapierkorb']
+  ['navDashboard','navProdukte','navKategorien','navBestellungen','navLager','navVersandplanung','navNachrichten','navKunden','navPreise','navAdminusers','navAuditlog','navPapierkorb']
     .forEach(id => setNav(id, false));
 
   const nurLager = istNurLager();
@@ -1521,6 +1625,7 @@ async function ladeAdminMe() {
     setNav('navProdukte',     darf('produkte.ansehen'));
     setNav('navKategorien',   darf('kategorien.ansehen'));
     setNav('navBestellungen', darf('bestellungen.ansehen'));
+    setNav('navVersandplanung', darf('bestellungen.ansehen'));
     setNav('navNachrichten',  darf('messages.view') || darf('bestellungen.ansehen'));
     setNav('navKunden',       darf('b2b.ansehen'));
     setNav('navPreise',       darf('lieferkosten.ansehen'));
@@ -1803,13 +1908,13 @@ async function kundeWiederherstellen(id) {
   catch (e) { zeigeToast('Fehler: ' + e.message, true); }
 }
 
-// --- Lager: An Spedition übergeben → Rechnung wird erstellt & versendet ---
+// --- Büro: Kunde informieren / in Versand setzen (nutzt den neuen, phasen-gegateten Weg).
+// Nur möglich, wenn das Lager die Abholung bereits bestätigt hat (sonst 409 mit Hinweis).
 async function anSpedition(id) {
-  if (!confirm('Wurde die Bestellung wirklich an die Spedition übergeben? Danach wird die Rechnung erstellt und an den Kunden versendet.')) return;
-  const tracking = (prompt('Trackingnummer (optional):', '') || '').trim();
+  if (!confirm('Bestellung jetzt versenden? Der Kunde wird per E-Mail informiert (Versandbestätigung + Rechnung) und der Status auf „Versendet" gesetzt.\n\nHinweis: nur möglich, wenn das Lager die Abholung bestätigt hat – ansonsten bitte über „Versandplanung".')) return;
   try {
-    const r = await backendApi(`/api/admin/bestellungen/${id}/an-spedition`, 'POST', { tracking_nr: tracking || null });
-    zeigeToast((r.rechnung && r.rechnung.already) ? '✅ Übergeben (Rechnung war bereits vorhanden)' : '✅ Übergeben – Rechnung wurde versendet');
+    await backendApi(`/api/admin/versand/${id}/versenden`, 'POST', {});
+    zeigeToast('📨 Versendet – Kunde informiert, Rechnung versendet');
     ladeBestellungen();
     schliesseModal('bestellModal');
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
@@ -1854,9 +1959,20 @@ async function ladeLager() {
   box.innerHTML = '<div style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</div>';
   try {
     const r = await backendApi('/api/admin/lager');
-    const liste = r.bestellungen || [];
-    if (!liste.length) { box.innerHTML = '<div style="text-align:center;color:var(--gray);padding:30px;">Keine Bestellungen zur Vorbereitung. 🎉</div>'; return; }
-    box.innerHTML = liste.map(lagerCardHtml).join('');
+    const alle = r.bestellungen || [];
+    // Nur Bestellungen, für die das Lager aktuell etwas zu tun/verfolgen hat.
+    const zuKomm = alle.filter(b => b.phase === 'in_bearbeitung');
+    const abholung = alle.filter(b => b.phase === 'an_disposition' && b.lieferart === 'abholung');
+    const wartetAbholung = alle.filter(b => b.phase === 'spedition_beauftragt');
+    const abholbereit = alle.filter(b => b.phase === 'abholbereit');
+    const sektion = (titel, arr) => arr.length
+      ? `<div style="margin:14px 0 6px;font-weight:700;color:var(--walnut);font-size:15px;">${titel} (${arr.length})</div>` + arr.map(lagerCardHtml).join('')
+      : '';
+    const html = sektion('📋 Zu kommissionieren', zuKomm)
+      + sektion('📦 Selbstabholung – abholbereit melden', abholung)
+      + sektion('🚛 Wartet auf Abholung durch Spedition', wartetAbholung)
+      + sektion('✅ Abholbereit gemeldet', abholbereit);
+    box.innerHTML = html || '<div style="text-align:center;color:var(--gray);padding:30px;">Keine Bestellungen zur Vorbereitung. 🎉</div>';
   } catch (e) { box.innerHTML = '<div style="text-align:center;color:var(--red);padding:20px;">Fehler: ' + h(e.message) + '</div>'; }
 }
 
@@ -1868,11 +1984,11 @@ function lagerLieferadresse(b) {
 }
 
 function lagerStatusLabel(b) {
-  const vs = b.versandstatus || '';
-  if (vs === 'spedition_beauftragt' || b.lager_status === 'fertig_gepackt')
-    return '<span class="badge" style="background:#1f5a8a;color:#fff;">Abholung angemeldet</span>';
-  if (vs === 'bereit_zur_abholung' || b.lager_status === 'kommissioniert')
-    return '<span class="badge badge-green">Kommissioniert – bereit für Spedition</span>';
+  const p = b.phase || '';
+  if (p === 'spedition_beauftragt') return '<span class="badge" style="background:#1f5a8a;color:#fff;">Spedition beauftragt – wartet auf Abholung</span>';
+  if (p === 'an_disposition') return '<span class="badge badge-green">Kommissioniert – bei Disposition</span>';
+  if (p === 'abholbereit') return '<span class="badge" style="background:#8a5a1f;color:#fff;">Abholbereit gemeldet</span>';
+  if (p === 'abgeholt') return '<span class="badge" style="background:#555;color:#fff;">Abgeholt – beim Versand</span>';
   return '<span class="badge" style="background:var(--oak-pale);color:var(--oak);">In Vorbereitung</span>';
 }
 
@@ -1881,22 +1997,35 @@ function lagerCardHtml(b) {
   const tel = b.lieferadresse_telefon || b.telefon;
   const pos = (b.positionen || []).map(p => `<li>${h(p.produktname || 'Artikel')}${p.anzahl_pakete ? ' — ' + h(p.anzahl_pakete) + ' Paket(e)' : ''}${p.menge_m2_gesamt ? ' · ' + h(Number(p.menge_m2_gesamt).toFixed(2).replace('.', ',')) + ' m²' : ''}</li>`).join('');
   const darfKomm = darf('warehouse.mark_ready') || adminMe.ist_super_admin;
-  const darfBeauftragen = darf('warehouse.request_spedition') || adminMe.ist_super_admin;
-  const darfUebergabe = darf('warehouse.mark_handed_to_carrier') || adminMe.ist_super_admin;
+  const darfAbgeholt = darf('warehouse.mark_handed_to_carrier') || adminMe.ist_super_admin;
   const darfChat = darf('warehouse.chat_view') || adminMe.ist_super_admin;
   const darfDruck = darf('warehouse.print_documents') || darf('warehouse.view_orders') || adminMe.ist_super_admin;
-  const ls = b.lager_status || '';
-  const vs = b.versandstatus || '';
-  const istKommissioniert = ['kommissioniert', 'fertig_gepackt', 'abgeschlossen', 'gepackt'].includes(ls) || ['bereit_zur_abholung', 'spedition_beauftragt'].includes(vs);
-  const istBeauftragt = ls === 'fertig_gepackt' || vs === 'spedition_beauftragt';
-  // Versandinfos (Abholung) als Block, falls vorhanden.
+  // Versanddaten-/Spedition-Infoblock.
   const infoTeile = [];
   if (b.kommissioniert_von_email) infoTeile.push(`Kommissioniert von ${h(b.kommissioniert_von_email)}${b.kommissioniert_am ? ' am ' + new Date(b.kommissioniert_am).toLocaleString('de-DE') : ''}`);
-  if (istBeauftragt) {
-    const det = [b.spediteur ? 'Spedition: ' + h(b.spediteur) : '', b.abholdatum ? 'Abholung: ' + new Date(b.abholdatum).toLocaleDateString('de-DE') : '', b.paketanzahl ? h(b.paketanzahl) + ' Paket(e)' : '', b.palettenanzahl ? h(b.palettenanzahl) + ' Palette(n)' : '', b.gewicht ? h(b.gewicht) + ' kg' : '', b.tracking_nr ? 'Tracking: ' + h(b.tracking_nr) : ''].filter(Boolean).join(' · ');
+  const vd = b.versanddaten;
+  if (vd) {
+    const vdT = [vd.pakete ? h(vd.pakete) + ' Paket(e)' : '', Array.isArray(vd.paletten) && vd.paletten.length ? h(vd.paletten.length) + ' Palette(n)' : '', vd.gesamtgewicht ? h(vd.gesamtgewicht) + ' kg' : ''].filter(Boolean).join(' · ');
+    if (vdT) infoTeile.push('📦 ' + vdT);
+    if (vd.bemerkungen) infoTeile.push('📝 ' + h(vd.bemerkungen));
+  }
+  if (b.phase === 'spedition_beauftragt' || b.phase === 'abgeholt') {
+    const det = [b.spediteur ? 'Spedition: ' + h(b.spediteur) : '', b.abholdatum ? 'Abholung: ' + new Date(b.abholdatum).toLocaleDateString('de-DE') : '', b.tracking_nr ? 'Tracking: ' + h(b.tracking_nr) : ''].filter(Boolean).join(' · ');
     if (det) infoTeile.push('🚛 ' + det);
   }
   const infoBlock = infoTeile.length ? `<div style="font-size:12px;color:var(--gray);margin-top:8px;">${infoTeile.map(t => `<div>${t}</div>`).join('')}</div>` : '';
+  // Phasenabhängige Lager-Aktion (Spedition/Versand liegt beim Büro).
+  const wart = txt => `<span style="font-size:12px;color:var(--gray);align-self:center;">⏳ ${txt}</span>`;
+  let aktion = '';
+  if (b.phase === 'in_bearbeitung') {
+    aktion = darfKomm ? `<button class="btn btn-sm" style="background:#1f7a4d;color:#fff;" onclick="versanddatenOeffnen(${b.id})">✅ Kommissionierung fertig</button>` : wart('Wartet auf Kommissionierung');
+  } else if (b.phase === 'an_disposition' && b.lieferart === 'abholung') {
+    aktion = darfKomm ? `<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="lagerAbholbereit(${b.id})">📦 Abholbereit melden</button>` : wart('Wartet auf Abholbereit-Meldung');
+  } else if (b.phase === 'spedition_beauftragt') {
+    aktion = darfAbgeholt ? `<button class="btn btn-green btn-sm" onclick="lagerAbgeholt(${b.id})">🚚 Bestellung abgeholt</button>` : wart('Wartet auf Abholung durch Spedition');
+  } else if (b.phase === 'abholbereit') {
+    aktion = wart('Kunde informiert – wartet auf Abholung');
+  }
   return `<div style="background:var(--white);border:1px solid var(--gray-light);border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.05);">
     <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px;">
       <div style="font-weight:700;font-size:16px;color:var(--walnut);">📦 Bestellung #${b.id}</div>
@@ -1918,10 +2047,7 @@ function lagerCardHtml(b) {
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
       ${b.lieferschein_verfuegbar && darfDruck ? `<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="zeigeAdminDokument(${b.id},'lieferschein','Lieferschein')">📄 Lieferschein ansehen</button>` : (darfDruck ? '<span style="font-size:12px;color:var(--red);align-self:center;">⚠️ Lieferschein fehlt</span>' : '')}
       ${b.lieferschein_verfuegbar && darfDruck ? `<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="lagerLieferscheinDrucken(${b.id})">🖨 Drucken</button>` : ''}
-      ${darfKomm && !istKommissioniert ? `<button class="btn btn-sm" style="background:#1f7a4d;color:#fff;" onclick="lagerKommissioniert(${b.id})">✅ Kommissionierung fertig</button>` : ''}
-      ${darfBeauftragen && istKommissioniert && !istBeauftragt ? `<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="lagerSpeditionOeffnen(${b.id})">📦 Spedition beauftragen</button>` : ''}
-      ${darfBeauftragen && istBeauftragt ? `<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="lagerSpeditionOeffnen(${b.id})">✏️ Abholung bearbeiten</button>` : ''}
-      ${darfUebergabe && istBeauftragt ? `<button class="btn btn-green btn-sm" onclick="lagerUebergabeOeffnen(${b.id})">🚚 An Spedition übergeben</button>` : ''}
+      ${aktion}
       ${darfChat ? `<button class="btn btn-sm" style="background:#eef;color:#334;" onclick="lagerChatOeffnen(${b.id})">🏭 Interner Chat</button>` : ''}
     </div>
   </div>`;
@@ -1935,16 +2061,78 @@ async function lagerLieferscheinDrucken(id) {
   } catch (e) { zeigeToast(e.message || 'Fehler beim Öffnen.', true); }
 }
 
-// Schritt 1: Kommissionierung fertig → danach direkt Spedition-Modal öffnen.
-async function lagerKommissioniert(id) {
-  if (!confirm('Kommissionierung als fertig markieren? (Die Bestellung ist damit NOCH NICHT versendet.)')) return;
+// LAGER Schritt 1: „Kommissionierung fertig" → öffnet das Versanddaten-Formular.
+function versanddatenOeffnen(id) {
+  document.getElementById('vdId').value = id;
+  document.getElementById('vdPakete').value = '';
+  document.getElementById('vdPaletten').value = '0';
+  document.getElementById('vdGesamtgewicht').value = '';
+  document.getElementById('vdBemerkungen').value = '';
+  document.getElementById('vdPalettenFelder').innerHTML = '';
+  document.getElementById('versanddatenModal').classList.add('open');
+}
+
+// Erzeugt die Palettenfelder dynamisch anhand der Anzahl.
+function versanddatenPalettenRender() {
+  const n = Math.max(0, Math.min(50, parseInt(document.getElementById('vdPaletten').value, 10) || 0));
+  let html = '';
+  for (let i = 1; i <= n; i++) {
+    html += `<div style="border:1px solid var(--gray-light);border-radius:8px;padding:10px;margin-bottom:8px;">
+      <div style="font-weight:600;font-size:13px;color:var(--walnut);margin-bottom:6px;">Palette ${i}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div class="field" style="flex:1;min-width:90px;margin:0;"><label>Länge (cm)</label><input type="number" min="0" step="0.1" class="vdPalL" data-i="${i}"></div>
+        <div class="field" style="flex:1;min-width:90px;margin:0;"><label>Breite (cm)</label><input type="number" min="0" step="0.1" class="vdPalB" data-i="${i}"></div>
+        <div class="field" style="flex:1;min-width:90px;margin:0;"><label>Höhe (cm)</label><input type="number" min="0" step="0.1" class="vdPalH" data-i="${i}"></div>
+        <div class="field" style="flex:1;min-width:90px;margin:0;"><label>Gewicht (kg)</label><input type="number" min="0" step="0.1" class="vdPalG" data-i="${i}"></div>
+      </div>
+    </div>`;
+  }
+  document.getElementById('vdPalettenFelder').innerHTML = html;
+}
+
+async function versanddatenAbsenden() {
+  const id = document.getElementById('vdId').value;
+  const n = Math.max(0, parseInt(document.getElementById('vdPaletten').value, 10) || 0);
+  const feld = (cls, i) => { const el = document.querySelector(`.${cls}[data-i="${i}"]`); return el && el.value !== '' ? el.value : null; };
+  const paletten = [];
+  for (let i = 1; i <= n; i++) paletten.push({ laenge: feld('vdPalL', i), breite: feld('vdPalB', i), hoehe: feld('vdPalH', i), gewicht: feld('vdPalG', i) });
+  const payload = {
+    pakete: document.getElementById('vdPakete').value || null,
+    paletten,
+    gesamtgewicht: document.getElementById('vdGesamtgewicht').value || null,
+    bemerkungen: document.getElementById('vdBemerkungen').value.trim()
+  };
+  const btn = document.getElementById('vdBtn');
+  btn.disabled = true; btn.textContent = 'Wird übergeben…';
   try {
-    await backendApi(`/api/admin/lager/${id}/kommissioniert`, 'POST', {});
-    zeigeToast('✅ Kommissionierung fertig – bitte Spedition beauftragen');
-    await ladeLager();
-    // Falls aus dem Nachrichtenfenster ausgelöst: Thread mit-aktualisieren (neues Ereignis + Buttons).
+    await backendApi(`/api/admin/lager/${id}/an-disposition`, 'POST', payload);
+    schliesseModal('versanddatenModal');
+    zeigeToast('✅ An Disposition weitergegeben');
+    ladeLager();
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
-    if (darf('warehouse.request_spedition') || adminMe.ist_super_admin) lagerSpeditionOeffnen(id);
+  } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
+  finally { btn.disabled = false; btn.textContent = 'An Disposition weitergeben'; }
+}
+
+// LAGER Schritt 3: tatsächliche Abholung durch die Spedition bestätigen.
+async function lagerAbgeholt(id) {
+  if (!confirm('Bestellung als vom Lager abgeholt bestätigen? (Die Spedition hat die Ware abgeholt.)')) return;
+  try {
+    await backendApi(`/api/admin/lager/${id}/abgeholt`, 'POST', {});
+    zeigeToast('✅ Abholung bestätigt');
+    ladeLager();
+    if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
+  } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
+}
+
+// LAGER Sonderfall Abholung: Ware als abholbereit melden (Kunde wird informiert).
+async function lagerAbholbereit(id) {
+  if (!confirm('Ware als abholbereit melden? Der Kunde wird per E-Mail informiert.')) return;
+  try {
+    await backendApi(`/api/admin/lager/${id}/abholbereit`, 'POST', {});
+    zeigeToast('✅ Abholbereit gemeldet – Kunde informiert');
+    ladeLager();
+    if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
 }
 
@@ -1959,6 +2147,7 @@ function lagerSpeditionOeffnen(id) {
   document.getElementById('lagerSpedTrackingNr').value = '';
   document.getElementById('lagerSpedTrackingUrl').value = '';
   document.getElementById('lagerSpeditionModal').classList.add('open');
+  syncSpeditionPairing();
 }
 
 async function lagerSpeditionBeauftragen() {
@@ -1992,6 +2181,7 @@ function lagerUebergabeOeffnen(id) {
   document.getElementById('lagerTrackingUrl').value = '';
   document.getElementById('lagerUebergabeInfo').textContent = 'Wurde die Ware tatsächlich an die Spedition übergeben? Dann wird die Bestellung auf „Versendet" gesetzt und die Rechnung erzeugt.';
   document.getElementById('lagerUebergabeModal').classList.add('open');
+  syncSpeditionPairing();
 }
 
 async function lagerUebergabeBestaetigen() {
@@ -2013,6 +2203,115 @@ async function lagerUebergabeBestaetigen() {
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
   finally { btn.disabled = false; btn.textContent = 'Übergabe bestätigen'; }
+}
+
+// ===== VERSANDPLANUNG (Büro/Disposition) =====
+let versandplanungCache = [];
+let threadOrderAktuell = null;
+
+// Spiegel der Backend-Funktion versandPhase(b) für die Button-Freischaltung.
+function feVersandPhase(b) {
+  const s = String(b && b.status || '');
+  if (s === 'storniert') return 'storniert';
+  if (s === 'geliefert') return 'geliefert';
+  if (s === 'versendet') return 'versendet';
+  const vs = String(b && b.versandstatus || '');
+  if (vs === 'abgeholt') return 'abgeholt';
+  if (vs === 'abholbereit') return 'abholbereit';
+  if (vs === 'spedition_beauftragt') return 'spedition_beauftragt';
+  if (vs === 'an_disposition' || vs === 'bereit_zur_abholung') return 'an_disposition';
+  return 'in_bearbeitung';
+}
+async function ladeVersandplanung() {
+  const tb = document.getElementById('versandplanungTable');
+  if (!tb) return;
+  tb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</td></tr>';
+  try {
+    const r = await backendApi('/api/admin/versandplanung');
+    versandplanungCache = r.bestellungen || [];
+    if (!versandplanungCache.length) { tb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--gray);padding:24px;">Keine Bestellungen in der Versandplanung. 🎉</td></tr>'; return; }
+    tb.innerHTML = versandplanungCache.map(versandplanungRow).join('');
+  } catch (e) { tb.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--red);padding:20px;">${h(e.message)}</td></tr>`; }
+}
+
+function versandPhaseLabel(p) {
+  return ({ an_disposition: 'Bei Disposition', spedition_beauftragt: 'Spedition beauftragt', abgeholt: 'Abgeholt – bereit für Versand', abholbereit: 'Abholbereit' })[p] || p;
+}
+
+function versandplanungRow(b) {
+  const vd = b.versanddaten || {};
+  const pakete = vd.pakete || b.paketanzahl || '—';
+  const paletten = (Array.isArray(vd.paletten) && vd.paletten.length) || b.palettenanzahl || '—';
+  const gewicht = vd.gesamtgewicht || b.gewicht;
+  const komm = b.kommissioniert_am ? new Date(b.kommissioniert_am).toLocaleDateString('de-DE') : '—';
+  const darfBeauftragen = darf('bestellungen.tracking') || adminMe.ist_super_admin;
+  const darfVersenden = darf('bestellungen.status') || adminMe.ist_super_admin;
+  let aktion = '<span style="color:var(--gray);font-size:12px;">—</span>';
+  if (b.phase === 'an_disposition') {
+    if (b.lieferart === 'abholung') aktion = '<span style="color:var(--gray);font-size:12px;">Selbstabholung – Lager meldet abholbereit</span>';
+    else aktion = darfBeauftragen ? `<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="versandSpeditionOeffnen(${b.id})">🚚 Spedition beauftragen</button>` : '<span style="color:var(--gray);font-size:12px;">keine Berechtigung</span>';
+  } else if (b.phase === 'spedition_beauftragt') {
+    aktion = '<span style="color:var(--gray);font-size:12px;">⏳ Wartet auf Abholbestätigung durch Lager</span>';
+  } else if (b.phase === 'abgeholt' || b.phase === 'abholbereit') {
+    aktion = darfVersenden ? `<button class="btn btn-green btn-sm" onclick="versandVersenden(${b.id})">📨 Kunde informieren / Versenden</button>` : '<span style="color:var(--gray);font-size:12px;">keine Berechtigung</span>';
+  }
+  return `<tr style="border-top:1px solid var(--gray-light);">
+    <td style="padding:10px;font-weight:600;">#${b.id}</td>
+    <td style="padding:10px;">${h(b.kundenname || '—')}${b.firma ? '<div style="font-size:12px;color:var(--gray);">' + h(b.firma) + '</div>' : ''}</td>
+    <td style="padding:10px;">${h(b.lieferart || '—')}${b.spediteur ? '<div style="font-size:12px;color:var(--gray);">' + h(b.spediteur) + '</div>' : ''}</td>
+    <td style="padding:10px;">${h(pakete)}</td>
+    <td style="padding:10px;">${h(paletten)}</td>
+    <td style="padding:10px;">${gewicht ? h(gewicht) + ' kg' : '—'}</td>
+    <td style="padding:10px;">${komm}</td>
+    <td style="padding:10px;"><span class="badge badge-blue">${versandPhaseLabel(b.phase)}</span></td>
+    <td style="padding:10px;">${aktion}</td>
+  </tr>`;
+}
+
+function versandSpeditionOeffnen(id) {
+  const b = versandplanungCache.find(x => x.id === id)
+    || (threadOrderAktuell && threadOrderAktuell.id === id ? threadOrderAktuell : {}) || {};
+  const vd = b.versanddaten || {};
+  document.getElementById('vsId').value = id;
+  document.getElementById('vsSpediteur').value = b.spediteur || 'Raben';
+  document.getElementById('vsAbholdatum').value = b.abholdatum || '';
+  document.getElementById('vsTrackingNr').value = b.tracking_nr || '';
+  document.getElementById('vsTrackingUrl').value = b.tracking_url || '';
+  document.getElementById('vsNotiz').value = '';
+  const info = [vd.pakete ? vd.pakete + ' Paket(e)' : '', Array.isArray(vd.paletten) && vd.paletten.length ? vd.paletten.length + ' Palette(n)' : '', vd.gesamtgewicht ? vd.gesamtgewicht + ' kg' : '', vd.bemerkungen ? 'Bem.: ' + vd.bemerkungen : ''].filter(Boolean).join(' · ');
+  document.getElementById('vsVersanddaten').textContent = info || 'Keine Versanddaten erfasst.';
+  document.getElementById('versandSpeditionModal').classList.add('open');
+}
+
+async function versandSpeditionBeauftragen() {
+  const id = document.getElementById('vsId').value;
+  const payload = {
+    spediteur: document.getElementById('vsSpediteur').value,
+    abholdatum: document.getElementById('vsAbholdatum').value || null,
+    tracking_nr: document.getElementById('vsTrackingNr').value.trim(),
+    tracking_url: document.getElementById('vsTrackingUrl').value.trim(),
+    notiz: document.getElementById('vsNotiz').value.trim()
+  };
+  const btn = document.getElementById('vsBtn');
+  btn.disabled = true; btn.textContent = 'Wird beauftragt…';
+  try {
+    await backendApi(`/api/admin/versand/${id}/spedition-beauftragen`, 'POST', payload);
+    schliesseModal('versandSpeditionModal');
+    zeigeToast('🚚 Spedition beauftragt');
+    ladeVersandplanung();
+    if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
+  } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
+  finally { btn.disabled = false; btn.textContent = 'Spedition beauftragen'; }
+}
+
+async function versandVersenden(id) {
+  if (!confirm('Bestellung jetzt versenden? Der Kunde wird per E-Mail informiert (Versandbestätigung + Rechnung) und der Status auf „Versendet" gesetzt.')) return;
+  try {
+    await backendApi(`/api/admin/versand/${id}/versenden`, 'POST', {});
+    zeigeToast('📨 Versendet – Kunde informiert, Rechnung erstellt');
+    ladeVersandplanung();
+    if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
+  } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
 }
 
 async function lagerChatOeffnen(id) {
@@ -2702,23 +3001,39 @@ function renderThreadOrderPane(b, pos, dok) {
     return;
   }
   const _nl = istNurLager();
+  threadOrderAktuell = b;
   // Lager: „Bestellung ansehen" (Geld-Modal), Rechnung und AB (enthalten Preise) ausblenden.
   const docBtns = _nl ? [] : [`<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="oeffneBestellungAusThread(${b.id})">👁 Bestellung ansehen</button>`];
   if (!_nl && dok.rechnung) docBtns.push(`<button class="btn btn-sm" onclick="zeigeRechnungPdf(${b.id})">📄 Rechnung</button>`);
   if (!_nl && dok.auftragsbestaetigung) docBtns.push(`<button class="btn btn-sm" onclick="zeigeAdminDokument(${b.id},'auftragsbestaetigung','Auftragsbestätigung')">📄 AB</button>`);
   if (dok.lieferschein) docBtns.push(`<button class="btn btn-sm" onclick="zeigeAdminDokument(${b.id},'lieferschein','Lieferschein')">📄 Lieferschein</button>`);
-  // Spedition-Workflow direkt aus dem Nachrichtenfenster – GLEICHE Funktionen/Modals
-  // wie in der Lageransicht (keine zweite Logik), mit derselben Workflow-Gating-Logik.
-  const _darfBeauftragen = darf('warehouse.request_spedition') || adminMe.ist_super_admin;
-  const _darfUebergabe = darf('warehouse.mark_handed_to_carrier') || adminMe.ist_super_admin;
-  const _ls = b.lager_status || '', _vs = b.versandstatus || '';
-  const _istKommissioniert = ['kommissioniert','fertig_gepackt','abgeschlossen','gepackt'].includes(_ls) || ['bereit_zur_abholung','spedition_beauftragt'].includes(_vs);
-  const _istBeauftragt = _ls === 'fertig_gepackt' || _vs === 'spedition_beauftragt';
+  // Versand-Workflow direkt aus dem Nachrichtenfenster – phasenbasiert, rollen-gegated,
+  // mit Hinweis, warum ein Schritt (noch) nicht verfügbar ist. Gleiche Endpoints wie in
+  // Lager-/Versandplanung-Ansicht (keine zweite Logik).
+  const _phase = feVersandPhase(b);
   const _darfKomm = darf('warehouse.mark_ready') || adminMe.ist_super_admin;
-  if (b.status === 'bezahlt' && _darfKomm && !_istKommissioniert) docBtns.push(`<button class="btn btn-sm" style="background:#1f7a4d;color:#fff;" onclick="lagerKommissioniert(${b.id})">✅ Kommissionierung fertig</button>`);
-  if (b.status === 'bezahlt' && _darfBeauftragen && _istKommissioniert && !_istBeauftragt) docBtns.push(`<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="lagerSpeditionOeffnen(${b.id})">📦 Spedition beauftragen</button>`);
-  if (b.status === 'bezahlt' && _darfBeauftragen && _istBeauftragt) docBtns.push(`<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="lagerSpeditionOeffnen(${b.id})">✏️ Abholung bearbeiten</button>`);
-  if (b.status === 'bezahlt' && _darfUebergabe && _istBeauftragt) docBtns.push(`<button class="btn btn-green btn-sm" onclick="lagerUebergabeOeffnen(${b.id})">🚚 An Spedition übergeben</button>`);
+  const _darfAbgeholt = darf('warehouse.mark_handed_to_carrier') || adminMe.ist_super_admin;
+  const _darfBeauftragen = darf('bestellungen.tracking') || adminMe.ist_super_admin;
+  const _darfVersenden = darf('bestellungen.status') || adminMe.ist_super_admin;
+  const _hint = txt => docBtns.push(`<span style="font-size:12px;color:var(--gray);align-self:center;">⏳ ${txt}</span>`);
+  if (b.status === 'bezahlt') {
+    if (_phase === 'in_bearbeitung') {
+      if (_darfKomm) docBtns.push(`<button class="btn btn-sm" style="background:#1f7a4d;color:#fff;" onclick="versanddatenOeffnen(${b.id})">✅ Kommissionierung fertig</button>`);
+      else _hint('Wartet auf Kommissionierung durch Lager');
+    } else if (_phase === 'an_disposition' && b.lieferart === 'abholung') {
+      if (_darfKomm) docBtns.push(`<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="lagerAbholbereit(${b.id})">📦 Abholbereit melden</button>`);
+      else _hint('Selbstabholung – Lager meldet abholbereit');
+    } else if (_phase === 'an_disposition') {
+      if (_darfBeauftragen && !_nl) docBtns.push(`<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="versandSpeditionOeffnen(${b.id})">🚚 Spedition beauftragen</button>`);
+      else _hint('Wartet auf Spedition-Beauftragung durch Büro');
+    } else if (_phase === 'spedition_beauftragt') {
+      if (_darfAbgeholt) docBtns.push(`<button class="btn btn-green btn-sm" onclick="lagerAbgeholt(${b.id})">🚚 Bestellung abgeholt</button>`);
+      else _hint('Wartet auf Abholbestätigung durch Lager');
+    } else if (_phase === 'abgeholt' || _phase === 'abholbereit') {
+      if (_darfVersenden && !_nl) docBtns.push(`<button class="btn btn-green btn-sm" onclick="versandVersenden(${b.id})">📨 Kunde informieren / Versenden</button>`);
+      else _hint('Wartet auf Versand durch Büro');
+    }
+  }
   const positions = (pos || []).map(p => `<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--gray-light);padding:4px 0;"><span>${h(p.produktname || 'Parkett')} · ${Number(p.menge_m2_gesamt || 0).toFixed(2)} m²${p.anzahl_pakete ? ' · ' + h(p.anzahl_pakete) + ' Pkt' : ''}${p.bauvorhaben ? '<br><span style="color:var(--gray);font-size:12px;">BV: ' + h(p.bauvorhaben) + '</span>' : ''}</span>${_nl ? '' : '<strong>' + euro(p.gesamtpreis) + '</strong>'}</div>`).join('') || '<span style="color:var(--gray);">—</span>';
   el.innerHTML = `
     <div style="font-weight:700;color:var(--oak);margin-bottom:6px;">Bestellung #${b.id}</div>
@@ -3057,8 +3372,17 @@ async function speichereEinstellungen() {
 }
 
 // ===== UTILS =====
-function schliesseModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+function schliesseModal(id) { document.getElementById(id).classList.remove('open'); syncSpeditionPairing(); }
+// Sind BEIDE Spedition-Modals offen, nebeneinander anordnen (sonst zentriert). Idempotent.
+function syncSpeditionPairing() {
+  const a = document.getElementById('lagerSpeditionModal');
+  const b = document.getElementById('lagerUebergabeModal');
+  if (!a || !b) return;
+  const beide = a.classList.contains('open') && b.classList.contains('open');
+  a.classList.toggle('paired', beide);
+  b.classList.toggle('paired', beide);
+}
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) { m.classList.remove('open'); syncSpeditionPairing(); } }));
 
 function zeigeToast(msg, error = false) {
   const t = document.getElementById('toast');

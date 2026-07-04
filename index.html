@@ -2639,7 +2639,7 @@ function renderNachrichtOrderPane(b) {
   if (b.auftragsbestaetigung_versendet_am) docBtns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'auftragsbestaetigung','Auftragsbestätigung')">📄 Auftragsbestätigung</button>`);
   if (b.lieferschein_versendet_am) docBtns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'lieferschein','Lieferschein')">📄 Lieferschein</button>`);
   if (b.lexoffice_id || b.rechnung_pdf_storage_path) docBtns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'rechnung','Rechnung')">📄 Rechnung</button>`);
-  if (b.tracking_nr) docBtns.push(`<a class="kb-gray-btn" href="${trackingLink(b)}" target="_blank">📦 Sendungsverfolgung</a>`);
+  if (kbTracking(b)) docBtns.push(`<a class="kb-gray-btn" href="${trackingLink(b)}" target="_blank">📦 Sendungsverfolgung</a>`);
   el.innerHTML = `
     <div style="font-weight:700;color:var(--oak);font-size:16px;margin-bottom:8px;">Bestellung #${b.id}</div>
     <button class="kb-yellow-btn" type="button" style="width:100%;margin-bottom:12px;" onclick="zeigeBestellungAusVorgang(${b.id})">Bestellung anzeigen</button>
@@ -2909,6 +2909,7 @@ function statusLabel(status) {
     bestaetigt: 'Bestätigt',
     bestätigt: 'Bestätigt',
     in_bearbeitung: 'In Bearbeitung',
+    abholbereit: 'Abholbereit – bitte abholen',
     wird_vorbereitet: 'Sendung wird vorbereitet',
     abholung_angemeldet: 'Abholung durch Spedition angemeldet',
     versendet: 'Versendet',
@@ -2921,14 +2922,19 @@ function statusLabel(status) {
 // Anzeige-Status für den Kunden, abgeleitet aus Versand-/Lagerphase.
 // Technischer Status bleibt 'bezahlt', bis die Ware wirklich übergeben wurde.
 function kbAnzeigeStatus(b) {
+  // Nach der Auftragsbestätigung sieht der Kunde bewusst KEINE internen Zwischenschritte
+  // (Kommissionierung/Disposition/Spedition/Abholung). Bis zum Versand bleibt es „In Bearbeitung".
+  // Ausnahme Selbstabholung: „Abholbereit", weil der Kunde dann selbst aktiv werden muss.
   if (b.status === 'bezahlt') {
-    const vs = String(b.versandstatus || '');
-    if (vs === 'spedition_beauftragt') return 'abholung_angemeldet';
-    if (vs === 'bereit_zur_abholung') return 'wird_vorbereitet';
-    if (b.lager_status === 'in_bearbeitung') return 'in_bearbeitung';
+    if (String(b.versandstatus || '') === 'abholbereit') return 'abholbereit';
+    return 'in_bearbeitung';
   }
   return b.status;
 }
+
+// Tracking ist für den Kunden erst nach dem tatsächlichen Versand sichtbar – die intern
+// (bei der Spedition-Beauftragung) vorab gesetzte Trackingnummer soll NICHT früher erscheinen.
+function kbTracking(b) { return !!(b && b.status === 'versendet' && b.tracking_nr); }
 
 function istOffeneVorkasseBestellung(b) {
   return b?.zahlungsart === 'vorkasse' && b?.status === 'warte_auf_zahlung';
@@ -3165,10 +3171,9 @@ function renderOrderCard(b, context = 'bestellungen') {
       primaryButton = `<button class="kb-yellow-btn" type="button" onclick="toggleBestellDetails('${detailId}')">Zahlungsdaten anzeigen</button>`;
     }
   } else if (context === 'tracking') {
-    if (b.tracking_nr) primaryButton = `<a class="kb-yellow-btn" href="${trackingLink(b)}" target="_blank">📦 Sendung verfolgen</a>`;
+    if (kbTracking(b)) primaryButton = `<a class="kb-yellow-btn" href="${trackingLink(b)}" target="_blank">📦 Sendung verfolgen</a>`;
     else if (b.status === 'geliefert') primaryButton = `<button class="kb-gray-btn" type="button">✅ Geliefert</button>`;
-    else if (b.status === 'versendet') primaryButton = `<button class="kb-gray-btn" type="button">🚚 An Spedition übergeben</button>`;
-    else if (b.versandstatus === 'spedition_beauftragt') primaryButton = `<button class="kb-gray-btn" type="button">📦 Abholung durch Spedition angemeldet</button>`;
+    else if (b.status === 'versendet') primaryButton = `<button class="kb-gray-btn" type="button">🚚 Versendet</button>`;
     else primaryButton = `<button class="kb-gray-btn" type="button">Sendung wird vorbereitet</button>`;
   } else if (context === 'reklamation') {
     const fristTxt = b.reklamation_frist ? `<div style="font-size:12px;color:var(--gray);margin-top:4px;text-align:center;">Möglich bis: ${formatDateDE(b.reklamation_frist)}</div>` : '';
@@ -3183,7 +3188,7 @@ function renderOrderCard(b, context = 'bestellungen') {
     if (b.auftragsbestaetigung_versendet_am) btns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'auftragsbestaetigung','Auftragsbestätigung')">📄 Auftragsbestätigung</button>`);
     if (b.lieferschein_versendet_am) btns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'lieferschein','Lieferschein')">📄 Lieferschein</button>`);
     if (b.lexoffice_id || b.rechnung_pdf_storage_path) btns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'rechnung','Rechnung')">📄 Rechnung</button>`);
-    if (b.tracking_nr) btns.push(`<a class="kb-gray-btn" href="${trackingLink(b)}" target="_blank">📦 Sendungsverfolgung</a>`);
+    if (kbTracking(b)) btns.push(`<a class="kb-gray-btn" href="${trackingLink(b)}" target="_blank">📦 Sendungsverfolgung</a>`);
     else btns.push(`<button class="kb-gray-btn" type="button" disabled style="opacity:.5;cursor:not-allowed;">📦 Tracking folgt</button>`);
     // Rücksendung/Reklamation direkt auf der Bestellung – nur geliefert & innerhalb der Frist.
     if (b.reklamation_moeglich) {
@@ -3250,7 +3255,7 @@ function renderOrderCard(b, context = 'bestellungen') {
             Zahlungsart: <strong>${zahlungsLabelBestellung(b)}</strong><br>
             ${String(b.lieferart || '').toLowerCase() === 'lieferung' ? `Empfänger: <strong>${escapeHtml(b.lieferadresse_empfaenger || b.firma || b.kundenname || '—')}</strong><br>` : ''}
             Lieferadresse:<br>${lieferAdresseHtml(b)}
-            ${b.tracking_nr ? `<br><br>Sendungsnummer: <strong>${escapeHtml(b.tracking_nr)}</strong>` : ''}
+            ${kbTracking(b) ? `<br><br>Sendungsnummer: <strong>${escapeHtml(b.tracking_nr)}</strong>` : ''}
           </div>
         </div>
       </div>
@@ -3395,7 +3400,7 @@ function kbTabMatch(b, tab) {
   const offen = istOffeneVorkasseBestellung(b);
   const storniert = st === 'storniert';
   const geliefert = st === 'geliefert' || !!b?.geliefert_am;
-  const versand = !geliefert && !storniert && (st === 'versendet' || String(b?.versandstatus || '') === 'spedition_beauftragt' || !!b?.tracking_nr);
+  const versand = !geliefert && !storniert && st === 'versendet';
   const bearbeitung = ['bezahlt', 'bestaetigt', 'bestätigt'].includes(st) && !versand && !geliefert;
   switch (tab) {
     case 'offen': return offen;
@@ -3447,13 +3452,13 @@ function renderKbBestellungen() {
 async function ladeTracking() {
   const orders = await ladeKundenBestellungen();
   const el = document.getElementById('kbTrackingList');
-  // Nur Sendungen, die noch UNTERWEGS sind: versendet/an Spedition (oder mit Tracking),
+  // Nur tatsächlich versendete Sendungen (Zwischenschritte bleiben für den Kunden intern),
   // aber NICHT geliefert/storniert. Gelieferte verschwinden hier automatisch.
   const trackingOrders = orders.filter(b =>
     !b.geliefert_am &&
     String(b.status) !== 'geliefert' &&
     String(b.status) !== 'storniert' &&
-    (String(b.status) === 'versendet' || b.versandstatus === 'spedition_beauftragt' || !!b.tracking_nr)
+    String(b.status) === 'versendet'
   );
   if (!trackingOrders.length) {
     el.innerHTML = '<div class="kb-empty">Aktuell keine Sendungen unterwegs. Gelieferte Bestellungen finden Sie unter „Meine Bestellungen".</div>';
