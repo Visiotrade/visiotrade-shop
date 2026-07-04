@@ -579,11 +579,16 @@
     <div id="vsVersanddaten" style="font-size:12px;color:var(--gray);background:var(--cream);border-radius:8px;padding:10px;margin-bottom:12px;">—</div>
     <div class="field"><label>Spedition</label>
       <select id="vsSpediteur" style="width:100%;padding:10px;border:2px solid var(--gray-light);border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;">
-        <option value="Raben">Raben</option>
-        <option value="DHL Freight">DHL Freight</option>
-        <option value="Schenker">Schenker</option>
-        <option value="Eigene Lieferung">Eigene Lieferung</option>
-        <option value="Andere">Andere</option>
+        <optgroup label="Aktuell im Einsatz">
+          <option value="Raben" style="font-weight:700;">Raben</option>
+          <option value="BOLL" style="font-weight:700;">BOLL</option>
+        </optgroup>
+        <optgroup label="Weitere">
+          <option value="DHL Freight">DHL Freight</option>
+          <option value="Schenker">Schenker</option>
+          <option value="Eigene Lieferung">Eigene Lieferung</option>
+          <option value="Andere">Andere</option>
+        </optgroup>
       </select>
     </div>
     <div class="field"><label>Abholdatum</label><input type="date" id="vsAbholdatum"></div>
