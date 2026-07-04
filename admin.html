@@ -110,20 +110,9 @@
   /* MODAL */
   .modal-overlay { position: fixed; inset: 0; background: rgba(61,43,31,0.45); backdrop-filter: blur(2px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
   .modal-overlay.open { display: flex; }
-  /* Spedition-/Übergabe-Modals werden AUS dem Nachrichten-/Thread-Modal (z-index 450) heraus
-     geöffnet und müssen darüber liegen (auch über dem Rechnungs-PDF-Modal, z-index 600). */
-  #lagerSpeditionModal, #lagerUebergabeModal { z-index: 700; }
-  /* Sind BEIDE offen → nebeneinander: „Spedition beauftragen" links, „An Spedition übergeben" rechts. */
-  #lagerSpeditionModal.paired { justify-content: flex-start; padding-left: 3vw; }
-  /* Das Übergabe-Overlay liegt (DOM-Reihenfolge) über dem linken Beauftragen-Modal. Transparent +
-     pointer-events:none, damit Klicks aufs linke Modal durchgehen; nur die rechte Box bleibt aktiv. */
-  #lagerUebergabeModal.paired { justify-content: flex-end; padding-right: 3vw; background: transparent; backdrop-filter: none; pointer-events: none; }
-  #lagerUebergabeModal.paired .modal { pointer-events: auto; }
-  @media (max-width: 1000px) {
-    /* Zu schmal für nebeneinander → wieder zentriert stapeln (oberstes Fenster bleibt bedienbar). */
-    #lagerSpeditionModal.paired { justify-content: center; padding-left: 20px; }
-    #lagerUebergabeModal.paired { justify-content: center; padding-right: 20px; background: rgba(61,43,31,0.45); backdrop-filter: blur(2px); pointer-events: auto; }
-  }
+  /* Versand-Modals werden AUS dem Nachrichten-/Thread-Modal (z-index 450) heraus geöffnet
+     und müssen darüber liegen (auch über dem Rechnungs-PDF-Modal, z-index 600). */
+  #versanddatenModal, #versandSpeditionModal { z-index: 700; }
   .modal { background: var(--white); border-radius: var(--radius); padding: 28px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 70px rgba(61,43,31,0.35); }
   .modal-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--walnut); margin-bottom: 20px; }
   .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
@@ -558,50 +547,6 @@
       <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;preisanfrageModal&#39;)">Schließen</button>
       <button class="btn btn-sm" id="paBtnAblehnen" style="background:var(--cream);color:var(--red);border:1px solid var(--red);" onclick="paStatusSetzen(document.getElementById(&#39;paModalId&#39;).value,&#39;abgelehnt&#39;)">Ablehnen</button>
       <button class="btn btn-green btn-sm" id="paBtnAngebot" onclick="angebotSenden(document.getElementById(&#39;paModalId&#39;).value)">📤 Angebot senden</button>
-    </div>
-  </div>
-</div>
-
-<!-- LAGER: SPEDITION BEAUFTRAGEN / ABHOLUNG ANMELDEN -->
-<div class="modal-overlay" id="lagerSpeditionModal">
-  <div class="modal" style="max-width:460px;">
-    <div class="modal-title">📦 Spedition beauftragen / Abholung anmelden</div>
-    <input type="hidden" id="lagerSpedId">
-    <p style="font-size:12px;color:var(--gray);margin:0 0 12px;">Die Ware ist fertig gepackt und wartet auf Abholung. Die Bestellung ist damit <strong>noch nicht versendet</strong> – es wird noch keine Rechnung erzeugt.</p>
-    <div class="field"><label>Spedition *</label>
-      <select id="lagerSpedSpediteur" style="width:100%;padding:10px;border:2px solid var(--gray-light);border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;">
-        <option value="Raben">Raben</option>
-        <option value="BOLL">BOLL</option>
-        <option value="Andere">Andere</option>
-      </select>
-    </div>
-    <div class="field"><label>Abholdatum</label><input type="date" id="lagerSpedAbholdatum"></div>
-    <div style="display:flex;gap:10px;">
-      <div class="field" style="flex:1;"><label>Pakete</label><input type="number" min="0" id="lagerSpedPakete" placeholder="z. B. 4"></div>
-      <div class="field" style="flex:1;"><label>Paletten</label><input type="number" min="0" id="lagerSpedPaletten" placeholder="z. B. 1"></div>
-      <div class="field" style="flex:1;"><label>Gewicht (kg)</label><input type="number" min="0" step="0.1" id="lagerSpedGewicht" placeholder="z. B. 320"></div>
-    </div>
-    <div class="field"><label>Trackingnummer (optional)</label><input type="text" id="lagerSpedTrackingNr" placeholder="Sendungsnummer"></div>
-    <div class="field"><label>Tracking-Link (optional)</label><input type="text" id="lagerSpedTrackingUrl" placeholder="https://…"></div>
-    <div class="modal-footer">
-      <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;lagerSpeditionModal&#39;)">Abbrechen</button>
-      <button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" id="lagerSpedBtn" onclick="lagerSpeditionBeauftragen()">Spedition beauftragen</button>
-    </div>
-  </div>
-</div>
-
-<!-- LAGER: AN SPEDITION ÜBERGEBEN (tatsächliche Übergabe → Versendet + Rechnung) -->
-<div class="modal-overlay" id="lagerUebergabeModal">
-  <div class="modal" style="max-width:440px;">
-    <div class="modal-title">🚚 An Spedition übergeben</div>
-    <input type="hidden" id="lagerUebergabeId">
-    <p id="lagerUebergabeInfo" style="font-size:13px;color:var(--gray);margin:0 0 14px;"></p>
-    <div class="field"><label>Trackingnummer (optional, falls noch nicht erfasst)</label><input type="text" id="lagerTrackingNr" placeholder="Sendungsnummer"></div>
-    <div class="field"><label>Tracking-Link (optional)</label><input type="text" id="lagerTrackingUrl" placeholder="https://…"></div>
-    <p style="font-size:12px;color:var(--gray);margin:2px 0 0;">Erst jetzt wird die Bestellung auf <strong>Versendet</strong> gesetzt und die Rechnung erzeugt/versendet.</p>
-    <div class="modal-footer">
-      <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;lagerUebergabeModal&#39;)">Abbrechen</button>
-      <button class="btn btn-green btn-sm" id="lagerUebergabeBtn" onclick="lagerUebergabeBestaetigen()">Übergabe bestätigen</button>
     </div>
   </div>
 </div>
@@ -2072,18 +2017,26 @@ function versanddatenOeffnen(id) {
   document.getElementById('versanddatenModal').classList.add('open');
 }
 
-// Erzeugt die Palettenfelder dynamisch anhand der Anzahl.
+// Erzeugt die Palettenfelder dynamisch anhand der Anzahl. Bereits eingetragene Werte
+// bleiben beim Ändern der Anzahl erhalten (vor dem Neurendern aus den Inputs gesichert).
 function versanddatenPalettenRender() {
   const n = Math.max(0, Math.min(50, parseInt(document.getElementById('vdPaletten').value, 10) || 0));
+  // Bestehende Eingaben sichern (Index+Feld → Wert).
+  const alt = {};
+  document.querySelectorAll('#vdPalettenFelder input[data-i]').forEach(el => {
+    const c = el.classList.contains('vdPalL') ? 'L' : el.classList.contains('vdPalB') ? 'B' : el.classList.contains('vdPalH') ? 'H' : 'G';
+    if (el.value !== '') alt[el.getAttribute('data-i') + c] = el.value;
+  });
+  const v = (i, c) => (alt[i + c] != null ? ` value="${alt[i + c]}"` : '');
   let html = '';
   for (let i = 1; i <= n; i++) {
     html += `<div style="border:1px solid var(--gray-light);border-radius:8px;padding:10px;margin-bottom:8px;">
       <div style="font-weight:600;font-size:13px;color:var(--walnut);margin-bottom:6px;">Palette ${i}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <div class="field" style="flex:1;min-width:90px;margin:0;"><label>Länge (cm)</label><input type="number" min="0" step="0.1" class="vdPalL" data-i="${i}"></div>
-        <div class="field" style="flex:1;min-width:90px;margin:0;"><label>Breite (cm)</label><input type="number" min="0" step="0.1" class="vdPalB" data-i="${i}"></div>
-        <div class="field" style="flex:1;min-width:90px;margin:0;"><label>Höhe (cm)</label><input type="number" min="0" step="0.1" class="vdPalH" data-i="${i}"></div>
-        <div class="field" style="flex:1;min-width:90px;margin:0;"><label>Gewicht (kg)</label><input type="number" min="0" step="0.1" class="vdPalG" data-i="${i}"></div>
+        <div class="field" style="flex:1;min-width:90px;margin:0;"><label>Länge (cm)</label><input type="number" min="0" step="0.1" class="vdPalL" data-i="${i}"${v(i, 'L')}></div>
+        <div class="field" style="flex:1;min-width:90px;margin:0;"><label>Breite (cm)</label><input type="number" min="0" step="0.1" class="vdPalB" data-i="${i}"${v(i, 'B')}></div>
+        <div class="field" style="flex:1;min-width:90px;margin:0;"><label>Höhe (cm)</label><input type="number" min="0" step="0.1" class="vdPalH" data-i="${i}"${v(i, 'H')}></div>
+        <div class="field" style="flex:1;min-width:90px;margin:0;"><label>Gewicht (kg)</label><input type="number" min="0" step="0.1" class="vdPalG" data-i="${i}"${v(i, 'G')}></div>
       </div>
     </div>`;
   }
@@ -2134,75 +2087,6 @@ async function lagerAbholbereit(id) {
     ladeLager();
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
-}
-
-// Schritt 2: Spedition beauftragen / Abholung anmelden (noch nicht versendet).
-function lagerSpeditionOeffnen(id) {
-  document.getElementById('lagerSpedId').value = id;
-  document.getElementById('lagerSpedSpediteur').value = 'Raben';
-  document.getElementById('lagerSpedAbholdatum').value = '';
-  document.getElementById('lagerSpedPakete').value = '';
-  document.getElementById('lagerSpedPaletten').value = '';
-  document.getElementById('lagerSpedGewicht').value = '';
-  document.getElementById('lagerSpedTrackingNr').value = '';
-  document.getElementById('lagerSpedTrackingUrl').value = '';
-  document.getElementById('lagerSpeditionModal').classList.add('open');
-  syncSpeditionPairing();
-}
-
-async function lagerSpeditionBeauftragen() {
-  const id = document.getElementById('lagerSpedId').value;
-  const payload = {
-    spediteur: document.getElementById('lagerSpedSpediteur').value,
-    abholdatum: document.getElementById('lagerSpedAbholdatum').value || null,
-    paketanzahl: document.getElementById('lagerSpedPakete').value || null,
-    palettenanzahl: document.getElementById('lagerSpedPaletten').value || null,
-    gewicht: document.getElementById('lagerSpedGewicht').value || null,
-    tracking_nr: document.getElementById('lagerSpedTrackingNr').value.trim(),
-    tracking_url: document.getElementById('lagerSpedTrackingUrl').value.trim()
-  };
-  const btn = document.getElementById('lagerSpedBtn');
-  btn.disabled = true; btn.textContent = 'Wird beauftragt…';
-  try {
-    await backendApi(`/api/admin/lager/${id}/spedition-beauftragen`, 'POST', payload);
-    schliesseModal('lagerSpeditionModal');
-    zeigeToast('📦 Spedition beauftragt – Abholung angemeldet');
-    ladeLager();
-    // Falls aus dem Nachrichtenfenster ausgelöst: Thread mit-aktualisieren (neues Ereignis + Buttons).
-    if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
-  } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
-  finally { btn.disabled = false; btn.textContent = 'Spedition beauftragen'; }
-}
-
-// Schritt 3: tatsächliche Übergabe → Versendet + Rechnung.
-function lagerUebergabeOeffnen(id) {
-  document.getElementById('lagerUebergabeId').value = id;
-  document.getElementById('lagerTrackingNr').value = '';
-  document.getElementById('lagerTrackingUrl').value = '';
-  document.getElementById('lagerUebergabeInfo').textContent = 'Wurde die Ware tatsächlich an die Spedition übergeben? Dann wird die Bestellung auf „Versendet" gesetzt und die Rechnung erzeugt.';
-  document.getElementById('lagerUebergabeModal').classList.add('open');
-  syncSpeditionPairing();
-}
-
-async function lagerUebergabeBestaetigen() {
-  const id = document.getElementById('lagerUebergabeId').value;
-  const tracking_nr = document.getElementById('lagerTrackingNr').value.trim();
-  const tracking_url = document.getElementById('lagerTrackingUrl').value.trim();
-  const btn = document.getElementById('lagerUebergabeBtn');
-  btn.disabled = true; btn.textContent = 'Wird übergeben…';
-  try {
-    // spediteur/tracking aus der Beauftragung bleiben erhalten, falls hier leer.
-    const payload = {};
-    if (tracking_nr) payload.tracking_nr = tracking_nr;
-    if (tracking_url) payload.tracking_url = tracking_url;
-    await backendApi(`/api/admin/bestellungen/${id}/an-spedition`, 'POST', payload);
-    schliesseModal('lagerUebergabeModal');
-    zeigeToast('🚚 An Spedition übergeben – Status: Versendet, Rechnung erstellt');
-    ladeLager();
-    // Falls aus dem Nachrichtenfenster ausgelöst: Thread mit-aktualisieren.
-    if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
-  } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
-  finally { btn.disabled = false; btn.textContent = 'Übergabe bestätigen'; }
 }
 
 // ===== VERSANDPLANUNG (Büro/Disposition) =====
@@ -3372,17 +3256,8 @@ async function speichereEinstellungen() {
 }
 
 // ===== UTILS =====
-function schliesseModal(id) { document.getElementById(id).classList.remove('open'); syncSpeditionPairing(); }
-// Sind BEIDE Spedition-Modals offen, nebeneinander anordnen (sonst zentriert). Idempotent.
-function syncSpeditionPairing() {
-  const a = document.getElementById('lagerSpeditionModal');
-  const b = document.getElementById('lagerUebergabeModal');
-  if (!a || !b) return;
-  const beide = a.classList.contains('open') && b.classList.contains('open');
-  a.classList.toggle('paired', beide);
-  b.classList.toggle('paired', beide);
-}
-document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) { m.classList.remove('open'); syncSpeditionPairing(); } }));
+function schliesseModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
 
 function zeigeToast(msg, error = false) {
   const t = document.getElementById('toast');
