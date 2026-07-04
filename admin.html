@@ -979,34 +979,6 @@ async function zeigeAdmin() {
   document.getElementById('adminPanel').style.display = 'block';
 }
 
-// ===== API =====
-async function api(table, params = '', method = 'GET', body = null, token = null) {
-  const doRequest = async (t) => {
-    const headers = {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${t || SUPABASE_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': method !== 'GET' ? 'return=representation' : ''
-    };
-    return fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
-      method, headers, body: body ? JSON.stringify(body) : null
-    });
-  };
-  let r = await doRequest(token || adminToken);
-  // Bei JWT expired: token erneuern und nochmal versuchen
-  if (r.status === 401) {
-    const ok = await refreshToken();
-    if (ok) {
-      r = await doRequest(token || adminToken);
-    } else {
-      adminLogout();
-      throw new Error('Sitzung abgelaufen. Bitte neu anmelden.');
-    }
-  }
-  if (!r.ok) { const e = await r.json(); throw new Error(e.message || r.status); }
-  return method === 'DELETE' ? null : r.json();
-}
-
 // ===== NAVIGATION =====
 const NAV_ID_MAP = { dashboard:'navDashboard', produkte:'navProdukte', kategorien:'navKategorien', bestellungen:'navBestellungen', lager:'navLager', versandplanung:'navVersandplanung', nachrichten:'navNachrichten', preisanfragen:'navPreisanfragen', kunden:'navKunden', preise:'navPreise', adminusers:'navAdminusers', auditlog:'navAuditlog', papierkorb:'navPapierkorb' };
 
