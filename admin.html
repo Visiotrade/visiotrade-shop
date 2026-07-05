@@ -735,6 +735,7 @@
           <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
             <label style="font-size:12px;font-weight:600;color:var(--walnut);">Senden als:</label>
             <select id="threadModus" onchange="threadModusGewechselt()" style="padding:6px 10px;border:1px solid var(--gray-light);border-radius:6px;font-size:13px;"></select>
+            <select id="threadSchnellantwort" onchange="threadSchnellantwortGewaehlt()" title="Textbaustein einfügen" style="padding:6px 10px;border:1px solid var(--gray-light);border-radius:6px;font-size:13px;display:none;"></select>
             <span id="threadModusHinweis" style="font-size:12px;color:var(--gray);"></span>
           </div>
           <textarea id="threadAntwortText" rows="3" placeholder="Antwort an den Kunden…" style="width:100%;padding:10px;border:2px solid var(--gray-light);border-radius:8px;font-size:14px;resize:vertical;box-sizing:border-box;font-family:'DM Sans',sans-serif;"></textarea>
@@ -759,6 +760,21 @@
 const SUPABASE_URL = 'https://rvouqjhrbjsmqyzvqtxy.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_gr_VMD5No5n8McWg93vq1A_gO6pKoUQ';
 const BACKEND_API_URL = 'https://visiotrade-backend-production.up.railway.app';
+
+// ===== SCHNELLANTWORTEN – hier Texte pflegen =====
+// Textbausteine für das „Schnellantwort wählen…"-Dropdown im Nachrichtenfenster.
+// Platzhalter werden beim Einfügen automatisch ersetzt: {{name}}, {{firma}},
+// {{bestellnummer}}, {{rechnungsnummer}}. Reine Vorlagen – KEIN Auto-Versand.
+// (Startvorlagen – Texte gern anpassen/ergänzen; die Reihenfolge = Dropdown-Reihenfolge.)
+const SCHNELLANTWORTEN = [
+  { label: 'Dank nach Kauf', text: 'Guten Tag {{name}},\n\nwir bedanken uns herzlich für Ihren Einkauf und das entgegengebrachte Vertrauen. Wir wünschen Ihnen schöne Aufträge, gesunde Mitarbeiter und solide Kundschaft.\n\nMit freundlichen Grüßen\nIhr VisioTrade-Team' },
+  { label: 'Zahlung erhalten', text: 'Guten Tag {{name}},\n\nIhre Zahlung zur Bestellung #{{bestellnummer}} ist bei uns eingegangen. Ihre Ware wird nun für den Versand vorbereitet – wir melden uns, sobald sie unterwegs ist.\n\nMit freundlichen Grüßen\nIhr VisioTrade-Team' },
+  { label: 'Versand mit Nachfrage', text: 'Guten Tag {{name}},\n\nIhre Bestellung #{{bestellnummer}} wurde versendet. Bitte geben Sie uns kurz Bescheid, sobald die Ware bei Ihnen eingetroffen ist und alles in Ordnung ist.\n\nMit freundlichen Grüßen\nIhr VisioTrade-Team' },
+  { label: 'Material erhalten?', text: 'Guten Tag {{name}},\n\nhaben Sie das Material zur Bestellung #{{bestellnummer}} gut erhalten? Falls etwas fehlt oder beschädigt ist, melden Sie sich gerne direkt hier im Vorgang.\n\nMit freundlichen Grüßen\nIhr VisioTrade-Team' },
+  { label: 'Eingang bestätigt', text: 'Guten Tag {{name}},\n\nvielen Dank für Ihre Nachricht. Wir kümmern uns darum und melden uns schnellstmöglich mit einer Antwort.\n\nMit freundlichen Grüßen\nIhr VisioTrade-Team' },
+  { label: 'Rückfrage Lieferadresse', text: 'Guten Tag {{name}},\n\nzu Bestellung #{{bestellnummer}} haben wir eine kurze Rückfrage zur Lieferadresse. Könnten Sie uns diese bitte noch einmal bestätigen?\n\nMit freundlichen Grüßen\nIhr VisioTrade-Team' },
+  { label: 'Rechnung / Beleg', text: 'Guten Tag {{name}},\n\ndie Rechnung {{rechnungsnummer}} zu Bestellung #{{bestellnummer}} finden Sie in Ihrem Kundenkonto. Gerne senden wir sie Ihnen auf Wunsch erneut per E-Mail.\n\nMit freundlichen Grüßen\nIhr VisioTrade-Team' }
+];
 
 // Admin-Sicherheit: Diese Liste bitte an deine echten Admin-E-Mails anpassen.
 // Zusätzlich wird user_metadata.role === 'admin' oder user_metadata.is_admin === true akzeptiert.
@@ -2477,6 +2493,7 @@ let threadDarfFreigeben = false;
 
 // Ungelesen-Zähler je Bestellung laden (für Badges an der Bestellkarte/-tabelle).
 async function ladeAdminUngelesen(reRenderWennGeaendert) {
+  if (!darf('messages.view')) return; // Endpoint verlangt messages.view → sonst 403-Serie
   try {
     const data = await backendApi('/api/admin/nachrichten/ungelesen');
     adminUnread = data.counts || {};
@@ -2826,6 +2843,7 @@ function rebuildThreadModusSelect() {
   if (threadModi.intern_superadmin) opts.push(['intern_superadmin', '🛡️ Nur Superadmin']);
   if (!opts.length) opts.push(['kunde', '✉️ Antwort an Kunden']);
   sel.innerHTML = opts.map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+  threadSchnellantwortBefuellen();
   threadModusGewechselt();
 }
 
@@ -2849,6 +2867,44 @@ function threadModusGewechselt() {
     if (ta) ta.placeholder = 'Interne Notiz…';
     if (btn) btn.textContent = 'Notiz speichern';
   }
+  // Schnellantworten nur im Modus „Antwort an Kunden" anbieten.
+  const sa = document.getElementById('threadSchnellantwort');
+  if (sa) sa.style.display = (m === 'kunde') ? '' : 'none';
+}
+
+// Befüllt das Schnellantwort-Dropdown aus SCHNELLANTWORTEN (Reihenfolge = Array).
+function threadSchnellantwortBefuellen() {
+  const sel = document.getElementById('threadSchnellantwort');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">⚡ Schnellantwort wählen…</option>' +
+    SCHNELLANTWORTEN.map((s, i) => `<option value="${i}">${h(s.label)}</option>`).join('');
+}
+
+// Fügt den gewählten Baustein (Platzhalter ersetzt) ins Antwortfeld ein. KEIN Auto-Versand.
+function threadSchnellantwortGewaehlt() {
+  const sel = document.getElementById('threadSchnellantwort');
+  const ta = document.getElementById('threadAntwortText');
+  if (!sel || !ta) return;
+  const idx = parseInt(sel.value, 10);
+  sel.value = ''; // Dropdown zurück auf „wählen…"
+  if (!Number.isInteger(idx) || !SCHNELLANTWORTEN[idx]) return;
+  const b = threadOrderAktuell || {};
+  const text = SCHNELLANTWORTEN[idx].text
+    .replace(/\{\{name\}\}/g, b.kundenname || '')
+    .replace(/\{\{firma\}\}/g, b.firma || '')
+    .replace(/\{\{bestellnummer\}\}/g, b.id != null ? b.id : '')
+    .replace(/\{\{rechnungsnummer\}\}/g, b.rechnung_nummer || '');
+  if (ta.value.trim()) {
+    // OK = ersetzen, Abbrechen = anhängen (Text im Feld bleibt nie ungewollt verloren).
+    if (confirm('Es steht bereits Text im Antwortfeld.\n\nOK = ersetzen · Abbrechen = anhängen')) {
+      ta.value = text;
+    } else {
+      ta.value = ta.value.replace(/\s*$/, '') + '\n\n' + text;
+    }
+  } else {
+    ta.value = text;
+  }
+  ta.focus();
 }
 
 function renderThreadOrderPane(b, pos, dok) {
@@ -3097,6 +3153,7 @@ async function ladeBestellNachrichten(id) {
 
 // Badge mit Anzahl offener Threads im Menü.
 async function aktualisiereNachrichtenBadge() {
+  if (!darf('messages.view')) return; // Endpoint verlangt messages.view → sonst 403-Serie
   try {
     const data = await backendApi('/api/admin/nachrichten/anzahl');
     const n = data.anzahl || 0;
@@ -3107,6 +3164,7 @@ async function aktualisiereNachrichtenBadge() {
 
 // Badge für offene (noch nicht bearbeitete) Preisanfragen – live aus der DB.
 async function aktualisierePreisanfrageBadge() {
+  if (istNurLager() || !darf('bestellungen.ansehen')) return; // Endpoint: verbieteNurLager + bestellungen.ansehen
   try {
     const data = await backendApi('/api/admin/preisanfragen/anzahl');
     const n = data.anzahl || 0;
