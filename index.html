@@ -3122,12 +3122,12 @@ async function erneutKaufen(orderId) {
       const paket = paketMap[p.paket_id];
       const produkt = produktMap[p.produkt_id];
       if (!paket || !produkt || produkt.aktiv === false) { fehlend++; return; }
-      (proProdukt[p.produkt_id] = proProdukt[p.produkt_id] || { produkt, kombi: [] }).kombi.push({ paket, anzahl: Number(p.anzahl_pakete || 0) });
+      (proProdukt[p.produkt_id] = proProdukt[p.produkt_id] || { produkt, kombi: [] }).kombi.push({ paket: { ...paket, preis_pro_m2: Number(produkt.preis_pro_m2) || 0 }, anzahl: Number(p.anzahl_pakete || 0) });
     });
     let hinzugefuegt = 0;
     Object.values(proProdukt).forEach(({ produkt, kombi }) => {
       const gesamtM2 = kombi.reduce((s, k) => s + k.anzahl * Number(k.paket.menge_m2 || 0), 0);
-      const gesamtPreis = kombi.reduce((s, k) => s + k.anzahl * Number(k.paket.preis || 0), 0);
+      const gesamtPreis = kombi.reduce((s, k) => s + posBetrag(k.paket, k.anzahl), 0);
       const gesamtGewicht = kombi.reduce((s, k) => s + k.anzahl * Number(produkt.gewicht_pro_paket_kg || 0), 0);
       warenkorb.push({ id: Date.now() + hinzugefuegt, produktId: produkt.id, name: produkt.name, icon: '🪵', kombi, benoetigt_m2: gesamtM2, gesamt_m2: gesamtM2, preis: gesamtPreis, gewicht: gesamtGewicht, gewichtProPaket: Number(produkt.gewicht_pro_paket_kg || 0) });
       hinzugefuegt++;
@@ -4616,7 +4616,9 @@ async function zeigeProduktliste(katId, katName) {
     _pakete.forEach(pk => { (_paketeMap[pk.produkt_id] = _paketeMap[pk.produkt_id] || []).push(pk); });
   }
   alleProdukte.forEach(p => {
-    p._pakete = _paketeMap[p.id] || [];
+    // preis_pro_m2 (Produkt-Stammdaten) an jedes Paket hängen → Positionsbetrag mit EINEM
+    // Rundungspunkt (posBetrag), identisch zur Serverberechnung.
+    p._pakete = (_paketeMap[p.id] || []).map(pk => ({ ...pk, preis_pro_m2: Number(p.preis_pro_m2) || 0 }));
     p._verfuegbarM2 = p._pakete.reduce((s, k) => s + (Number(k.verfuegbare_pakete) || 0) * (Number(k.menge_m2) || 0), 0);
     p._veM2 = Number(p.ve_m2) || (p._pakete[0] ? Number(p._pakete[0].menge_m2) : 0);
   });
@@ -4968,7 +4970,7 @@ function b2bRowUpdate(pid) {
   if (!kombi) { pk.innerHTML = '<span class="b2b-stock-no">Nicht genug auf Lager</span>'; gs.textContent = '—'; b2bRenderSummary(); return; }
   const pakAnz = kombi.reduce((s, k) => s + k.anzahl, 0);
   const gM2 = kombi.reduce((s, k) => s + k.anzahl * k.paket.menge_m2, 0);
-  const gPreis = kombi.reduce((s, k) => s + k.anzahl * k.paket.preis, 0);
+  const gPreis = kombi.reduce((s, k) => s + posBetrag(k.paket, k.anzahl), 0);
   pk.innerHTML = `= ${pakAnz} Paket${pakAnz !== 1 ? 'e' : ''} (${b2bNum(gM2, 3)} m²) <span class="b2b-info" title="Es werden ganze Pakete (VE) bestellt. Ihre Menge wird auf die nächste volle Verpackungseinheit aufgerundet.">ⓘ</span>`;
   gs.textContent = b2bNum(gPreis) + ' €';
   b2bRenderSummary();
@@ -4987,7 +4989,7 @@ function b2bRenderSummary() {
     gInput += m2;
     gPak += kombi.reduce((s, k) => s + k.anzahl, 0);
     gM2 += kombi.reduce((s, k) => s + k.anzahl * k.paket.menge_m2, 0);
-    gPreis += kombi.reduce((s, k) => s + k.anzahl * k.paket.preis, 0);
+    gPreis += kombi.reduce((s, k) => s + posBetrag(k.paket, k.anzahl), 0);
   });
   box.innerHTML = `
     <div class="b2b-sum-left">
@@ -5213,7 +5215,7 @@ function renderPreisanfrageErfolg(paNummer) {
 // In den Warenkorb legen – baut dieselbe Struktur wie addToCart (kombi-basiert).
 function b2bPush(p, kombi) {
   const gM2 = kombi.reduce((s, k) => s + k.anzahl * k.paket.menge_m2, 0);
-  const gPreis = kombi.reduce((s, k) => s + k.anzahl * k.paket.preis, 0);
+  const gPreis = kombi.reduce((s, k) => s + posBetrag(k.paket, k.anzahl), 0);
   const gGew = kombi.reduce((s, k) => s + k.anzahl * (Number(p.gewicht_pro_paket_kg) || 0), 0);
   const name = `${p.holzart || ''} ${p._sortName || ''}`.trim() || p.name;
   const sig = warenkorbSignatur(p.id, kombi);
@@ -5325,7 +5327,7 @@ function berechneM2() {
   const kombi = optimierePakete(m2, aktPakete.filter(p=>p.verfuegbare_pakete>0));
   if (!kombi) { vorschlag.classList.remove('visible'); btn.disabled=true; btn.textContent='Nicht genug auf Lager'; return; }
   const gesamtM2 = kombi.reduce((s,k)=>s+k.anzahl*k.paket.menge_m2,0);
-  const gesamtPreis = kombi.reduce((s,k)=>s+k.anzahl*k.paket.preis,0);
+  const gesamtPreis = kombi.reduce((s,k)=>s+posBetrag(k.paket,k.anzahl),0);
   document.getElementById('paketText').textContent=kombi.map(k=>`${k.anzahl}× ${k.paket.menge_m2}m²-Paket`).join(' + ')+` = ${gesamtM2.toFixed(2)} m²`;
   document.getElementById('paketPreis').textContent=`${gesamtPreis.toFixed(2).replace('.',',')} €`;
   vorschlag.classList.add('visible');
@@ -5333,6 +5335,18 @@ function berechneM2() {
   btn.textContent=`In den Warenkorb — ${gesamtPreis.toFixed(2).replace('.',',')} €`;
   btn.dataset.kombi=JSON.stringify(kombi);
   btn.dataset.m2=m2;
+}
+
+// Positionsbetrag mit EINEM Rundungspunkt: round2(pakete × VE-m² × €/m²) – identisch zur
+// Serverberechnung (services/pricing.js). Fallback auf den (gerundeten) Paketpreis, falls kein
+// preis_pro_m2 am Paket hängt. Verhaltensänderung (fix pricing): behebt die Doppelrundung
+// (früher: pakete × gerundeter Paketpreis).
+function posBetrag(paket, anzahl) {
+  const n = Number(anzahl) || 0;
+  const ppm = Number(paket && paket.preis_pro_m2) || 0;
+  const m2 = Number(paket && paket.menge_m2) || 0;
+  const roh = (ppm > 0 && m2 > 0) ? n * m2 * ppm : n * (Number(paket && paket.preis) || 0);
+  return Math.round(roh * 100) / 100;
 }
 
 function optimierePakete(benoetigt, pakete) {
@@ -5360,7 +5374,7 @@ function addToCart() {
   const kombi = JSON.parse(btn.dataset.kombi||'[]');
   if (!kombi.length) return;
   const gesamtM2 = kombi.reduce((s,k)=>s+k.anzahl*k.paket.menge_m2,0);
-  const gesamtPreis = kombi.reduce((s,k)=>s+k.anzahl*k.paket.preis,0);
+  const gesamtPreis = kombi.reduce((s,k)=>s+posBetrag(k.paket,k.anzahl),0);
   const name = document.getElementById('produktName').textContent;
   // Gesamtgewicht berechnen
   const gesamtGewicht = kombi.reduce((s,k)=>s+k.anzahl*(aktProdukt.gewicht_pro_paket_kg||0),0);
@@ -5436,7 +5450,7 @@ function setWarenkorbMenge(id, eingabe) {
   // Auf eine Position mit der gewünschten Paketzahl normalisieren
   item.kombi = [{ paket, anzahl: n }];
   item.gesamt_m2 = n * paket.menge_m2;
-  item.preis = n * paket.preis;
+  item.preis = posBetrag(paket, n);
   item.gewicht = n * (item.gewichtProPaket || 0);
   aktualisiereNachMengenAenderung();
 }
@@ -5467,7 +5481,7 @@ function aendereWarenkorbMenge(id, delta) {
   }
 
   item.gesamt_m2 = item.kombi.reduce((s, k) => s + k.anzahl * k.paket.menge_m2, 0);
-  item.preis = item.kombi.reduce((s, k) => s + k.anzahl * k.paket.preis, 0);
+  item.preis = item.kombi.reduce((s, k) => s + posBetrag(k.paket, k.anzahl), 0);
   item.gewicht = item.kombi.reduce((s, k) => s + k.anzahl, 0) * (item.gewichtProPaket || 0);
 
   aktualisiereNachMengenAenderung();
@@ -6238,7 +6252,7 @@ async function bestellungAbsenden() {
           anzahl_pakete: k.anzahl,
           menge_m2_gesamt: k.anzahl * k.paket.menge_m2,
           preis_je_paket: k.paket.preis,
-          gesamtpreis: k.anzahl * k.paket.preis,
+          gesamtpreis: posBetrag(k.paket, k.anzahl),
           bauvorhaben: item.bauvorhaben || null
         });
       }
