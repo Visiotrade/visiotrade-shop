@@ -844,6 +844,7 @@ function statusLabel(status) {
     abgeholt: 'Abgeholt – bereit für Versand',
     abholbereit: 'Abholbereit',
     versendet: 'Versendet',
+    abgeholt_final: 'Abgeholt',
     geliefert: 'Geliefert',
     storniert: 'Storniert'
   };
@@ -853,6 +854,8 @@ function statusLabel(status) {
 // Anzeige-Status (nur intern/Admin): technischer status bleibt bezahlt bis Versand,
 // die Versandphase wird für die Anzeige abgeleitet.
 function anzeigeStatus(b) {
+  // Abgeschlossene Abholung: technischer Status bleibt 'versendet', Anzeige = „Abgeholt".
+  if (b.status === 'versendet' && String(b.lieferart || '') === 'abholung') return 'abgeholt_final';
   if (b.status === 'bezahlt') {
     const vs = String(b.versandstatus || '');
     if (vs === 'abgeholt') return 'abgeholt';
@@ -877,6 +880,7 @@ function statusBadge(status) {
     abgeholt: 'badge-blue',
     abholbereit: 'badge-yellow',
     versendet: 'badge-blue',
+    abgeholt_final: 'badge-green',
     geliefert: 'badge-green',
     storniert: 'badge-red'
   };
@@ -1093,7 +1097,7 @@ function renderDashboard(s) {
       <td>${b.erstellt_am ? new Date(b.erstellt_am).toLocaleDateString('de-DE') : '—'}</td>
       <td>${h(b.kundenname || '—')}</td>
       <td><strong>${Number(b.gesamtbetrag || 0).toFixed(2).replace('.', ',')} €</strong></td>
-      <td><span class="badge ${statusBadge(b.status)}">${statusLabel(b.status)}</span></td>
+      <td><span class="badge ${statusBadge(anzeigeStatus(b))}">${statusLabel(anzeigeStatus(b))}</span></td>
     </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--gray);padding:20px;">Keine Bestellungen</td></tr>';
 }
 
@@ -1570,10 +1574,28 @@ async function vorgangscenterNachtragen() {
 // Lädt Rolle/Rechte und richtet Menü + Landebereich ein. Gibt true zurück,
 // wenn der Nutzer mindestens EINEN Bereich sehen darf, sonst false (Deny).
 // DEFAULT-DENY: bei Lade-/Backend-Fehler werden KEINE Rechte angenommen.
+// Deutliches, fixes Banner solange der Mail-Testmodus (MAIL_TEST_EMPFAENGER) aktiv ist –
+// damit der Testmodus nicht vergessen wird. Wird bei jedem ladeAdminMe aktualisiert.
+function renderTestmodusBanner() {
+  let el = document.getElementById('testmodusBanner');
+  const aktiv = !!(adminMe && adminMe.mail_testmodus);
+  if (!aktiv) { if (el) { el.remove(); document.body.style.paddingTop = ''; } return; }
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'testmodusBanner';
+    el.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:99999;background:#b00020;color:#fff;font-weight:700;text-align:center;padding:10px 16px;font-size:14px;line-height:1.4;box-shadow:0 2px 10px rgba(0,0,0,.35);font-family:'DM Sans',sans-serif;";
+    document.body.appendChild(el);
+  }
+  const ziel = adminMe.mail_test_empfaenger || '—';
+  el.textContent = `⚠️ TESTMODUS AKTIV – alle Mails gehen NUR an ${ziel}. Zum Livegang MAIL_TEST_EMPFAENGER in Railway entfernen.`;
+  document.body.style.paddingTop = el.offsetHeight + 'px';
+}
+
 async function ladeAdminMe() {
   try { adminMe = await backendApi('/api/admin/me'); }
   catch (e) { adminMe = { ist_super_admin:false, rechte:[] }; return false; }
   if (!adminMe || adminMe.ok === false) { adminMe = { ist_super_admin:false, rechte:[] }; return false; }
+  renderTestmodusBanner();
 
   const setNav = (id, ok) => { const el=document.getElementById(id); if (el) el.style.display = ok ? '' : 'none'; };
   // Erst ALLES verbergen, dann gezielt freigeben.
@@ -2341,7 +2363,8 @@ async function ladeBestellungen() {
             ${paymentActions}
             ${speditionAction}
             <select class="admin-select" onchange="aktualisiereStatus(${b.id}, this.value, '${b.status || ''}', '${b.zahlungsart || ''}')">
-              ${STATUS_OPTIONEN.map(s => `<option value="${s}" ${(b.status === s || (b.status === 'bestätigt' && s === 'bestaetigt')) ? 'selected' : ''}>${statusLabel(s)}</option>`).join('')}
+              ${anzeigeStatus(b) === 'abgeholt_final' ? '<option value="abgeholt_final" selected>Abgeholt</option>' : ''}
+              ${STATUS_OPTIONEN.map(s => `<option value="${s}" ${(anzeigeStatus(b) !== 'abgeholt_final' && (b.status === s || (b.status === 'bestätigt' && s === 'bestaetigt'))) ? 'selected' : ''}>${statusLabel(s)}</option>`).join('')}
             </select>
             ${adminMe.ist_super_admin ? `<button class="btn btn-red btn-sm" onclick="bestellungPapierkorb(${b.id})">🗑 Löschen</button>` : ''}
           </div>
@@ -2353,6 +2376,8 @@ async function ladeBestellungen() {
 
 async function aktualisiereStatus(id, neuerStatus, alterStatus = '', zahlungsart = '') {
   try {
+    // Reiner Anzeige-Status (abgeschlossene Abholung) – DB bleibt 'versendet', keine Änderung.
+    if (neuerStatus === 'abgeholt_final') { ladeBestellungen(); return; }
     const z = String(zahlungsart || '').toLowerCase();
 
     if (z === 'vorkasse' && alterStatus === 'warte_auf_zahlung' && neuerStatus === 'bezahlt') {
@@ -2396,8 +2421,8 @@ async function zeigeBestellung(id) {
       : '—';
 
     const zahlungsInfo = zahlungsart === 'vorkasse'
-      ? `<strong>${zahlungsLabel}</strong><br>Verwendungszweck: <strong style="color:var(--oak);">${verwendungszweck}</strong><br>Status: <strong>${statusLabel(b.status)}</strong><br>Reservierung: ${reservierungInfo}`
-      : `<strong>${zahlungsLabel}</strong>${b.zahlungs_id ? '<br>Zahlungs-ID: <strong>' + h(b.zahlungs_id) + '</strong>' : ''}<br>Status: <strong>${statusLabel(b.status)}</strong>`;
+      ? `<strong>${zahlungsLabel}</strong><br>Verwendungszweck: <strong style="color:var(--oak);">${verwendungszweck}</strong><br>Status: <strong>${statusLabel(anzeigeStatus(b))}</strong><br>Reservierung: ${reservierungInfo}`
+      : `<strong>${zahlungsLabel}</strong>${b.zahlungs_id ? '<br>Zahlungs-ID: <strong>' + h(b.zahlungs_id) + '</strong>' : ''}<br>Status: <strong>${statusLabel(anzeigeStatus(b))}</strong>`;
 
     const vorkasseButtons = b.zahlungsart === 'vorkasse' && b.status === 'warte_auf_zahlung'
       ? `<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
@@ -3029,7 +3054,7 @@ function renderThreadOrderPane(b, pos, dok) {
       Bestellt von: <strong>${h(b.bestellt_von_email || b.email || '—')}</strong><br>
       Filiale: <strong>${h(b.filiale || '—')}</strong><br>
       ${_nl ? '' : `Zahlungsart: <strong>${zahlungsartLabel(b.zahlungsart)}</strong><br>`}
-      Status: <strong>${statusLabel(b.status)}</strong><br>
+      Status: <strong>${statusLabel(anzeigeStatus(b))}</strong><br>
       ${_nl ? '' : `Rechnungsnr.: <strong>${b.rechnung_nummer ? h(b.rechnung_nummer) : '—'}</strong><br>`}
       ${b.tracking_nr ? `Tracking: <strong>${h(b.tracking_nr)}</strong><br>` : ''}
       ${_nl ? '' : `Gesamt brutto: <strong>${euro(Number(b.gesamtbetrag || 0) * 1.19)}</strong>`}
