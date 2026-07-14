@@ -4519,11 +4519,13 @@ async function ladeKategorien() {
   const data = await dbCached('kategorien','?aktiv=eq.true&order=reihenfolge');
   if (!data) { grid.innerHTML='<div style="padding:20px;color:red;grid-column:span 2">Verbindungsfehler. Bitte neu laden.</div>'; return; }
   if (!data.length) { grid.innerHTML='<div style="padding:20px;color:var(--gray);grid-column:span 2">Noch keine Produkte angelegt.</div>'; return; }
+  // Name als data-Attribut (HTML-escaped) statt String-Interpolation im onclick:
+  // kein XSS über Kategorienamen, und Apostrophe brechen den Handler nicht mehr.
   grid.innerHTML = data.map(k=>`
-    <div class="kat-card" onclick="zeigeProduktliste(${k.id},'${k.name}')">
+    <div class="kat-card" data-kat-id="${Number(k.id)}" data-kat-name="${escapeHtml(k.name)}" onclick="zeigeProduktliste(Number(this.dataset.katId), this.dataset.katName)">
       <div class="kat-card-img">${ICONS[k.name]||'🪵'}</div>
       <div class="kat-card-body">
-        <div class="kat-card-name">${k.name}</div>
+        <div class="kat-card-name">${escapeHtml(k.name)}</div>
         <div class="kat-card-count">Kollektion →</div>
       </div>
     </div>`).join('');
@@ -6033,7 +6035,7 @@ function zeigeBestelluebersicht() {
     return `
     <div style="padding:8px 0;border-bottom:1px solid var(--gray-light);font-size:14px;">
       <div style="display:flex;justify-content:space-between;">
-        <span style="color:var(--walnut)">${item.name}<br><span style="font-size:12px;color:var(--gray)">${item.gesamt_m2.toFixed(3)} m²</span></span>
+        <span style="color:var(--walnut)">${escapeHtml(item.name)}<br><span style="font-size:12px;color:var(--gray)">${item.gesamt_m2.toFixed(3)} m²</span></span>
         <span style="font-weight:600;color:var(--oak)">${item.preis.toFixed(2).replace('.',',')} €</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
