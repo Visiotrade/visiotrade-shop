@@ -1540,12 +1540,6 @@ async function backendApi(path, method='GET', body=null) {
   return data;
 }
 
-// Audit-Eintrag schreiben (für direkte REST-Aktionen wie Bonus/Preis).
-async function auditLog(aktion, entity_type, entity_id, alter_wert, neuer_wert) {
-  try { await backendApi('/api/admin/audit', 'POST', { aktion, entity_type, entity_id, alter_wert, neuer_wert }); }
-  catch (e) { console.warn('Audit-Log fehlgeschlagen:', e.message); }
-}
-
 // Vorgangscenter-Backfill: trägt die Timeline für bestehende Bestellungen nach (paginiert, idempotent).
 async function vorgangscenterNachtragen() {
   const btn = document.getElementById('btnBackfill');
