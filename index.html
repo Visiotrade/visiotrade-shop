@@ -992,11 +992,6 @@
       </label>
       <div class="form-group"><label>Sonstiges / Anmerkungen zur Lieferung</label><textarea id="rech-sonstiges" rows="2" style="width:100%;padding:13px 14px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-size:15px;font-family:&#39;DM Sans&#39;,sans-serif;color:var(--walnut);background:var(--white);outline:none;resize:vertical;" placeholder="z. B. Lieferhinweise, Öffnungszeiten ..."></textarea></div>
 
-    <label class="checkbox-row" id="stammdatenSpeichernWrap" style="display:none;">
-      <input type="checkbox" id="stammdaten-speichern">
-      <span><svg class="vti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4"/><path d="M8 13h8v7H8z"/></svg>Änderungen an Firmen-/Rechnungsdaten für zukünftige Bestellungen speichern</span>
-    </label>
-
     <div id="frachtVorschau" style="display: none; background: rgb(240, 247, 240); border: 1px solid rgb(45, 106, 79); border-radius: 8px; padding: 14px; font-size: 14px; color: rgb(27, 67, 50); margin-bottom: 8px;">
       <div style="font-weight:600;color:#2D6A4F;margin-bottom:8px;"><svg class="vti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5h10.5v9H3z"/><path d="M13.5 9.5H17l3.5 3.2v2.8h-7z"/><circle cx="7" cy="18" r="1.5"/><circle cx="17.5" cy="18" r="1.5"/></svg> Geschätzte Lieferkosten</div>
       <div id="frachtDetails">
@@ -5724,9 +5719,8 @@ function prefillCheckoutVonProfil(p, userEmail) {
     if (typeof pruefeUstPflicht === 'function') pruefeUstPflicht();
   }
 
-  // „Änderungen speichern“-Checkbox nur dem Einkaufsleiter zeigen.
-  const wrap = document.getElementById('stammdatenSpeichernWrap');
-  if (wrap) wrap.style.display = (p.rolle === 'einkaufsleiter') ? '' : 'none';
+  // Stammdaten-Änderungen im Checkout ENTFERNT (Commit B): Firmen-/Rechnungsdaten
+  // pflegt ausschließlich der Einkaufsleiter über „Mein Konto → Adressen".
 }
 
 function toggleAbwLieferadresse() {
@@ -6324,7 +6318,6 @@ async function bestellungAbsenden() {
         // Lieferadress-Auswahl (serverseitig geprüft): gewählte gespeicherte Adresse + Speichern-Wunsch.
         lieferadresse_id: (lieferart === 'lieferung' && abwLiefChecked) ? (document.getElementById('lief-id')?.value || null) : null,
         lieferadresse_speichern: (lieferart === 'lieferung' && abwLiefChecked) ? (document.getElementById('lief-speichern')?.checked || false) : false,
-        stammdaten_speichern: document.getElementById('stammdaten-speichern')?.checked || false,
         bestaetigungen: {
           b2b: document.getElementById('checkB2B').checked,
           agb: document.getElementById('checkAgb').checked,
