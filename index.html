@@ -5687,7 +5687,18 @@ function waehleGespeicherteLieferadresse() {
   if (typeof pruefeCheckboxen === 'function') pruefeCheckboxen();
 }
 
+// Ansprechpartner-Namen kontrolliert in Vor-/Nachname aufteilen (NIE die Firma).
+function splitKontaktName(kontaktName) {
+  const name = String(kontaktName || '').trim();
+  if (!name) return { vorname: '', nachname: '' };
+  const teile = name.split(/\s+/);
+  if (teile.length === 1) return { vorname: teile[0], nachname: '' };
+  return { vorname: teile.slice(0, -1).join(' '), nachname: teile.at(-1) };
+}
+
 // Checkout-Felder aus dem Kundenprofil vorausfüllen (nur leere Felder; Nutzereingaben bleiben).
+// Zuordnung ist SEMANTISCH: firma→Firma, kontakt_name→Vor-/Nachname,
+// strasse+hausnr→Straßenfeld. Der Firmenname befüllt niemals Vor-/Nachname.
 function prefillCheckoutVonProfil(p, userEmail) {
   if (!p || !p.kundenkonto) return;
   // Fallback aus der jüngsten Firmenbestellung, falls das Profil noch keine
@@ -5695,21 +5706,23 @@ function prefillCheckoutVonProfil(p, userEmail) {
   const lb = p.letzte_bestellung || {};
   const setIfEmpty = (id, val) => { const el = document.getElementById(id); if (el && !el.value && val) el.value = val; };
 
-  // Name: eigener Name des eingeloggten Nutzers (Mitarbeiter ODER Einkaufsleiter).
-  // Für den Einkaufsleiter zusätzlich Fallback auf den Namen der jüngsten Bestellung.
-  const fullName = p.mitarbeiter_name || p.kontakt_name || (p.rolle === 'einkaufsleiter' ? lb.kundenname : '');
-  if (fullName) {
-    const parts = String(fullName).trim().split(/\s+/);
-    const nachname = parts.length > 1 ? parts.pop() : '';
-    const vorname = parts.join(' ') || fullName;
-    setIfEmpty('vorname', vorname);
-    if (nachname) setIfEmpty('nachname', nachname);
-  }
+  // Name: eingeloggter Mitarbeiter → eigener Name aus der Mitarbeiter-Verwaltung;
+  // sonst Ansprechpartner (kontakt_name). Entspricht der Wert der Firma
+  // (Altbestand: Registrierung schrieb die Firma in den Namen), wird er verworfen.
+  const firmaNorm = String(p.firma || '').trim();
+  let nameQuelle = (p.rolle === 'mitarbeiter' ? String(p.mitarbeiter_name || '').trim() : '') || String(p.kontakt_name || '').trim();
+  if (nameQuelle && firmaNorm && nameQuelle === firmaNorm) nameQuelle = '';
+  const geteilt = splitKontaktName(nameQuelle);
+  if (geteilt.vorname) setIfEmpty('vorname', geteilt.vorname);
+  if (geteilt.nachname) setIfEmpty('nachname', geteilt.nachname);
   setIfEmpty('firma', p.firma);
   setIfEmpty('email', userEmail || p.einkaufsleiter_email);
   setIfEmpty('telefon', p.telefon || lb.telefon);
   setIfEmpty('ustid', p.ust_idnr || lb.ust_idnr);
-  setIfEmpty('rech-strasse', p.rechnungsadresse_strasse || lb.rechnungsadresse_strasse);
+  // Straße + Hausnummer gehören im Checkout in EIN Feld ("Dieselstr. 14").
+  const strasseMitHausnr = [p.rechnungsadresse_strasse, p.rechnungsadresse_hausnr]
+    .map(v => String(v || '').trim()).filter(Boolean).join(' ');
+  setIfEmpty('rech-strasse', strasseMitHausnr || lb.rechnungsadresse_strasse);
   setIfEmpty('rech-plz', p.rechnungsadresse_plz || lb.rechnungsadresse_plz);
   setIfEmpty('rech-ort', p.rechnungsadresse_ort || lb.rechnungsadresse_ort);
   const landWert = p.rechnungsadresse_land || lb.rechnungsadresse_land;
