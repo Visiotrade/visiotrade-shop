@@ -1783,6 +1783,7 @@ function kbSessionAbgelaufen() {
   kbUser = null;
   try { localStorage.removeItem('vt_kb'); } catch (_) {}
   if (typeof resetKundenbueroAnsichten === 'function') resetKundenbueroAnsichten();
+  if (typeof resetCheckoutIdentityFields === 'function') resetCheckoutIdentityFields();
   const icon = document.getElementById('kontoIcon'); if (icon) icon.textContent = '👤';
 }
 
@@ -1829,6 +1830,7 @@ async function ladeAktuellenAuthUser() {
     kbUser = null;
     localStorage.removeItem('vt_kb');
     resetKundenbueroAnsichten();
+    if (typeof resetCheckoutIdentityFields === 'function') resetCheckoutIdentityFields();
     throw new Error('Ihre Anmeldung ist abgelaufen. Bitte melden Sie sich erneut an.');
   }
 
@@ -1936,12 +1938,17 @@ async function authAktion() {
     toggleLoginMode();
   } else {
     const res = await supabaseAuth('token?grant_type=password', {email, password:pass});
-    btn.disabled=false; btn.textContent='Anmelden';
-    if (res.error || !res.access_token) { kbError('E-Mail oder Passwort falsch.'); return; }
+    if (res.error || !res.access_token) { btn.disabled=false; btn.textContent='Anmelden'; kbError('E-Mail oder Passwort falsch.'); return; }
     resetKundenbueroAnsichten();
     kbUser = {id:res.user?.id || null, access_token:res.access_token, refresh_token:res.refresh_token || null, email:res.user?.email, firma:res.user?.user_metadata?.firma||''};
     localStorage.setItem('vt_kb', JSON.stringify(kbUser));
+    // Kontowechsel: alte Gast-/Fremd-Checkoutdaten VOLLSTÄNDIG verwerfen und die
+    // Kundendaten fertig laden, BEVOR der Nutzer weiterklicken kann (kein Race).
+    btn.textContent = 'Kundendaten werden geladen…';
+    resetCheckoutIdentityFields();
+    await ladeKundenkontext();
     await verknuepfeGastbestellungenMitKonto();
+    btn.disabled=false; btn.textContent='Anmelden';
     zeigeKundenbuero();
   }
 }
@@ -4393,6 +4400,7 @@ function abmelden() {
   kbUser = null;
   localStorage.removeItem('vt_kb');
   resetKundenbueroAnsichten();
+  resetCheckoutIdentityFields();
   document.getElementById('kontoIcon').textContent = '👤';
   showScreen('home');
 }
@@ -5557,6 +5565,35 @@ let erlaubteZahlungsarten = ['stripe','paypal','vorkasse'];
 let kundenBonusProzent = 0;
 let kundenkontoAktiv = false;
 
+// Identitäts-/Adressfelder des Checkouts vollständig zurücksetzen. Wird bei
+// JEDEM Login und Logout aufgerufen: Nach einem Kontowechsel darf kein Feld
+// mehr Daten des Gasts bzw. des vorherigen Kunden enthalten (der Warenkorb
+// bleibt bewusst unangetastet – er enthält keine Kundenidentität).
+function resetCheckoutIdentityFields() {
+  const leeren = (id) => { const el = document.getElementById(id); if (el) el.value = ''; };
+  // Kontakt + Firma + Rechnungsadresse
+  ['vorname','nachname','firma','email','telefon','ustid',
+   'rech-strasse','rech-plz','rech-ort'].forEach(leeren);
+  const rechLand = document.getElementById('rech-land'); if (rechLand) rechLand.value = 'DE';
+  if (typeof pruefeUstPflicht === 'function') pruefeUstPflicht();
+  // Abweichende Lieferadresse (inkl. gewählter gespeicherter Adresse)
+  ['lief-id','lief-empfaenger','lief-strasse','lief-plz','lief-ort','lief-telefon','lief-sonstiges'].forEach(leeren);
+  const liefLand = document.getElementById('lief-land'); if (liefLand) liefLand.value = 'DE';
+  const heb = document.getElementById('lief-hebebuehne'); if (heb) heb.checked = false;
+  const abw = document.getElementById('checkAbwLieferadresse');
+  if (abw) { abw.checked = false; if (typeof toggleAbwLieferadresse === 'function') toggleAbwLieferadresse(); }
+  const sel = document.getElementById('gespeicherteLieferadresse'); if (sel) sel.value = '';
+  gespeicherteCheckoutAdressen = [];
+  const wrap = document.getElementById('gespeicherteLieferadressenWrap'); if (wrap) wrap.style.display = 'none';
+  // Kunden-Kontext (Filiale, Konditionen) auf Gast-Standard – der nächste
+  // ladeKundenkontext() setzt sie für den (neuen) Kunden frisch.
+  kbAktuelleFiliale = '';
+  erlaubteZahlungsarten = ['stripe','paypal','vorkasse'];
+  kundenBonusProzent = 0;
+  kundenkontoAktiv = false;
+  if (typeof wendeErlaubteZahlungsartenAn === 'function') wendeErlaubteZahlungsartenAn();
+}
+
 async function ladeKundenkontext() {
   let arten = ['stripe','paypal','vorkasse'];
   let bonus = 0;
@@ -6408,6 +6445,7 @@ async function setzeNeuesPasswort() {
     // Lokale Shop-Session verwerfen → Nutzer meldet sich mit neuem Passwort neu an.
     try { localStorage.removeItem('vt_kb'); } catch (_) {}
     kbUser = null;
+    if (typeof resetCheckoutIdentityFields === 'function') resetCheckoutIdentityFields();
     _spAccessToken = null;
     if (istAdmin) {
       // Interner Admin-Mitarbeiter → ins Admin-Panel, NICHT ins Kundenkonto.
