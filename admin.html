@@ -179,7 +179,7 @@
       <div id="navDashboard" class="sidebar-item active" onclick="zeigeSeite(&#39;dashboard&#39;)"><span class="sidebar-icon">📊</span> Dashboard</div>
       <div id="navProdukte" class="sidebar-item" onclick="zeigeSeite(&#39;produkte&#39;)"><span class="sidebar-icon">🪵</span> Produkte</div>
       <div id="navKategorien" class="sidebar-item" onclick="zeigeSeite(&#39;kategorien&#39;)"><span class="sidebar-icon">📂</span> Kategorien</div>
-      <div id="navBestellungen" class="sidebar-item" onclick="zeigeSeite(&#39;bestellungen&#39;)"><span class="sidebar-icon">📦</span> Bestellungen</div>
+      <div id="navBestellungen" class="sidebar-item" onclick="zeigeSeite(&#39;bestellungen&#39;)"><span class="sidebar-icon">📦</span> Bestellungen <span id="navBestellungenBadge" style="display:none;background:#B91C1C;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></div>
       <div id="navLager" class="sidebar-item" style="display:none;" onclick="zeigeSeite(&#39;lager&#39;)"><span class="sidebar-icon">🏭</span> Lager</div>
       <div id="navVersandplanung" class="sidebar-item" style="display:none;" onclick="zeigeSeite(&#39;versandplanung&#39;)"><span class="sidebar-icon">🚚</span> Versandplanung</div>
       <div id="navNachrichten" class="sidebar-item" onclick="zeigeSeite(&#39;nachrichten&#39;)"><span class="sidebar-icon">💬</span> Nachrichten <span id="navNachrichtenBadge" style="display:none;background:#B91C1C;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></div>
@@ -1621,7 +1621,7 @@ async function ladeAdminMe() {
   aktiviereSeite(landing);
 
   // Hintergrund-Funktionen nur, wenn erlaubt (keine Daten für Lager-only).
-  if (!nurLager && (darf('bestellungen.ansehen') || darf('messages.view'))) { aktualisiereNachrichtenBadge(); aktualisierePreisanfrageBadge(); startNachrichtenPoller(); }
+  if (!nurLager && (darf('bestellungen.ansehen') || darf('messages.view'))) { aktualisiereNachrichtenBadge(); aktualisierePreisanfrageBadge(); aktualisiereBestellBadge(); startNachrichtenPoller(); }
   if (nurLager && (darf('messages.view') || darf('warehouse.chat_view'))) { aktualisiereNachrichtenBadge(); startNachrichtenPoller(); }
   if (!nurLager && (darf('produkte.ansehen') || darf('kategorien.ansehen'))) { try { ladeKategorienListe(); } catch (_) {} }
 
@@ -2365,6 +2365,10 @@ async function ladeBestellungen() {
         </td>
       </tr>`;
     }).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--gray);padding:20px;">Keine Bestellungen</td></tr>';
+    // Badge nach jedem Listen-Load live nachziehen. Da alle Status-Aktionen am Ende
+    // ladeBestellungen() aufrufen, aktualisiert sich der Badge unmittelbar nach jeder
+    // Statusänderung. Das bloße Öffnen der Seite ändert den (live gezählten) Wert nicht.
+    aktualisiereBestellBadge();
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
 }
 
@@ -3243,6 +3247,19 @@ async function aktualisiereNachrichtenBadge() {
   } catch (_) {}
 }
 
+// Badge: Anzahl offener (nicht abgeschlossener) Bestellungen – live aus der DB, kein
+// lokaler Zähler. Neue Bestellung → +1 automatisch; Abschluss (versendet/abgeholt/
+// storniert/geliefert) → −1; Rücksetzen auf offen → wieder mitgezählt. 0 → ausgeblendet.
+async function aktualisiereBestellBadge() {
+  if (istNurLager() || !darf('bestellungen.ansehen')) return; // Endpoint: bestellungen.ansehen
+  try {
+    const data = await backendApi('/api/admin/bestellungen-offen-anzahl');
+    const n = data.anzahl || 0;
+    const badge = document.getElementById('navBestellungenBadge');
+    if (badge) { badge.textContent = n; badge.style.display = n > 0 ? 'inline-block' : 'none'; }
+  } catch (_) {}
+}
+
 // Badge für offene (noch nicht bearbeitete) Preisanfragen – live aus der DB.
 async function aktualisierePreisanfrageBadge() {
   if (istNurLager() || !darf('bestellungen.ansehen')) return; // Endpoint: verbieteNurLager + bestellungen.ansehen
@@ -3262,8 +3279,17 @@ function startNachrichtenPoller() {
     if (document.hidden) return;
     aktualisiereNachrichtenBadge();
     aktualisierePreisanfrageBadge();
+    aktualisiereBestellBadge();
     ladeAdminUngelesen(true);
     if (document.getElementById('page-nachrichten')?.classList.contains('active')) ladeNachrichten(true);
+    // Bestellliste live halten, solange die Seite offen ist – aber NICHT mitten in einer
+    // Interaktion neu rendern (offenes Modal oder fokussiertes Feld/Dropdown in der Tabelle).
+    if (document.getElementById('page-bestellungen')?.classList.contains('active')) {
+      const modalOffen = document.querySelector('.modal-overlay.open');
+      const tabelle = document.getElementById('bestellungenTable');
+      const fokusInTabelle = tabelle && tabelle.contains(document.activeElement);
+      if (!modalOffen && !fokusInTabelle) ladeBestellungen();
+    }
     // Offener Chat: nur den Verlauf aktualisieren (Flacker-/Scrollschutz in renderThreadVerlauf).
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
   };
