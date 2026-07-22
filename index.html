@@ -191,6 +191,8 @@
   .zahlung-opt-icon svg { width:24px; height:24px; }
   /* Dezente Outline-Icons im Checkout (Header-Stil). */
   .vti { width:17px; height:17px; flex:0 0 auto; vertical-align:-3px; }
+  /* Einheitliche Inline-Icons (Emoji-Ersatz): 1em → erben Schriftgröße & Farbe des Kontexts. */
+  .vt-ico { width:1em; height:1em; flex:0 0 auto; vertical-align:-0.125em; display:inline-block; }
   .checkbox-row .vti, .b2b-hinweis .vti { color:var(--oak); margin-right:2px; }
   .lieferart-btn .vti { color:inherit; margin-right:7px; vertical-align:-4px; }
   .bestellen-btn { width: 100%; background: var(--green); color: var(--white); border: none; border-radius: var(--radius); padding: 18px; font-family: 'DM Sans', sans-serif; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 8px; }
@@ -865,7 +867,7 @@
 <!-- PRODUKT DETAIL -->
 <div id="screen-produkt" class="screen">
   <div class="back-bar" onclick="showScreen(&#39;produktliste&#39;)">← <span id="produktBackLabel">Stabparkett</span></div>
-  <div id="produktImg" class="produkt-img">🪵</div>
+  <div id="produktImg" class="produkt-img"><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M3 15h18"/></svg></div>
   <div class="produkt-body">
     <div id="produktBadge" class="produkt-badge badge-gruen">● Verfügbar</div>
     <div id="produktName" class="produkt-name">Stabparkett · Natur · 70×500mm · 22mm stark</div>
@@ -899,7 +901,7 @@
 <!-- WARENKORB -->
 <div id="screen-warenkorb" class="screen">
   <div class="back-bar" onclick="showScreen(&#39;produktliste&#39;)">← Weiter einkaufen</div>
-  <div id="warenkorbContent"><div class="warenkorb-items"><div class="wk-item"><div class="wk-item-icon">🪵</div><div class="wk-item-info"><div class="wk-item-name">Stabparkett · Natur · 70×500mm · 22mm stark</div><div class="wk-item-detail">1.40 m²</div><div class="wk-item-preis">63,00 €</div></div><button class="wk-remove" onclick="removeFromCart(1778499071842)">✕</button></div></div><div class="wk-summary"><div class="wk-row"><span>Nettobetrag</span><span>63,00 €</span></div><div class="wk-row"><span>MwSt. 19%</span><span>11,97 €</span></div><div class="wk-row"><span>Lieferkosten</span><span>auf Anfrage</span></div><div class="wk-row total"><span>Gesamtbetrag inkl. MwSt.</span><span>74,97 €</span></div></div><button class="checkout-btn" onclick="showScreen(&#39;kasse&#39;)">Zur Kasse →</button><div class="pb-safe"></div></div>
+  <div id="warenkorbContent"><div class="warenkorb-items"><div class="wk-item"><div class="wk-item-icon"><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="4.5" height="18" rx="0.5"/><rect x="10" y="3" width="4.5" height="18" rx="0.5"/><rect x="16" y="3" width="4.5" height="18" rx="0.5"/></svg></div><div class="wk-item-info"><div class="wk-item-name">Stabparkett · Natur · 70×500mm · 22mm stark</div><div class="wk-item-detail">1.40 m²</div><div class="wk-item-preis">63,00 €</div></div><button class="wk-remove" onclick="removeFromCart(1778499071842)">✕</button></div></div><div class="wk-summary"><div class="wk-row"><span>Nettobetrag</span><span>63,00 €</span></div><div class="wk-row"><span>MwSt. 19%</span><span>11,97 €</span></div><div class="wk-row"><span>Lieferkosten</span><span>auf Anfrage</span></div><div class="wk-row total"><span>Gesamtbetrag inkl. MwSt.</span><span>74,97 €</span></div></div><button class="checkout-btn" onclick="showScreen(&#39;kasse&#39;)">Zur Kasse →</button><div class="pb-safe"></div></div>
 </div>
 
 <!-- PREISANFRAGE ab 500 m² (RFQ – getrennt vom Warenkorb) -->
@@ -1164,7 +1166,7 @@
   <div id="uebersichtContent" style="padding:0 16px 16px;display:flex;flex-direction:column;gap:16px;">
     <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
       <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;margin-bottom:8px;">
-        <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;">🏢 Rechnungsdaten</div>
+        <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;"><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16"/><path d="M14 9h5a1 1 0 0 1 1 1v11"/><path d="M3 21h18"/><path d="M7.5 8h3M7.5 12h3M7.5 16h3"/></svg> Rechnungsdaten</div>
         ${rechnungsdatenHinweis}
         <div></div>
       </div>
@@ -1178,20 +1180,20 @@
       </div>
     </div>
     <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-        <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📋 Lieferhinweise</div>
+        <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;"><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg> Lieferhinweise</div>
         <div style="font-size:14px;line-height:1.8;color:var(--walnut);">
           ✓ Anlieferung mit Hebebühne<br>
           
         </div>
       </div>
     <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📦 Lieferart &amp; Zahlung</div>
+      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;"><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg> Lieferart &amp; Zahlung</div>
       <div style="font-size:14px;line-height:1.8;color:var(--walnut);">
-        🚚 Lieferung<br>💳 Kreditkarte / Debitkarte (Stripe)
+        <svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18h-5"/><path d="M14 8h5.5a1 1 0 0 1 .9.55L22 12v5a1 1 0 0 1-1 1h-1"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg> Lieferung<br><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg> Kreditkarte / Debitkarte (Stripe)
       </div>
     </div>
     <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🛒 Bestellpositionen</div>
+      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;"><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg> Bestellpositionen</div>
       
     <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--gray-light);font-size:14px;">
       <span style="color:var(--walnut)">Stabparkett · Natur · 70×500mm · 22mm stark<br><span style="font-size:12px;color:var(--gray)">1.40 m²</span></span>
@@ -1216,7 +1218,7 @@
       </div>
     </div>
     <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">✅ Bestätigungen</div>
+      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;"><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg> Bestätigungen</div>
       <div style="font-size:13px;line-height:1.8;color:var(--walnut);">
         ✓ Unternehmer/Gewerbetreibender bestätigt<br>
         ✓ AGB akzeptiert<br>
@@ -1235,7 +1237,7 @@
 <!-- ERFOLG ONLINE-ZAHLUNG -->
 <div id="screen-erfolg" class="screen">
   <div class="erfolg-screen">
-    <div class="erfolg-icon">✅</div>
+    <div class="erfolg-icon" style="color:var(--green);"><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div>
     <h2>Vielen Dank!</h2>
     <p>Ihre Bestellung wurde erfolgreich aufgenommen.<br>Die Zahlungsbestätigung und Ihre Rechnung werden per E-Mail versendet.</p>
     <button class="weiter-btn" onclick="showScreen(&#39;home&#39;)">Zurück zum Shop</button>
@@ -1372,7 +1374,7 @@
 <!-- ERFOLG VORKASSE -->
 <div id="screen-vorkasse-erfolg" class="screen">
   <div class="erfolg-screen" style="padding:42px 20px;">
-    <div class="erfolg-icon">🏦</div>
+    <div class="erfolg-icon" style="color:var(--oak);"><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg></div>
     <h2>Bestellung aufgenommen</h2>
     <p style="margin-bottom:18px;">Bitte überweisen Sie den Gesamtbetrag mit dem untenstehenden Verwendungszweck. Die offizielle Rechnung erhalten Sie nach Zahlungseingang per E-Mail.</p>
     <div id="vorkasseErfolgBox" style="max-width:560px;margin:0 auto 22px;text-align:left;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;">
@@ -1682,7 +1684,59 @@ function tsToken(containerId) {
 // Leer lassen, solange der Support-Bot noch nicht eingerichtet ist – dann erscheint kein Button.
 const TELEGRAM_SUPPORT_BOT = 'visiotradesupport_bot';
 
-const ICONS = {'Stabparkett':'🪵','Mosaikparkett':'🔲','Hochkantlamellenparkett':'📐','Massivholzdielen':'🏡','Altholz':'🌿','Breitlamellenparkett':'▬','Landhausdielen':'🏘️','Fischgrätparkett':'🐟','Fischgratparkett':'🐟'};
+// =============================================================================
+// Einheitliches Icon-System (Emoji-Ersatz): Outline-SVGs im Header-Stil
+// (24er-viewBox, stroke currentColor, Strichstärke 1.6). vtIco(name) liefert
+// ein 1em-Icon, das Schriftgröße & Farbe des Kontexts erbt – exakt wie zuvor
+// die Emojis, nur konsistent und professionell.
+// =============================================================================
+const VT_ICON_PATHS = {
+  truck: '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18h-5"/><path d="M14 8h5.5a1 1 0 0 1 .9.55L22 12v5a1 1 0 0 1-1 1h-1"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>',
+  package: '<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/>',
+  landmark: '<line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/>',
+  card: '<rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>',
+  wallet: '<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>',
+  'file-text': '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
+  receipt: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h5"/>',
+  mail: '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+  phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+  building: '<path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16"/><path d="M14 9h5a1 1 0 0 1 1 1v11"/><path d="M3 21h18"/><path d="M7.5 8h3M7.5 12h3M7.5 16h3"/>',
+  clipboard: '<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
+  cart: '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>',
+  'check-circle': '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+  'x-circle': '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
+  alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5 5.5 5.5 0 0 1-5.5 5.5H11"/>',
+  banknote: '<rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>',
+  inbox: '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+  'circle-dot': '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="2"/>',
+  user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  'user-check': '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/>',
+  factory: '<path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/>',
+  send: '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  // Sortiments-Icons (Verlege-Muster, eigener Entwurf im selben Strich-Stil)
+  stab: '<rect x="4" y="3" width="4.5" height="18" rx="0.5"/><rect x="10" y="3" width="4.5" height="18" rx="0.5"/><rect x="16" y="3" width="4.5" height="18" rx="0.5"/>',
+  mosaik: '<rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/>',
+  lamelle: '<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M7.5 3v18M12 3v18M16.5 3v18"/>',
+  diele: '<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M3 15h18"/>',
+  blatt: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+  breitdiele: '<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 12h18"/>',
+  landhaus: '<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M3 15h18M12 3v6M8 9v6M15 15v6"/>',
+  fischgraet: '<path d="m3 9 9-6 9 6"/><path d="m3 15 9-6 9 6"/><path d="m3 21 9-6 9 6"/>'
+};
+function vtIco(name) {
+  const p = VT_ICON_PATHS[name];
+  if (!p) return '';
+  return '<svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
+}
+const HOLZ_ICON = vtIco('diele');   // neutraler Fallback (früher 🪵)
+const ICONS = {
+  'Stabparkett': vtIco('stab'), 'Mosaikparkett': vtIco('mosaik'),
+  'Hochkantlamellenparkett': vtIco('lamelle'), 'Massivholzdielen': vtIco('diele'),
+  'Altholz': vtIco('blatt'), 'Breitlamellenparkett': vtIco('breitdiele'),
+  'Landhausdielen': vtIco('landhaus'), 'Fischgrätparkett': vtIco('fischgraet'), 'Fischgratparkett': vtIco('fischgraet')
+};
 
 let warenkorb = [], aktKat = null, aktProdukt = null, aktPakete = [], lieferart = 'abholung', zahlungsart = 'stripe';
 let kbAktuelleFiliale = '';   // Filiale des Bestellers (für BV/Filiale-Anzeige im Warenkorb)
@@ -1779,7 +1833,7 @@ function kbSessionAbgelaufen() {
   try { localStorage.removeItem('vt_kb'); } catch (_) {}
   if (typeof resetKundenbueroAnsichten === 'function') resetKundenbueroAnsichten();
   if (typeof resetCheckoutIdentityFields === 'function') resetCheckoutIdentityFields();
-  const icon = document.getElementById('kontoIcon'); if (icon) icon.textContent = '👤';
+  const icon = document.getElementById('kontoIcon'); if (icon) icon.innerHTML = vtIco('user');
 }
 
 // Zentraler Fetch fürs Kundenbüro: hängt das Auth-Token an, erneuert es bei 401
@@ -1929,7 +1983,7 @@ async function authAktion() {
     const res = await supabaseAuth('signup', {email, password:pass, data:{firma}});
     btn.disabled=false; btn.textContent='Konto erstellen';
     if (res.error) { kbError(res.error.message || 'Fehler.'); return; }
-    kbSuccess('✅ Registrierung erfolgreich! Bitte E-Mail bestätigen.');
+    kbSuccess('Registrierung erfolgreich! Bitte E-Mail bestätigen.');
     toggleLoginMode();
   } else {
     const res = await supabaseAuth('token?grant_type=password', {email, password:pass});
@@ -1971,7 +2025,7 @@ function zeigeKundenbuero() {
   document.getElementById('kbEmail').textContent = kbUser.email;
   document.getElementById('kbKontoEmail').textContent = kbUser.email;
   document.getElementById('kbKontoFirma').textContent = kbUser.firma || '—';
-  document.getElementById('kontoIcon').textContent = '✅';
+  document.getElementById('kontoIcon').innerHTML = vtIco('user-check');
   showScreen('kundenbuero');
   b2bRenderNav(b2bAktKat.id);   // Kategorienavigation auch im Konto-Bereich anzeigen
   kbZeige('bestellungen');      // Einstieg: Meine Bestellungen (separater "Offene Zahlungen"-Bereich entfällt)
@@ -2151,7 +2205,7 @@ function kbNachrichtThreadCard(t) {
     return `<div class="kb-card-line" style="padding:14px;cursor:pointer;" onclick="oeffnePreisanfrageVorgang(${t.preisanfrage_id},'${escapeHtml(paNr)}')">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
         <div style="min-width:0;">
-          <strong>📩 Preisanfrage ${escapeHtml(paNr)}</strong>${statusBadge}${badge}
+          <strong>${vtIco('inbox')} Preisanfrage ${escapeHtml(paNr)}</strong>${statusBadge}${badge}
           <div style="font-size:12.5px;color:var(--gray);margin-top:5px;">Letzte Aktivität${rel ? ' · ' + rel : ''}</div>
           ${lastTxt ? `<div style="font-size:13px;color:var(--walnut);margin-top:4px;max-height:40px;overflow:hidden;white-space:pre-wrap;">${escapeHtml(lastTxt)}</div>` : ''}
         </div>
@@ -2167,7 +2221,7 @@ function kbNachrichtThreadCard(t) {
   return `<div class="kb-card-line" style="padding:14px;cursor:pointer;" onclick="oeffneNachrichtModal(${t.bestellung_id},'${t.typ || 'nachricht'}')">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
       <div style="min-width:0;">
-        <strong>📋 Bestellung #${t.bestellung_id}</strong>${b.rechnung_nummer ? ` <span style="color:var(--gray);font-size:13px;">· ${escapeHtml(b.rechnung_nummer)}</span>` : ''}${statusBadge}${badge}
+        <strong>${vtIco('clipboard')} Bestellung #${t.bestellung_id}</strong>${b.rechnung_nummer ? ` <span style="color:var(--gray);font-size:13px;">· ${escapeHtml(b.rechnung_nummer)}</span>` : ''}${statusBadge}${badge}
         <div style="font-size:12.5px;color:var(--gray);margin-top:5px;">Letzte Aktivität${rel ? ' · ' + rel : ''}</div>
         ${lastTxt ? `<div style="font-size:13px;color:var(--walnut);margin-top:4px;max-height:40px;overflow:hidden;white-space:pre-wrap;">${escapeHtml(lastTxt)}</div>` : ''}
       </div>
@@ -2285,10 +2339,10 @@ function verwendungszweck(b) {
 // Wird im gesamten Shop verwendet, damit überall dieselbe Schreibweise erscheint.
 function zahlungsartLabel(z) {
   const labels = {
-    vorkasse: '🏦 Vorkasse / Überweisung',
-    paypal: '🅿️ PayPal',
-    stripe: '💳 Kreditkarte / Debitkarte',
-    rechnung: '🧾 Kauf auf Rechnung'
+    vorkasse: 'Vorkasse / Überweisung',
+    paypal: 'PayPal',
+    stripe: 'Kreditkarte / Debitkarte',
+    rechnung: 'Kauf auf Rechnung'
   };
   return labels[String(z || '').toLowerCase()] || (z || '—');
 }
@@ -2420,14 +2474,14 @@ function paAktionenHtml(pa) {
   }
   if (st === 'angenommen') {
     return `<div style="margin-top:14px;background:var(--green-light);border:1px solid #BFE3CE;border-radius:10px;padding:12px;font-size:13px;color:var(--walnut);">
-      ✅ <strong>Angebot angenommen.</strong> VisioTrade erstellt die verbindliche Bestellung – Sie finden sie anschließend unter „Meine Bestellungen".
+      ${vtIco('check-circle')} <strong>Angebot angenommen.</strong> VisioTrade erstellt die verbindliche Bestellung – Sie finden sie anschließend unter „Meine Bestellungen".
       <button class="kb-gray-btn" type="button" style="width:100%;margin-top:10px;" onclick="oeffnePaAnnahme()">Angaben anpassen / erneut senden</button>
     </div>`;
   }
   if (st === 'in_bestellung') {
     const oid = pa.bestellung_id;
     return `<div style="margin-top:14px;background:var(--oak-pale);border-radius:10px;padding:12px;font-size:13px;color:var(--walnut);">
-      📦 In eine Bestellung umgewandelt${oid ? ` (Bestellung #${oid})` : ''}.
+      ${vtIco('package')} In eine Bestellung umgewandelt${oid ? ` (Bestellung #${oid})` : ''}.
       ${oid ? `<button class="weiter-btn" type="button" style="width:100%;margin-top:10px;padding:12px;" onclick="zeigeBestellungAusPa(${oid})">Zur Bestellung #${oid} →</button>` : ''}
     </div>`;
   }
@@ -2638,10 +2692,10 @@ function renderNachrichtOrderPane(b) {
     `<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--gray-light);padding:4px 0;"><span>${escapeHtml(p.produktname || 'Parkett')}<br><span style="color:var(--gray);font-size:12px;">${Number(p.menge_m2_gesamt || 0).toFixed(2)} m² · ${Number(p.anzahl_pakete || 0)} Pkt.</span></span><strong>${formatEuro(p.gesamtpreis)}</strong></div>`
   ).join('') || '<span style="color:var(--gray);">—</span>';
   const docBtns = [];
-  if (b.auftragsbestaetigung_versendet_am) docBtns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'auftragsbestaetigung','Auftragsbestätigung')">📄 Auftragsbestätigung</button>`);
-  if (b.lieferschein_versendet_am) docBtns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'lieferschein','Lieferschein')">📄 Lieferschein</button>`);
-  if (b.lexoffice_id || b.rechnung_pdf_storage_path) docBtns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'rechnung','Rechnung')">📄 Rechnung</button>`);
-  if (kbTracking(b)) docBtns.push(`<a class="kb-gray-btn" href="${trackingLink(b)}" target="_blank">📦 Sendungsverfolgung</a>`);
+  if (b.auftragsbestaetigung_versendet_am) docBtns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'auftragsbestaetigung','Auftragsbestätigung')">${vtIco('file-text')} Auftragsbestätigung</button>`);
+  if (b.lieferschein_versendet_am) docBtns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'lieferschein','Lieferschein')">${vtIco('file-text')} Lieferschein</button>`);
+  if (b.lexoffice_id || b.rechnung_pdf_storage_path) docBtns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'rechnung','Rechnung')">${vtIco('file-text')} Rechnung</button>`);
+  if (kbTracking(b)) docBtns.push(`<a class="kb-gray-btn" href="${trackingLink(b)}" target="_blank">${vtIco('package')} Sendungsverfolgung</a>`);
   el.innerHTML = `
     <div style="font-weight:700;color:var(--oak);font-size:16px;margin-bottom:8px;">Bestellung #${b.id}</div>
     <button class="kb-yellow-btn" type="button" style="width:100%;margin-bottom:12px;" onclick="zeigeBestellungAusVorgang(${b.id})">Bestellung anzeigen</button>
@@ -2746,21 +2800,21 @@ function kbAnhangHtml(a) {
   if (String(a.mime_type || '').startsWith('image/')) {
     return `<a href="${a.url}" target="_blank" rel="noopener"><img src="${a.url}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #ddd;"></a>`;
   }
-  return `<a href="${a.url}" target="_blank" rel="noopener" style="font-size:12px;color:var(--oak);text-decoration:underline;">📄 ${escapeHtml(a.dateiname || 'Datei')}</a>`;
+  return `<a href="${a.url}" target="_blank" rel="noopener" style="font-size:12px;color:var(--oak);text-decoration:underline;">${vtIco('file-text')} ${escapeHtml(a.dateiname || 'Datei')}</a>`;
 }
 
 // Vorgangscenter: Systemereignisse werden als zentrierte Timeline-Einträge dargestellt
 // (statt Chat-Bubble). Icons je Ereignis-Code.
 const VORGANG_ICONS = {
-  bestellung_eingegangen: '🟢', auftrag_bestaetigt: '📄', bezahlt: '💶',
-  rechnung_erstellt: '📄', lieferschein_erstellt: '📄', tracking_verfuegbar: '📦',
-  versendet: '🚚', geliefert: '✅', storniert: '⛔', reklamation_eroeffnet: '⚠️',
-  ruecksendung: '↩️', rechnungskorrektur_erstellt: '🧾',
-  preisanfrage_eingegangen: '📩', angebot_erstellt: '💶', angebot_angenommen: '✅',
-  angebot_abgelehnt: '⛔', preisanfrage_abgelehnt: '⛔', preisanfrage_in_bestellung: '📦'
+  bestellung_eingegangen: 'circle-dot', auftrag_bestaetigt: 'file-text', bezahlt: 'banknote',
+  rechnung_erstellt: 'file-text', lieferschein_erstellt: 'file-text', tracking_verfuegbar: 'package',
+  versendet: 'truck', geliefert: 'check-circle', storniert: 'x-circle', reklamation_eroeffnet: 'alert',
+  ruecksendung: 'undo', rechnungskorrektur_erstellt: 'receipt',
+  preisanfrage_eingegangen: 'inbox', angebot_erstellt: 'banknote', angebot_angenommen: 'check-circle',
+  angebot_abgelehnt: 'x-circle', preisanfrage_abgelehnt: 'x-circle', preisanfrage_in_bestellung: 'package'
 };
 function kbSystemEintrag(m) {
-  const ico = VORGANG_ICONS[m.ereignis_code] || '•';
+  const ico = VORGANG_ICONS[m.ereignis_code] ? vtIco(VORGANG_ICONS[m.ereignis_code]) : '•';
   const zeit = m.created_at ? new Date(m.created_at).toLocaleString('de-DE') : '';
   const meta = (m.meta && typeof m.meta === 'object') ? m.meta : {};
   const oid = document.getElementById('nachrichtOrderId')?.value;
@@ -2788,7 +2842,7 @@ function kbNachrichtBubble(m) {
   const align = istAdmin ? 'flex-start' : 'flex-end';
   const bg = istAdmin ? '#ffffff' : 'var(--oak-pale)';
   const istTelegram = m.quelle === 'telegram_support' || m.external_channel === 'telegram_support';
-  const kanalTag = istTelegram ? ' · <span style="color:#229ED9;font-weight:600;">📨 Telegram</span>' : (m.quelle === 'email_inbound' ? ' · <span style="color:#888;">✉️ E-Mail</span>' : '');
+  const kanalTag = istTelegram ? ' · <span style="color:#229ED9;font-weight:600;">' + vtIco('send') + ' Telegram</span>' : (m.quelle === 'email_inbound' ? ' · <span style="color:#888;">' + vtIco('mail') + ' E-Mail</span>' : '');
   const anh = (m.anhaenge || []).map(kbAnhangHtml).join('');
   return `<div style="display:flex;justify-content:${align};margin-bottom:10px;">
     <div style="max-width:80%;background:${bg};border:1px solid #E5E0D8;border-radius:10px;padding:9px 12px;">
@@ -2836,7 +2890,7 @@ async function nachrichtFotosGewaehlt(ev) {
         const b64 = await dateiZuBase64(file);
         nachrichtFotosData.push({ name: file.name, typ: 'application/pdf', contentBase64: b64 });
         const tag = document.createElement('span');
-        tag.textContent = '📄 ' + file.name;
+        tag.innerHTML = vtIco('file-text') + ' ' + escapeHtml(file.name);
         tag.style.cssText = 'font-size:12px;background:#eee;border-radius:6px;padding:4px 8px;';
         box.appendChild(tag);
       } else if (file.type === 'image/jpeg' || file.type === 'image/png') {
@@ -3131,7 +3185,7 @@ async function erneutKaufen(orderId) {
       const gesamtM2 = kombi.reduce((s, k) => s + k.anzahl * Number(k.paket.menge_m2 || 0), 0);
       const gesamtPreis = kombi.reduce((s, k) => s + posBetrag(k.paket, k.anzahl), 0);
       const gesamtGewicht = kombi.reduce((s, k) => s + k.anzahl * Number(produkt.gewicht_pro_paket_kg || 0), 0);
-      warenkorb.push({ id: Date.now() + hinzugefuegt, produktId: produkt.id, name: produkt.name, icon: '🪵', kombi, benoetigt_m2: gesamtM2, gesamt_m2: gesamtM2, preis: gesamtPreis, gewicht: gesamtGewicht, gewichtProPaket: Number(produkt.gewicht_pro_paket_kg || 0) });
+      warenkorb.push({ id: Date.now() + hinzugefuegt, produktId: produkt.id, name: produkt.name, icon: HOLZ_ICON, kombi, staerke_mm: Number(produkt.staerke_mm) || null, benoetigt_m2: gesamtM2, gesamt_m2: gesamtM2, preis: gesamtPreis, gewicht: gesamtGewicht, gewichtProPaket: Number(produkt.gewicht_pro_paket_kg || 0) });
       hinzugefuegt++;
     });
     const cc = document.getElementById('cartCount'); if (cc) cc.textContent = warenkorb.length;
@@ -3152,7 +3206,7 @@ function renderOrderCard(b, context = 'bestellungen') {
   const bestEmail = b.besteller_email || b.bestellt_von_email || b.email || '';
   const bestName = b.besteller_name || b.kundenname || '';
   const bestellerInfo = (kbIstEinkaufsleiter && (bestName || bestEmail))
-    ? `<div style="font-size:12px;color:var(--gray);margin-top:3px;">👤 Bestellt von: ${escapeHtml(bestName || '—')}${bestEmail ? ' · ' + escapeHtml(bestEmail) : ''}</div>`
+    ? `<div style="font-size:12px;color:var(--gray);margin-top:3px;">${vtIco('user')} Bestellt von: ${escapeHtml(bestName || '—')}${bestEmail ? ' · ' + escapeHtml(bestEmail) : ''}</div>`
     : '';
   // BV/Bauvorhaben (je Position, dedupliziert) + Filiale der Bestellung – kompakt im Produktbereich.
   const bvListe = [...new Set((b.positionen || []).map(p => (p.bauvorhaben || '').trim()).filter(Boolean))];
@@ -3166,20 +3220,20 @@ function renderOrderCard(b, context = 'bestellungen') {
   let primaryButton = '';
   if (context === 'rechnungen') {
     if (b.lexoffice_id || b.rechnung_pdf_storage_path) {
-      primaryButton = `<button class="kb-yellow-btn" type="button" onclick="zeigeKundeRechnungPdf(${b.id})">📄 Rechnung ansehen</button>`;
+      primaryButton = `<button class="kb-yellow-btn" type="button" onclick="zeigeKundeRechnungPdf(${b.id})">${vtIco('file-text')} Rechnung ansehen</button>`;
     } else if (b.status === 'bezahlt') {
       primaryButton = `<button class="kb-yellow-btn" type="button">Rechnung per E-Mail gesendet</button>`;
     } else if (isVorkasseOffen) {
       primaryButton = `<button class="kb-yellow-btn" type="button" onclick="toggleBestellDetails('${detailId}')">Zahlungsdaten anzeigen</button>`;
     }
   } else if (context === 'tracking') {
-    if (kbTracking(b)) primaryButton = `<a class="kb-yellow-btn" href="${trackingLink(b)}" target="_blank">📦 Sendung verfolgen</a>`;
-    else if (b.status === 'geliefert') primaryButton = `<button class="kb-gray-btn" type="button">✅ Geliefert</button>`;
-    else if (b.status === 'versendet') primaryButton = `<button class="kb-gray-btn" type="button">🚚 Versendet</button>`;
+    if (kbTracking(b)) primaryButton = `<a class="kb-yellow-btn" href="${trackingLink(b)}" target="_blank">${vtIco('package')} Sendung verfolgen</a>`;
+    else if (b.status === 'geliefert') primaryButton = `<button class="kb-gray-btn" type="button">${vtIco('check-circle')} Geliefert</button>`;
+    else if (b.status === 'versendet') primaryButton = `<button class="kb-gray-btn" type="button">${vtIco('truck')} Versendet</button>`;
     else primaryButton = `<button class="kb-gray-btn" type="button">Sendung wird vorbereitet</button>`;
   } else if (context === 'reklamation') {
     const fristTxt = b.reklamation_frist ? `<div style="font-size:12px;color:var(--gray);margin-top:4px;text-align:center;">Möglich bis: ${formatDateDE(b.reklamation_frist)}</div>` : '';
-    primaryButton = `<button class="kb-yellow-btn" type="button" onclick="oeffneNachrichtModal(${b.id},'reklamation')">✉️ Rücksendung/Reklamation</button>${fristTxt}`;
+    primaryButton = `<button class="kb-yellow-btn" type="button" onclick="oeffneNachrichtModal(${b.id},'reklamation')">${vtIco('mail')} Rücksendung/Reklamation</button>${fristTxt}`;
   } else {
     const btns = [];
     if (isVorkasseOffen) {
@@ -3187,15 +3241,15 @@ function renderOrderCard(b, context = 'bestellungen') {
     } else {
       btns.push(`<button class="kb-yellow-btn" type="button" onclick="erneutKaufen(${b.id})" style="display:inline-flex;align-items:center;gap:6px;justify-content:center;">${cartSvg(15)} Erneut kaufen</button>`);
     }
-    if (b.auftragsbestaetigung_versendet_am) btns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'auftragsbestaetigung','Auftragsbestätigung')">📄 Auftragsbestätigung</button>`);
-    if (b.lieferschein_versendet_am) btns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'lieferschein','Lieferschein')">📄 Lieferschein</button>`);
-    if (b.lexoffice_id || b.rechnung_pdf_storage_path) btns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'rechnung','Rechnung')">📄 Rechnung</button>`);
-    if (kbTracking(b)) btns.push(`<a class="kb-gray-btn" href="${trackingLink(b)}" target="_blank">📦 Sendungsverfolgung</a>`);
-    else btns.push(`<button class="kb-gray-btn" type="button" disabled style="opacity:.5;cursor:not-allowed;">📦 Tracking folgt</button>`);
+    if (b.auftragsbestaetigung_versendet_am) btns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'auftragsbestaetigung','Auftragsbestätigung')">${vtIco('file-text')} Auftragsbestätigung</button>`);
+    if (b.lieferschein_versendet_am) btns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'lieferschein','Lieferschein')">${vtIco('file-text')} Lieferschein</button>`);
+    if (b.lexoffice_id || b.rechnung_pdf_storage_path) btns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'rechnung','Rechnung')">${vtIco('file-text')} Rechnung</button>`);
+    if (kbTracking(b)) btns.push(`<a class="kb-gray-btn" href="${trackingLink(b)}" target="_blank">${vtIco('package')} Sendungsverfolgung</a>`);
+    else btns.push(`<button class="kb-gray-btn" type="button" disabled style="opacity:.5;cursor:not-allowed;">${vtIco('package')} Tracking folgt</button>`);
     // Rücksendung/Reklamation direkt auf der Bestellung – nur geliefert & innerhalb der Frist.
     if (b.reklamation_moeglich) {
       const fristTxt = b.reklamation_frist ? `<div style="font-size:11px;color:var(--gray);text-align:center;margin-top:-2px;">Möglich bis ${formatDateDE(b.reklamation_frist)}</div>` : '';
-      btns.push(`<button class="kb-gray-btn" type="button" onclick="oeffneNachrichtModal(${b.id},'reklamation')">✉️ Rücksendung/Reklamation</button>${fristTxt}`);
+      btns.push(`<button class="kb-gray-btn" type="button" onclick="oeffneNachrichtModal(${b.id},'reklamation')">${vtIco('mail')} Rücksendung/Reklamation</button>${fristTxt}`);
     }
     primaryButton = btns.join('');
   }
@@ -3206,10 +3260,10 @@ function renderOrderCard(b, context = 'bestellungen') {
   const _badge = _unread > 0
     ? `<span style="position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;line-height:18px;background:#C0392B;color:#fff;border-radius:9px;font-size:11px;font-weight:700;text-align:center;padding:0 5px;box-shadow:0 1px 3px rgba(0,0,0,.25);">${_unread}</span>`
     : '';
-  primaryButton = (primaryButton || '') + `<button class="kb-gray-btn" type="button" style="position:relative;overflow:visible;" onclick="oeffneNachrichtModal(${b.id},'nachricht')">📋 Vorgang öffnen${_badge}</button>`;
+  primaryButton = (primaryButton || '') + `<button class="kb-gray-btn" type="button" style="position:relative;overflow:visible;" onclick="oeffneNachrichtModal(${b.id},'nachricht')">${vtIco('clipboard')} Vorgang öffnen${_badge}</button>`;
   // Telegram-Support (nur falls Support-Bot konfiguriert) – mit Bestell-Kontext per Deep-Link.
   if (typeof TELEGRAM_SUPPORT_BOT !== 'undefined' && TELEGRAM_SUPPORT_BOT) {
-    primaryButton += `<a class="kb-gray-btn" href="https://t.me/${TELEGRAM_SUPPORT_BOT}?start=order_${b.id}" target="_blank" rel="noopener">📨 Telegram-Support</a>`;
+    primaryButton += `<a class="kb-gray-btn" href="https://t.me/${TELEGRAM_SUPPORT_BOT}?start=order_${b.id}" target="_blank" rel="noopener">${vtIco('send')} Telegram-Support</a>`;
   }
 
   return `<div class="kb-card-line" id="kbOrderCard${safeContext}${b.id}">
@@ -3332,7 +3386,7 @@ async function storniereVorkasseBestellung(bestellungId, checkboxId, buttonId) {
       throw new Error(data.error || 'Stornierung fehlgeschlagen');
     }
 
-    alert(`✅ Vorkasse-Bestellung #${bestellungId} wurde storniert.`);
+    alert(`Vorkasse-Bestellung #${bestellungId} wurde storniert.`);
 
     kbOrdersCache = null;
     await ladeKundenBestellungen(true);
@@ -4127,7 +4181,7 @@ async function ladeMitarbeiterEinladen() {
     const data = await r.json().catch(() => ({}));
     if (!r.ok || !data.ok) throw new Error(data.error || 'Einladung fehlgeschlagen');
     berInviteWahl = null;   // Auswahl nach erfolgreichem Versand zurücksetzen
-    alert('✅ Einladung an ' + email + ' gesendet. Der Mitarbeiter erhält eine E-Mail, um sein Passwort festzulegen.');
+    alert('Einladung an ' + email + ' gesendet. Der Mitarbeiter erhält eine E-Mail, um sein Passwort festzulegen.');
     ladeTeam();
   } catch (e) {
     alert('Fehler: ' + e.message);
@@ -4387,7 +4441,7 @@ async function passwortAendern() {
   });
   const res = await r.json().catch(() => ({}));
   if (!r.ok || res.error) { alert('Fehler: ' + (res.error?.message || 'Anmeldung abgelaufen. Bitte neu anmelden.')); return; }
-  alert('✅ Passwort erfolgreich geändert.');
+  alert('Passwort erfolgreich geändert.');
   document.getElementById('kbNeuesPasswort').value='';
 }
 
@@ -4396,7 +4450,7 @@ function abmelden() {
   localStorage.removeItem('vt_kb');
   resetKundenbueroAnsichten();
   resetCheckoutIdentityFields();
-  document.getElementById('kontoIcon').textContent = '👤';
+  document.getElementById('kontoIcon').innerHTML = vtIco('user');
   showScreen('home');
 }
 
@@ -4404,7 +4458,7 @@ function abmelden() {
 (function() {
   try {
     const s = localStorage.getItem('vt_kb');
-    if (s) { kbUser = JSON.parse(s); document.addEventListener('DOMContentLoaded', () => { document.getElementById('kontoIcon').textContent = '✅'; if (typeof b2bSetKontoLabel === 'function') b2bSetKontoLabel(); }); }
+    if (s) { kbUser = JSON.parse(s); document.addEventListener('DOMContentLoaded', () => { document.getElementById('kontoIcon').innerHTML = vtIco('user-check'); if (typeof b2bSetKontoLabel === 'function') b2bSetKontoLabel(); }); }
   } catch(e) {}
 })();
 
@@ -4526,7 +4580,7 @@ async function ladeKategorien() {
   // kein XSS über Kategorienamen, und Apostrophe brechen den Handler nicht mehr.
   grid.innerHTML = data.map(k=>`
     <div class="kat-card" data-kat-id="${Number(k.id)}" data-kat-name="${escapeHtml(k.name)}" onclick="zeigeProduktliste(Number(this.dataset.katId), this.dataset.katName)">
-      <div class="kat-card-img">${ICONS[k.name]||'🪵'}</div>
+      <div class="kat-card-img">${ICONS[k.name]||HOLZ_ICON}</div>
       <div class="kat-card-body">
         <div class="kat-card-name">${escapeHtml(k.name)}</div>
         <div class="kat-card-count">Kollektion →</div>
@@ -4907,11 +4961,18 @@ function b2bRenderTabelle() {
   </table>`;
   b2bRenderSummary();
 }
+// Bild lädt nicht → einheitliches Holz-Icon als Ersatz (statt Emoji).
+function b2bThumbErsatz(img) {
+  const d = document.createElement('div');
+  d.className = 'b2b-thumb b2b-thumb-fallback';
+  d.innerHTML = HOLZ_ICON;
+  img.replaceWith(d);
+}
 function b2bRowHtml(p) {
   const bild = (Array.isArray(p.bild_urls) && p.bild_urls[0]) ? p.bild_urls[0] : null;
   const thumb = bild
-    ? `<img src="${escapeHtml(bild)}" class="b2b-thumb" loading="lazy" onerror="this.outerHTML='<div class=&quot;b2b-thumb b2b-thumb-fallback&quot;>🪵</div>'">`
-    : '<div class="b2b-thumb b2b-thumb-fallback">🪵</div>';
+    ? `<img src="${escapeHtml(bild)}" class="b2b-thumb" loading="lazy" onerror="b2bThumbErsatz(this)">`
+    : '<div class="b2b-thumb b2b-thumb-fallback">' + HOLZ_ICON + '</div>';
   let name = `${p.holzart || ''} ${p._sortName || ''}`.trim() || p.name || '—';
   // Kantenprofil (Besäumt / Nut/Feder) zur Unterscheidung an den Namen hängen.
   const profil = /bes[äa]umt/i.test(p.name || '') ? 'Besäumt' : (/nut[\s\/-]*feder/i.test(p.name || '') ? 'Nut/Feder' : '');
@@ -4976,7 +5037,7 @@ function b2bRowUpdate(pid) {
   const pakAnz = kombi.reduce((s, k) => s + k.anzahl, 0);
   const gM2 = kombi.reduce((s, k) => s + k.anzahl * k.paket.menge_m2, 0);
   const gPreis = kombi.reduce((s, k) => s + posBetrag(k.paket, k.anzahl), 0);
-  pk.innerHTML = `= ${pakAnz} Paket${pakAnz !== 1 ? 'e' : ''} (${b2bNum(gM2, 3)} m²) <span class="b2b-info" title="Es werden ganze Pakete (VE) bestellt. Ihre Menge wird auf die nächste volle Verpackungseinheit aufgerundet.">ⓘ</span>`;
+  pk.innerHTML = `= ${pakAnz} Paket${pakAnz !== 1 ? 'e' : ''} (${b2bNum(gM2, 3)} m²) <span class="b2b-info" title="Es werden ganze Pakete (VE) bestellt. Ihre Menge wird auf die nächste volle Verpackungseinheit aufgerundet.">${vtIco('info')}</span>`;
   gs.textContent = b2bNum(gPreis) + ' €';
   b2bRenderSummary();
 }
@@ -4999,7 +5060,7 @@ function b2bRenderSummary() {
   box.innerHTML = `
     <div class="b2b-sum-left">
       <div><span class="b2b-muted">Ausgewählte Artikel:</span> <strong>${artikel}</strong></div>
-      <div class="b2b-sum-menge"><span class="b2b-muted">Gesamtmenge:</span> <strong>${b2bNum(gInput)} m²</strong> &nbsp;<span class="b2b-muted">= ${gPak} Paket${gPak !== 1 ? 'e' : ''} (${b2bNum(gM2, 3)} m²)</span> <span class="b2b-info" title="Bestellt werden ganze Pakete (VE). Mengen werden auf die nächste volle VE aufgerundet.">ⓘ</span></div>
+      <div class="b2b-sum-menge"><span class="b2b-muted">Gesamtmenge:</span> <strong>${b2bNum(gInput)} m²</strong> &nbsp;<span class="b2b-muted">= ${gPak} Paket${gPak !== 1 ? 'e' : ''} (${b2bNum(gM2, 3)} m²)</span> <span class="b2b-info" title="Bestellt werden ganze Pakete (VE). Mengen werden auf die nächste volle VE aufgerundet.">${vtIco('info')}</span></div>
     </div>
     <div class="b2b-sum-mid"><span class="b2b-muted">Gesamtsumme netto</span><div class="b2b-sum-total">${b2bNum(gPreis)} €</div></div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
@@ -5046,7 +5107,7 @@ function b2bAnfrageRow(pid) {
     anfrageKorb.push({
       id: Date.now() + (++anfrageSeq),
       produktId: p.id, name, artikelnummer: p.artikelnummer || '',
-      icon: ICONS[b2bAktKat.name] || '🪵',
+      icon: ICONS[b2bAktKat.name] || HOLZ_ICON,
       menge_m2: m2, verfuegbar_m2: Math.round(p._verfuegbarM2 || 0),
       ve_m2: Number(p._veM2) || 0,
       bauvorhaben: '', wunsch_lieferdatum: '', hinweis: ''
@@ -5125,7 +5186,7 @@ function renderPreisanfrage() {
   const items = anfrageKorb.map(it => {
     const verf = Number(it.verfuegbar_m2) || 0;
     return `<div class="wk-item" style="align-items:flex-start;">
-      <div class="wk-item-icon">${escapeHtml(it.icon)}</div>
+      <div class="wk-item-icon">${it.icon}</div>
       <div class="wk-item-info">
         <div class="wk-item-name">${escapeHtml(it.name)}</div>
         ${it.artikelnummer ? `<div class="wk-item-detail">Art.-Nr.: ${escapeHtml(it.artikelnummer)}</div>` : ''}
@@ -5229,7 +5290,7 @@ function b2bPush(p, kombi) {
     for (const neu of kombi) { const t = vorhanden.kombi.find(k => k.paket.id === neu.paket.id); if (t) t.anzahl += neu.anzahl; else vorhanden.kombi.push(neu); }
     vorhanden.gesamt_m2 += gM2; vorhanden.preis += gPreis; vorhanden.gewicht += gGew; vorhanden.benoetigt_m2 = (vorhanden.benoetigt_m2 || 0) + gM2;
   } else {
-    warenkorb.push({ id: Date.now() + (++b2bCartSeq), produktId: p.id, name, icon: ICONS[b2bAktKat.name] || '🪵', kombi, benoetigt_m2: gM2, gesamt_m2: gM2, preis: gPreis, gewicht: gGew, gewichtProPaket: Number(p.gewicht_pro_paket_kg) || 0 });
+    warenkorb.push({ id: Date.now() + (++b2bCartSeq), produktId: p.id, name, icon: ICONS[b2bAktKat.name] || HOLZ_ICON, kombi, staerke_mm: Number(p.staerke_mm) || null, benoetigt_m2: gM2, gesamt_m2: gM2, preis: gPreis, gewicht: gGew, gewichtProPaket: Number(p.gewicht_pro_paket_kg) || 0 });
   }
 }
 function b2bNachCart() {
@@ -5285,7 +5346,7 @@ async function zeigeProduktDetail(produktId) {
   const sortName = await getSortierungName(aktProdukt.sortierung_id);
   const staerke = aktProdukt.staerke_mm ? ` · ${aktProdukt.staerke_mm}mm stark` : '';
   document.getElementById('produktName').textContent = `${aktKat.name} · ${sortName}${abmessung ? ' · ' + abmessung + 'mm' : ''}${staerke}`;
-  document.getElementById('produktImg').textContent = ICONS[aktKat.name] || '🪵';
+  document.getElementById('produktImg').innerHTML = ICONS[aktKat.name] || HOLZ_ICON;
   document.getElementById('produktPreis').innerHTML = `${aktProdukt.preis_pro_m2.toFixed(2).replace('.',',')} € <span>/ m²</span>`;
   document.getElementById('produktBeschreibung').textContent = aktProdukt.beschreibung || aktProdukt.kurzbeschreibung || '';
 
@@ -5354,6 +5415,24 @@ function posBetrag(paket, anzahl) {
   return Math.round(roh * 100) / 100;
 }
 
+// Deutsche Zahlformatierung für die Anzeige (1.234,56) – reine Darstellung.
+function deZahl(n, dec = 2) {
+  return Number(n || 0).toLocaleString('de-DE', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+
+// Kompakte Technik-Zeile einer Warenkorbposition: Stärke · VE je Paket · €/m² netto.
+// NUR aus den gespeicherten Produkt-/Paketdaten – nichts fest verdrahtet, nichts
+// zurückgerechnet. Fehlende Angaben werden ausgeblendet (kein falscher Wert).
+function wkPositionInfo(item) {
+  const teile = [];
+  if (Number(item.staerke_mm) > 0) teile.push(deZahl(item.staerke_mm, 0) + ' mm');
+  const veWerte = [...new Set((item.kombi || []).map(k => Number(k.paket && k.paket.menge_m2) || 0).filter(v => v > 0))];
+  if (veWerte.length === 1) teile.push(deZahl(veWerte[0], 3) + ' m² je Paket');
+  const ppm = (item.kombi || []).map(k => Number(k.paket && k.paket.preis_pro_m2) || 0).find(v => v > 0);
+  if (ppm) teile.push(deZahl(ppm, 2) + ' €/m² netto');
+  return teile.join(' · ');
+}
+
 function optimierePakete(benoetigt, pakete) {
   if (!pakete.length) return null;
   const sortiert = [...pakete].sort((a,b)=>b.menge_m2-a.menge_m2);
@@ -5400,7 +5479,7 @@ function addToCart() {
     vorhanden.gewicht += gesamtGewicht;
     vorhanden.benoetigt_m2 = (vorhanden.benoetigt_m2 || 0) + (isFinite(benoetigt) ? benoetigt : 0);
   } else {
-    warenkorb.push({id:Date.now(),produktId:aktProdukt.id,name,icon:ICONS[aktKat.name]||'🪵',kombi,benoetigt_m2:benoetigt,gesamt_m2:gesamtM2,preis:gesamtPreis,gewicht:gesamtGewicht,gewichtProPaket:(aktProdukt.gewicht_pro_paket_kg||0)});
+    warenkorb.push({id:Date.now(),produktId:aktProdukt.id,name,icon:ICONS[aktKat.name]||HOLZ_ICON,kombi,staerke_mm:Number(aktProdukt.staerke_mm)||null,benoetigt_m2:benoetigt,gesamt_m2:gesamtM2,preis:gesamtPreis,gewicht:gesamtGewicht,gewichtProPaket:(aktProdukt.gewicht_pro_paket_kg||0)});
   }
 
   pruefeHebebuehneGewicht();
@@ -5497,7 +5576,7 @@ function renderWarenkorb() {
   if (!warenkorb.length) { cont.innerHTML=`<div class="warenkorb-leer"><div class="warenkorb-leer-icon" style="color:var(--oak)">${cartSvg(54)}</div><h3>Warenkorb ist leer</h3><p>Entdecken Sie unser Sortiment.</p></div>`; return; }
   const gesamt = warenkorb.reduce((s,i)=>s+i.preis,0);
   const anzahl = warenkorb.length;
-  const items = warenkorb.map(item=>{const pakete=item.kombi.reduce((s,k)=>s+k.anzahl,0);return `<div class="wk-item"><div class="wk-item-icon">${escapeHtml(item.icon)}</div><div class="wk-item-info"><div class="wk-item-name">${escapeHtml(item.name)}</div><div class="wk-item-detail">${item.gesamt_m2.toFixed(3)} m²</div><div style="display:flex;align-items:center;gap:10px;margin:8px 0;"><button type="button" onclick="aendereWarenkorbMenge(${item.id},-1)" aria-label="Menge verringern" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--gray-light);background:var(--white);color:var(--walnut);font-size:18px;line-height:1;cursor:pointer;">−</button><input type="number" min="1" inputmode="numeric" value="${pakete}" onchange="setWarenkorbMenge(${item.id},this.value)" onclick="this.select()" aria-label="Anzahl Pakete" style="width:64px;height:30px;text-align:center;border:1px solid var(--gray-light);border-radius:8px;font-size:14px;color:var(--walnut);background:var(--white);"><span style="font-size:13px;color:var(--walnut);">Paket(e)</span><button type="button" onclick="aendereWarenkorbMenge(${item.id},1)" aria-label="Menge erhöhen" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--gray-light);background:var(--white);color:var(--walnut);font-size:18px;line-height:1;cursor:pointer;">+</button></div><div class="wk-item-preis">${item.preis.toFixed(2).replace('.',',')} €</div><div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;"><span style="font-size:12px;color:var(--gray);white-space:nowrap;">BV / Bauvorhaben</span><input type="text" value="${escapeHtml(item.bauvorhaben||'')}" oninput="setWarenkorbBV(${item.id}, this.value)" placeholder="optional" style="flex:1;min-width:150px;padding:6px 9px;border:1px solid var(--gray-light);border-radius:8px;font-size:13px;color:var(--walnut);background:var(--white);box-sizing:border-box;">${kbAktuelleFiliale ? `<span style="font-size:12px;color:var(--gray);white-space:nowrap;">Filiale: <strong style="color:var(--walnut);">${escapeHtml(kbAktuelleFiliale)}</strong></span>` : ''}</div></div><button class="wk-remove" onclick="removeFromCart(${item.id})" title="Entfernen">✕</button></div>`}).join('');
+  const items = warenkorb.map(item=>{const pakete=item.kombi.reduce((s,k)=>s+k.anzahl,0);const info=wkPositionInfo(item);return `<div class="wk-item"><div class="wk-item-icon">${item.icon}</div><div class="wk-item-info"><div class="wk-item-name">${escapeHtml(item.name)}</div>${info ? `<div class="wk-item-detail" style="font-size:12px;color:var(--gray);">${info}</div>` : ''}<div class="wk-item-detail">${deZahl(item.gesamt_m2,3)} m² · ${pakete} Paket${pakete!==1?'e':''}</div><div style="display:flex;align-items:center;gap:10px;margin:8px 0;"><button type="button" onclick="aendereWarenkorbMenge(${item.id},-1)" aria-label="Menge verringern" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--gray-light);background:var(--white);color:var(--walnut);font-size:18px;line-height:1;cursor:pointer;">−</button><input type="number" min="1" inputmode="numeric" value="${pakete}" onchange="setWarenkorbMenge(${item.id},this.value)" onclick="this.select()" aria-label="Anzahl Pakete" style="width:64px;height:30px;text-align:center;border:1px solid var(--gray-light);border-radius:8px;font-size:14px;color:var(--walnut);background:var(--white);"><span style="font-size:13px;color:var(--walnut);">Paket(e)</span><button type="button" onclick="aendereWarenkorbMenge(${item.id},1)" aria-label="Menge erhöhen" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--gray-light);background:var(--white);color:var(--walnut);font-size:18px;line-height:1;cursor:pointer;">+</button></div><div class="wk-item-preis"><span style="font-size:12px;color:var(--gray);font-weight:500;">Positionssumme netto:</span> ${deZahl(item.preis,2)} €</div><div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;"><span style="font-size:12px;color:var(--gray);white-space:nowrap;">BV / Bauvorhaben</span><input type="text" value="${escapeHtml(item.bauvorhaben||'')}" oninput="setWarenkorbBV(${item.id}, this.value)" placeholder="optional" style="flex:1;min-width:150px;padding:6px 9px;border:1px solid var(--gray-light);border-radius:8px;font-size:13px;color:var(--walnut);background:var(--white);box-sizing:border-box;">${kbAktuelleFiliale ? `<span style="font-size:12px;color:var(--gray);white-space:nowrap;">Filiale: <strong style="color:var(--walnut);">${escapeHtml(kbAktuelleFiliale)}</strong></span>` : ''}</div></div><button class="wk-remove" onclick="removeFromCart(${item.id})" title="Entfernen">✕</button></div>`}).join('');
   cont.innerHTML=`<div class="wk-wrap">
     <div class="wk-col-items">
       <div class="wk-head">Warenkorb <span>(${anzahl} ${anzahl===1?'Artikel':'Artikel'})</span></div>
@@ -5506,10 +5585,10 @@ function renderWarenkorb() {
     <aside class="wk-col-sum">
       <div class="wk-summary">
         <div class="wk-sum-title">Zusammenfassung</div>
-        <div class="wk-row"><span>Nettobetrag</span><span>${gesamt.toFixed(2).replace('.',',')} €</span></div>
-        <div class="wk-row"><span>MwSt. 19%</span><span>${(gesamt*0.19).toFixed(2).replace('.',',')} €</span></div>
+        <div class="wk-row"><span>Nettobetrag</span><span>${deZahl(gesamt)} €</span></div>
+        <div class="wk-row"><span>MwSt. 19%</span><span>${deZahl(gesamt*0.19)} €</span></div>
         <div class="wk-row"><span>Lieferkosten</span><span>auf Anfrage</span></div>
-        <div class="wk-row total"><span>Gesamt inkl. MwSt.</span><span>${(gesamt*1.19).toFixed(2).replace('.',',')} €</span></div>
+        <div class="wk-row total"><span>Gesamt inkl. MwSt.</span><span>${deZahl(gesamt*1.19)} €</span></div>
         <button class="checkout-btn" onclick="showScreen('kasse')">Zur Kasse <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
         <div class="wk-sum-hint">Lieferkosten werden im nächsten Schritt berechnet.</div>
       </div>
@@ -6028,7 +6107,7 @@ function zeigeBestelluebersicht() {
     ? '<div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;text-align:center;white-space:normal;">Lieferadresse entspricht Rechnungsdaten</div>'
     : '<div></div>';
   const zahlungLabel = getZahlungLabel();
-  const lieferartLabel = lieferart === 'abholung' ? '🏭 Abholung' : '🚚 Lieferung';
+  const lieferartLabel = lieferart === 'abholung' ? vtIco('factory') + ' Abholung' : vtIco('truck') + ' Lieferung';
 
   // Rechnungsadresse
   const rechLand = document.getElementById('rech-land')?.selectedOptions[0]?.text || 'Deutschland';
@@ -6047,10 +6126,10 @@ function zeigeBestelluebersicht() {
     const liefEigen = document.getElementById('lief-eigenAbladung')?.checked || false;
     const liefSonst = document.getElementById('lief-sonstiges')?.value.trim() || '';
     liefHtml = `<div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🚚 Abweichende Lieferadresse</div>
+      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">${vtIco('truck')} Abweichende Lieferadresse</div>
       <div style="font-size:14px;line-height:1.8;color:var(--walnut);">
         ${liefEmpf}<br>${liefStr}<br>${liefPlz} ${liefOrt}<br>${liefLand}
-        ${liefTel ? '<br>📞 ' + liefTel : ''}
+        ${liefTel ? '<br>' + vtIco('phone') + ' ' + liefTel : ''}
         ${liefHeb ? '<br>✓ Anlieferung mit Hebebühne' : ''}
         ${liefEigen ? '<br>✓ Eigenständige Entladung durch den Käufer' : ''}
         ${liefSonst ? '<br><em style="color:var(--gray)">Hinweis: ' + liefSonst + '</em>' : ''}
@@ -6062,7 +6141,7 @@ function zeigeBestelluebersicht() {
     const eigen = document.getElementById('eigenAbladung')?.checked || false;
     if (heb || eigen || sonst) {
       liefHtml = `<div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-        <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📋 Lieferhinweise</div>
+        <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">${vtIco('clipboard')} Lieferhinweise</div>
         <div style="font-size:14px;line-height:1.8;color:var(--walnut);">
           ${heb ? '✓ Anlieferung mit Hebebühne<br>' : ''}
           ${eigen ? '✓ Eigenständige Entladung durch den Käufer<br>' : ''}
@@ -6096,12 +6175,12 @@ function zeigeBestelluebersicht() {
     `<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:14px;">
       <span style="color:var(--walnut)">Lieferkosten (netto)</span>
       <span style="font-weight:600;color:var(--oak)">${aktuellerFrachtKunde.toFixed(2).replace('.',',')} €</span>
-    </div>` : (lieferart === 'abholung' ? '<div style="font-size:13px;color:var(--green);padding:4px 0;">🏭 Abholung – kostenlos</div>' : '');
+    </div>` : (lieferart === 'abholung' ? '<div style="font-size:13px;color:var(--green);padding:4px 0;">' + vtIco('factory') + ' Abholung – kostenlos</div>' : '');
 
   const uebersicht = document.getElementById('uebersichtContent');
   uebersicht.innerHTML = `
     <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🏢 Rechnungsdaten</div>
+      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">${vtIco('building')} Rechnungsdaten</div>
       <div style="font-size:14px;line-height:1.8;color:var(--walnut);">
         <strong>${vorname} ${nachname}</strong><br>
         ${firma}<br>
@@ -6113,13 +6192,13 @@ function zeigeBestelluebersicht() {
     </div>
     ${liefHtml}
     <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📦 Lieferart & Zahlung</div>
+      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">${vtIco('package')} Lieferart & Zahlung</div>
       <div style="font-size:14px;line-height:1.8;color:var(--walnut);">
         ${lieferartLabel}<br>${zahlungLabel}
       </div>
     </div>
     <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🛒 Bestellpositionen</div>
+      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">${vtIco('cart')} Bestellpositionen</div>
       ${warenkorbHtml}
       ${frachtPreis}
       <div style="display:flex;justify-content:space-between;padding:10px 0 4px;font-size:15px;font-weight:700;color:var(--walnut);">
@@ -6136,11 +6215,11 @@ function zeigeBestelluebersicht() {
         <span>Gesamt inkl. MwSt.</span><span>${((gesamt + (lieferart==='lieferung' && aktuellerFrachtKunde ? aktuellerFrachtKunde : 0))*1.19).toFixed(2).replace('.',',')} €</span>
       </div>
       <div style="margin-top:10px;background:#FFF4D6;border:1px solid #E0C36B;border-radius:8px;padding:10px 12px;font-size:12.5px;color:#6B4E00;">
-        🚚 <strong>Lieferzeit: ca. 7–8 Arbeitstage nach Auftragsbestätigung bzw. Geldeingang.</strong>
+        ${vtIco('truck')} <strong>Lieferzeit: ca. 7–8 Arbeitstage nach Auftragsbestätigung bzw. Geldeingang.</strong>
       </div>
     </div>
     <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">✅ Bestätigungen</div>
+      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">${vtIco('check-circle')} Bestätigungen</div>
       <div style="font-size:13px;line-height:1.8;color:var(--walnut);">
         ✓ Unternehmer/Gewerbetreibender bestätigt<br>
         ✓ AGB akzeptiert<br>
@@ -6455,10 +6534,10 @@ async function setzeNeuesPasswort() {
     _spAccessToken = null;
     if (istAdmin) {
       // Interner Admin-Mitarbeiter → ins Admin-Panel, NICHT ins Kundenkonto.
-      spSuccess('✅ Passwort erfolgreich festgelegt. Sie werden zum Admin-Bereich weitergeleitet …');
+      spSuccess('Passwort erfolgreich festgelegt. Sie werden zum Admin-Bereich weitergeleitet …');
       setTimeout(() => { window.location.href = '/admin.html'; }, 1500);
     } else {
-      spSuccess('✅ Passwort erfolgreich geändert. Sie können sich jetzt anmelden.');
+      spSuccess('Passwort erfolgreich geändert. Sie können sich jetzt anmelden.');
       setTimeout(() => { window.history.replaceState({}, document.title, window.location.pathname); showScreen('konto'); }, 1800);
     }
   } catch (e) { spError(e.message); }
