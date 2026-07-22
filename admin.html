@@ -79,6 +79,9 @@
   .sidebar-item.active { color: #fff; font-weight: 700; background: linear-gradient(135deg, var(--oak) 0%, var(--oak-dark) 100%); box-shadow: 0 4px 12px rgba(139,105,20,0.28); }
   .sidebar-item.active:hover { color: #fff; background: linear-gradient(135deg, var(--oak) 0%, var(--oak-dark) 100%); }
   .sidebar-icon { font-size: 18px; width: 22px; text-align: center; opacity: 0.9; }
+  /* Einheitliche Outline-Icons (Emoji-Ersatz, Shop-Stil): erben Schriftgröße & Farbe. */
+  .vt-ico { width:1em; height:1em; flex:0 0 auto; vertical-align:-0.125em; display:inline-block; }
+  .sidebar-icon .vt-ico { width:18px; height:18px; vertical-align:-4px; }
   .main { padding: 28px; overflow-y: auto; }
   .page { display: none; }
   .page.active { display: block; }
@@ -176,19 +179,19 @@
 
   <div class="admin-wrap">
     <div class="sidebar">
-      <div id="navDashboard" class="sidebar-item active" onclick="zeigeSeite(&#39;dashboard&#39;)"><span class="sidebar-icon">📊</span> Dashboard</div>
-      <div id="navProdukte" class="sidebar-item" onclick="zeigeSeite(&#39;produkte&#39;)"><span class="sidebar-icon">🪵</span> Produkte</div>
-      <div id="navKategorien" class="sidebar-item" onclick="zeigeSeite(&#39;kategorien&#39;)"><span class="sidebar-icon">📂</span> Kategorien</div>
-      <div id="navBestellungen" class="sidebar-item" onclick="zeigeSeite(&#39;bestellungen&#39;)"><span class="sidebar-icon">📦</span> Bestellungen <span id="navBestellungenBadge" style="display:none;background:#B91C1C;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></div>
-      <div id="navLager" class="sidebar-item" style="display:none;" onclick="zeigeSeite(&#39;lager&#39;)"><span class="sidebar-icon">🏭</span> Lager</div>
-      <div id="navVersandplanung" class="sidebar-item" style="display:none;" onclick="zeigeSeite(&#39;versandplanung&#39;)"><span class="sidebar-icon">🚚</span> Versandplanung</div>
-      <div id="navNachrichten" class="sidebar-item" onclick="zeigeSeite(&#39;nachrichten&#39;)"><span class="sidebar-icon">💬</span> Nachrichten <span id="navNachrichtenBadge" style="display:none;background:#B91C1C;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></div>
-      <div id="navPreisanfragen" class="sidebar-item" onclick="zeigeSeite(&#39;preisanfragen&#39;)"><span class="sidebar-icon">📩</span> Preisanfragen <span id="navPreisanfragenBadge" style="display:none;background:#B91C1C;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></div>
-      <div id="navKunden" class="sidebar-item" onclick="zeigeSeite(&#39;kunden&#39;)"><span class="sidebar-icon">🏢</span> B2B-Kunden</div>
-      <div id="navPreise" class="sidebar-item" onclick="zeigeSeite(&#39;preise&#39;)"><span class="sidebar-icon">💶</span> Lieferkosten</div>
-      <div id="navAdminusers" class="sidebar-item" style="display:none;" onclick="zeigeSeite(&#39;adminusers&#39;)"><span class="sidebar-icon">🛡️</span> Admin-Benutzer</div>
-      <div id="navAuditlog" class="sidebar-item" style="display:none;" onclick="zeigeSeite(&#39;auditlog&#39;)"><span class="sidebar-icon">📝</span> Audit-Log</div>
-      <div id="navPapierkorb" class="sidebar-item" style="display:none;" onclick="zeigeSeite(&#39;papierkorb&#39;)"><span class="sidebar-icon">🗑️</span> Papierkorb</div>
+      <div id="navDashboard" class="sidebar-item active" onclick="zeigeSeite(&#39;dashboard&#39;)"><span class="sidebar-icon" data-ico="layout-dashboard"></span> Dashboard</div>
+      <div id="navProdukte" class="sidebar-item" onclick="zeigeSeite(&#39;produkte&#39;)"><span class="sidebar-icon" data-ico="boxes"></span> Produkte</div>
+      <div id="navKategorien" class="sidebar-item" onclick="zeigeSeite(&#39;kategorien&#39;)"><span class="sidebar-icon" data-ico="folder-tree"></span> Kategorien</div>
+      <div id="navBestellungen" class="sidebar-item" onclick="zeigeSeite(&#39;bestellungen&#39;)"><span class="sidebar-icon" data-ico="package"></span> Bestellungen <span id="navBestellungenBadge" style="display:none;background:#B91C1C;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></div>
+      <div id="navLager" class="sidebar-item" style="display:none;" onclick="zeigeSeite(&#39;lager&#39;)"><span class="sidebar-icon" data-ico="warehouse"></span> Lager</div>
+      <div id="navVersandplanung" class="sidebar-item" style="display:none;" onclick="zeigeSeite(&#39;versandplanung&#39;)"><span class="sidebar-icon" data-ico="truck"></span> Versandplanung</div>
+      <div id="navNachrichten" class="sidebar-item" onclick="zeigeSeite(&#39;nachrichten&#39;)"><span class="sidebar-icon" data-ico="message-circle"></span> Nachrichten <span id="navNachrichtenBadge" style="display:none;background:#B91C1C;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></div>
+      <div id="navPreisanfragen" class="sidebar-item" onclick="zeigeSeite(&#39;preisanfragen&#39;)"><span class="sidebar-icon" data-ico="file-question"></span> Preisanfragen <span id="navPreisanfragenBadge" style="display:none;background:#B91C1C;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></div>
+      <div id="navKunden" class="sidebar-item" onclick="zeigeSeite(&#39;kunden&#39;)"><span class="sidebar-icon" data-ico="building"></span> B2B-Kunden</div>
+      <div id="navPreise" class="sidebar-item" onclick="zeigeSeite(&#39;preise&#39;)"><span class="sidebar-icon" data-ico="banknote"></span> Lieferkosten</div>
+      <div id="navAdminusers" class="sidebar-item" style="display:none;" onclick="zeigeSeite(&#39;adminusers&#39;)"><span class="sidebar-icon" data-ico="shield"></span> Admin-Benutzer</div>
+      <div id="navAuditlog" class="sidebar-item" style="display:none;" onclick="zeigeSeite(&#39;auditlog&#39;)"><span class="sidebar-icon" data-ico="clipboard"></span> Audit-Log</div>
+      <div id="navPapierkorb" class="sidebar-item" style="display:none;" onclick="zeigeSeite(&#39;papierkorb&#39;)"><span class="sidebar-icon" data-ico="trash"></span> Papierkorb</div>
     </div>
 
     <div class="main">
@@ -319,7 +322,7 @@
             <option value="stripe">Nur Stripe</option>
             <option value="paypal">Nur PayPal</option>
           </select>
-          <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="reservierungenFreigeben()">⏱ Abgelaufene Reservierungen freigeben</button>
+          <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="reservierungenFreigeben()"><span data-ico="clock"></span> Abgelaufene Reservierungen freigeben</button>
         </div>
         <div class="table-wrap">
           <table><thead><tr><th>Nr.</th><th>Datum</th><th>Kunde</th><th>Firma</th><th>Betrag (brutto)</th><th>Zahlung</th><th>Status</th><th>Reservierung</th><th>Aktionen</th></tr></thead>
@@ -331,7 +334,7 @@
       <div id="page-lager" class="page">
         <div class="page-title">Lager · Kommissionierung & Versand</div>
         <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
-          <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="ladeLager()">🔄 Aktualisieren</button>
+          <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="ladeLager()"><span data-ico="refresh"></span> Aktualisieren</button>
           <span id="lagerHinweis" style="font-size:13px;color:var(--gray);">Bezahlte Bestellungen, die für den Versand vorbereitet werden müssen.</span>
         </div>
         <div id="lagerCards" style="display:flex;flex-direction:column;gap:14px;"><div style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</div></div>
@@ -341,7 +344,7 @@
       <div id="page-versandplanung" class="page">
         <div class="page-title">Versandplanung · Disposition</div>
         <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
-          <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="ladeVersandplanung()">🔄 Aktualisieren</button>
+          <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="ladeVersandplanung()"><span data-ico="refresh"></span> Aktualisieren</button>
           <span style="font-size:13px;color:var(--gray);">Kommissionierte Bestellungen – Spedition beauftragen und Versand bestätigen.</span>
         </div>
         <div style="overflow-x:auto;background:var(--white);border:1px solid var(--gray-light);border-radius:12px;">
@@ -374,10 +377,10 @@
           </select>
           <select id="filterNachrichtKanal" onchange="ladeNachrichten()" style="padding:9px 13px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;background:var(--white);">
             <option value="">Alle Kanäle</option>
-            <option value="shop">💬 Shop</option>
-            <option value="email">✉️ E-Mail</option>
-            <option value="telegram_support">📨 Telegram</option>
-            <option value="whatsapp">🟢 WhatsApp</option>
+            <option value="shop">Shop</option>
+            <option value="email">E-Mail</option>
+            <option value="telegram_support">Telegram</option>
+            <option value="whatsapp">WhatsApp</option>
             <option value="__allgemein">Nicht zugeordnet</option>
           </select>
           <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="ladeNachrichten()">↻ Aktualisieren</button>
@@ -514,7 +517,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;produktModal&#39;)">Abbrechen</button>
-      <button class="btn btn-green btn-sm" onclick="speichereProdukt()">💾 Speichern</button>
+      <button class="btn btn-green btn-sm" onclick="speichereProdukt()"><span data-ico="save"></span> Speichern</button>
     </div>
   </div>
 </div>
@@ -532,7 +535,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;katModal&#39;)">Abbrechen</button>
-      <button class="btn btn-green btn-sm" onclick="speichereKategorie()">💾 Speichern</button>
+      <button class="btn btn-green btn-sm" onclick="speichereKategorie()"><span data-ico="save"></span> Speichern</button>
     </div>
   </div>
 </div>
@@ -546,7 +549,7 @@
     <div class="modal-footer">
       <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;preisanfrageModal&#39;)">Schließen</button>
       <button class="btn btn-sm" id="paBtnAblehnen" style="background:var(--cream);color:var(--red);border:1px solid var(--red);" onclick="paStatusSetzen(document.getElementById(&#39;paModalId&#39;).value,&#39;abgelehnt&#39;)">Ablehnen</button>
-      <button class="btn btn-green btn-sm" id="paBtnAngebot" onclick="angebotSenden(document.getElementById(&#39;paModalId&#39;).value)">📤 Angebot senden</button>
+      <button class="btn btn-green btn-sm" id="paBtnAngebot" onclick="angebotSenden(document.getElementById(&#39;paModalId&#39;).value)"><span data-ico="upload"></span> Angebot senden</button>
     </div>
   </div>
 </div>
@@ -554,7 +557,7 @@
 <!-- LAGER: VERSANDDATEN ERFASSEN (Kommissionierung → an Disposition) -->
 <div class="modal-overlay" id="versanddatenModal">
   <div class="modal" style="max-width:560px;">
-    <div class="modal-title">📦 Versanddaten erfassen</div>
+    <div class="modal-title"><span data-ico="package"></span> Versanddaten erfassen</div>
     <input type="hidden" id="vdId">
     <p style="font-size:12px;color:var(--gray);margin:0 0 12px;">Bitte erfassen Sie die Versanddaten der fertig kommissionierten Ware. Diese Informationen werden an die Disposition übergeben.</p>
     <div style="display:flex;gap:10px;">
@@ -574,7 +577,7 @@
 <!-- BÜRO/DISPOSITION: SPEDITION BEAUFTRAGEN -->
 <div class="modal-overlay" id="versandSpeditionModal">
   <div class="modal" style="max-width:520px;">
-    <div class="modal-title">🚚 Spedition beauftragen</div>
+    <div class="modal-title"><span data-ico="truck"></span> Spedition beauftragen</div>
     <input type="hidden" id="vsId">
     <div id="vsVersanddaten" style="font-size:12px;color:var(--gray);background:var(--cream);border-radius:8px;padding:10px;margin-bottom:12px;">—</div>
     <div class="field"><label>Spedition</label>
@@ -604,7 +607,7 @@
 
 <div class="modal-overlay" id="versandVersendenModal">
   <div class="modal" style="max-width:520px;">
-    <div class="modal-title">📨 Versenden & Rechnung senden</div>
+    <div class="modal-title"><span data-ico="send"></span> Versenden & Rechnung senden</div>
     <input type="hidden" id="vvId">
     <p style="font-size:12px;color:var(--gray);margin:0 0 12px;">Der Kunde erhält genau EINE E-Mail: Versandbestätigung mit Sendungsverfolgung und Rechnung im Anhang.</p>
     <div class="field"><label>Spedition</label>
@@ -633,7 +636,7 @@
 <!-- LAGER: INTERNER BESTELL-CHAT -->
 <div class="modal-overlay" id="lagerChatModal">
   <div class="modal" style="max-width:560px;">
-    <div class="modal-title">🏭 Interner Chat zur Bestellung <span id="lagerChatNr"></span></div>
+    <div class="modal-title"><span data-ico="warehouse"></span> Interner Chat zur Bestellung <span id="lagerChatNr"></span></div>
     <p style="font-size:12px;color:var(--gray);margin:0 0 10px;">Nur intern sichtbar (Admin/Superadmin/Lager). Wird <strong>niemals</strong> an den Kunden gesendet.</p>
     <div id="lagerChatVerlauf" style="max-height:46vh;overflow-y:auto;background:var(--cream);border-radius:8px;padding:12px;margin-bottom:10px;">—</div>
     <input type="hidden" id="lagerChatId">
@@ -677,7 +680,7 @@
     <div id="kuMitarbeiter" style="margin-top:8px;"></div>
     <div class="modal-footer">
       <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;kundeModal&#39;)">Abbrechen</button>
-      <button class="btn btn-green btn-sm" onclick="speichereKunde()">💾 Speichern</button>
+      <button class="btn btn-green btn-sm" onclick="speichereKunde()"><span data-ico="save"></span> Speichern</button>
     </div>
   </div>
 </div>
@@ -698,8 +701,8 @@
         <label style="display:block;font-size:12px;font-weight:700;color:var(--oak);text-transform:uppercase;margin-bottom:4px;">Rollen-Vorlage</label>
         <select id="amVorlage" onchange="wendeVorlageAn()" style="width:100%;padding:9px 12px;border:2px solid var(--gray-light);border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;">
           <option value="">— Eigene Auswahl —</option>
-          <option value="lager">🏭 Lager (alle Lagerrechte)</option>
-          <option value="lager_chat">🏭 Lager – nur Kommissionierung + Chat</option>
+          <option value="lager">Lager (alle Lagerrechte)</option>
+          <option value="lager_chat">Lager – nur Kommissionierung + Chat</option>
           <option value="keine">Alle Rechte entfernen</option>
         </select>
       </div>
@@ -788,6 +791,71 @@
 const SUPABASE_URL = 'https://rvouqjhrbjsmqyzvqtxy.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_gr_VMD5No5n8McWg93vq1A_gO6pKoUQ';
 const BACKEND_API_URL = 'https://visiotrade-backend-production.up.railway.app';
+
+// =============================================================================
+// Zentrales Icon-System (Emoji-Ersatz) – identischer Outline-Stil wie im Shop
+// (Lucide, 24er-viewBox, stroke currentColor, Strichstärke 1.6). vtIco(name)
+// liefert ein 1em-Icon, das Schriftgröße & Farbe des Kontexts erbt. EINE Quelle,
+// keine mehrfach eingefügten SVG-Dateien.
+// =============================================================================
+const VT_ICON_PATHS = {
+  'layout-dashboard': '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
+  package: '<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/>',
+  boxes: '<path d="M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 1.03 1.75l3 1.65a2 2 0 0 0 1.94 0L10 20v-4l-4.66-2.55a2 2 0 0 0-1.87 0Z"/><path d="M7 16.5 3.5 14 7 12"/><path d="M14 20l1.03.57a2 2 0 0 0 1.94 0l3-1.65A2 2 0 0 0 21 17.13v-3.24a2 2 0 0 0-.97-1.71L16 10l-4 2.5v3.5"/><path d="M17 16.5 20.5 14 17 12"/><path d="m7.5 4.27 4.5 2.6 4.5-2.6"/><path d="M12 12V7l4.5-2.6"/><path d="M7.5 4.27 12 2l4.5 2.27"/>',
+  'folder-tree': '<path d="M20 10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2.5a1 1 0 0 1-.8-.4l-.9-1.2A1 1 0 0 0 15 3h-2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z"/><path d="M20 21a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2.9a1 1 0 0 1-.88-.55l-.42-.85a1 1 0 0 0-.92-.6H13a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z"/><path d="M3 5a2 2 0 0 0 2 2h3"/><path d="M3 3v13a2 2 0 0 0 2 2h3"/>',
+  'folder-open': '<path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/>',
+  warehouse: '<path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/><rect width="12" height="12" x="6" y="10"/>',
+  truck: '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18h-5"/><path d="M14 8h5.5a1 1 0 0 1 .9.55L22 12v5a1 1 0 0 1-1 1h-1"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>',
+  'message-circle': '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+  'file-question': '<path d="M12 17h.01"/><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/>',
+  trash: '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
+  eye: '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+  'check-circle': '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+  'badge-check': '<path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/>',
+  'x-circle': '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
+  landmark: '<line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/>',
+  clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  'clock-alert': '<path d="M12 6v6l3.644 1.822"/><path d="M20.968 12.61A9 9 0 1 0 12.61 20.968"/><path d="M18 16v3"/><path d="M18 22h.01"/>',
+  'file-text': '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
+  receipt: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h5"/>',
+  mail: '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+  inbox: '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+  send: '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+  save: '<path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/>',
+  shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+  lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  unlock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>',
+  pencil: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
+  clipboard: '<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
+  'clipboard-edit': '<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M10.42 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2m8 0h2a2 2 0 0 1 2 2v3.5"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.01a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>',
+  refresh: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
+  printer: '<path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect width="12" height="8" x="6" y="14"/>',
+  recycle: '<path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5"/><path d="M11 19h8.203a1.83 1.83 0 0 0 1.556-.89 1.784 1.784 0 0 0 0-1.775l-1.226-2.12"/><path d="m14 16-3 3 3 3"/><path d="M8.293 13.596 4.875 9.5 1.5 13"/><path d="m9.344 5.811 1.093-1.892A1.83 1.83 0 0 1 11.985 3a1.784 1.784 0 0 1 1.546.888l3.943 6.843"/><path d="m13.378 9.633 4.163 1.4 1.1-3.792"/>',
+  paperclip: '<path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l7.293-7.415"/>',
+  zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',
+  'circle-dot': '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="2"/>',
+  user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  building: '<rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/>',
+  banknote: '<rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>',
+  card: '<rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>',
+  alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  sparkles: '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>',
+  diele: '<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M3 15h18"/>'
+};
+function vtIco(name) {
+  const p = VT_ICON_PATHS[name];
+  if (!p) return '';
+  return '<svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
+}
+// Statische Icons aus data-ico befüllen (zentrale Quelle, kein dupliziertes SVG-Markup).
+function vtInitDataIcons(root) {
+  (root || document).querySelectorAll('[data-ico]').forEach(el => {
+    if (!el.firstChild) el.innerHTML = vtIco(el.getAttribute('data-ico'));
+  });
+}
+document.addEventListener('DOMContentLoaded', () => vtInitDataIcons());
 
 // ===== SCHNELLANTWORTEN – hier Texte pflegen =====
 // Textbausteine für das „Schnellantwort wählen…"-Dropdown im Nachrichtenfenster.
@@ -903,10 +971,10 @@ function euro(value) {
 
 function zahlungsartLabel(zahlungsart) {
   const labels = {
-    vorkasse: '🏦 Vorkasse / Überweisung',
-    stripe: '💳 Kreditkarte / Debitkarte',
-    paypal: '🅿️ PayPal',
-    rechnung: '🧾 Kauf auf Rechnung'
+    vorkasse: '' + vtIco('landmark') + ' Vorkasse / Überweisung',
+    stripe: '' + vtIco('card') + ' Kreditkarte / Debitkarte',
+    paypal: '' + vtIco('card') + ' PayPal',
+    rechnung: '' + vtIco('receipt') + ' Kauf auf Rechnung'
   };
   return labels[String(zahlungsart || '').toLowerCase()] || (zahlungsart || '—');
 }
@@ -1138,7 +1206,7 @@ async function ladeProdukte() {
       const bestand = bestandMap[p.id];
       const bild = p.bild_urls?.[0] || null;
       return `<tr>
-        <td><div class="img-preview">${bild ? `<img src="${h(bild)}" onerror="this.style.display='none'">` : '🪵'}</div></td>
+        <td><div class="img-preview">${bild ? `<img src="${h(bild)}" onerror="this.style.display='none'">` : vtIco('diele')}</div></td>
         <td>
           <strong>${h(p.name || '—')}</strong>
           <div style="font-size:12px;color:var(--gray);margin-top:2px;">
@@ -1150,8 +1218,8 @@ async function ladeProdukte() {
         <td>${bestand !== undefined ? `<strong style="color:${bestand > 0 ? 'var(--green)' : 'var(--red)'};">${bestand} Pak.</strong>` : '—'}</td>
         <td><span class="badge ${p.aktiv ? 'badge-green' : 'badge-red'}">${p.aktiv ? 'Aktiv' : 'Inaktiv'}</span></td>
         <td style="display:flex;gap:6px;">
-          <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="bearbeiteProdukt(${p.id})">✏️ Edit</button>
-          <button class="btn btn-red btn-sm" onclick="loescheProdukt(${p.id})">🗑</button>
+          <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="bearbeiteProdukt(${p.id})">${vtIco('pencil')} Edit</button>
+          <button class="btn btn-red btn-sm" onclick="loescheProdukt(${p.id})">${vtIco('trash')}</button>
         </td>
       </tr>`;
     }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--gray);padding:20px;">Keine Produkte</td></tr>';
@@ -1236,7 +1304,7 @@ async function ladePakete(produktId) {
             onchange="aktualisierePaketAktiv(${p.id}, this.checked, ${produktId})">
         </td>
         <td style="padding:6px 8px;">
-          <button class="btn btn-red btn-sm" style="padding:4px 8px;font-size:12px;" onclick="loeschePaket(${p.id}, ${produktId})">🗑</button>
+          <button class="btn btn-red btn-sm" style="padding:4px 8px;font-size:12px;" onclick="loeschePaket(${p.id}, ${produktId})">${vtIco('trash')}</button>
         </td>
       </tr>`).join('')}</tbody>
     </table>`;
@@ -1246,14 +1314,14 @@ async function ladePakete(produktId) {
 async function aktualisiereBestand(paketId, wert, produktId) {
   try {
     await backendApi(`/api/admin/pakete/${paketId}`, 'PATCH', { verfuegbare_pakete: parseInt(wert) || 0 });
-    zeigeToast('✅ Bestand gespeichert');
+    zeigeToast('Bestand gespeichert');
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
 }
 
 async function aktualisierePaketAktiv(paketId, aktiv, produktId) {
   try {
     await backendApi(`/api/admin/pakete/${paketId}`, 'PATCH', { aktiv });
-    zeigeToast('✅ Gespeichert');
+    zeigeToast('Gespeichert');
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
 }
 
@@ -1271,7 +1339,7 @@ async function neuesPaket(produktId) {
       verfuegbare_pakete: parseInt(bestand),
       aktiv: true
     });
-    zeigeToast('✅ Paket hinzugefügt');
+    zeigeToast('Paket hinzugefügt');
     ladePakete(produktId);
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
 }
@@ -1280,7 +1348,7 @@ async function loeschePaket(paketId, produktId) {
   if (!confirm('Paket wirklich löschen?')) return;
   try {
     await backendApi(`/api/admin/pakete/${paketId}`, 'DELETE');
-    zeigeToast('✅ Paket gelöscht');
+    zeigeToast('Paket gelöscht');
     ladePakete(produktId);
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
 }
@@ -1313,10 +1381,10 @@ async function speichereProdukt() {
     // Backend übernimmt: Produkt-Update + VE→menge_m2 + Bestand gleichmäßig auf Pakete verteilen.
     if (id) {
       await backendApi(`/api/admin/produkte/${id}`, 'PATCH', body);
-      zeigeToast('✅ Produkt & Bestand aktualisiert');
+      zeigeToast('Produkt & Bestand aktualisiert');
     } else {
       await backendApi('/api/admin/produkte', 'POST', body);
-      zeigeToast('✅ Produkt erstellt');
+      zeigeToast('Produkt erstellt');
     }
     schliesseModal('produktModal');
     ladeProdukte();
@@ -1328,7 +1396,7 @@ async function loescheProdukt(id) {
   if (!confirm(`Produkt "${name}" wirklich löschen?`)) return;
   try {
     await backendApi(`/api/admin/produkte/${id}`, 'DELETE');
-    zeigeToast('✅ Produkt gelöscht');
+    zeigeToast('Produkt gelöscht');
     ladeProdukte();
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
 }
@@ -1344,8 +1412,8 @@ async function ladeKategorienSeite() {
         <td>${k.reihenfolge || '—'}</td>
         <td><span class="badge ${k.aktiv ? 'badge-green' : 'badge-red'}">${k.aktiv ? 'Aktiv' : 'Inaktiv'}</span></td>
         <td style="display:flex;gap:6px;">
-          <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="bearbeiteKat(${k.id})">✏️ Edit</button>
-          <button class="btn btn-red btn-sm" onclick="loescheKat(${k.id})">🗑</button>
+          <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="bearbeiteKat(${k.id})">${vtIco('pencil')} Edit</button>
+          <button class="btn btn-red btn-sm" onclick="loescheKat(${k.id})">${vtIco('trash')}</button>
         </td>
       </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px;">Keine Kategorien</td></tr>';
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
@@ -1374,8 +1442,8 @@ async function speichereKategorie() {
   };
   if (!body.name) { zeigeToast('Name ist Pflichtfeld', true); return; }
   try {
-    if (id) { await backendApi(`/api/admin/kategorien/${id}`, 'PATCH', body); zeigeToast('✅ Kategorie aktualisiert'); }
-    else { await backendApi('/api/admin/kategorien', 'POST', body); zeigeToast('✅ Kategorie erstellt'); }
+    if (id) { await backendApi(`/api/admin/kategorien/${id}`, 'PATCH', body); zeigeToast('Kategorie aktualisiert'); }
+    else { await backendApi('/api/admin/kategorien', 'POST', body); zeigeToast('Kategorie erstellt'); }
     schliesseModal('katModal');
     ladeKategorienSeite();
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
@@ -1384,7 +1452,7 @@ async function speichereKategorie() {
 async function loescheKat(id) {
   const name = (alleKategorien.find(k => k.id === id)?.name) || `#${id}`;
   if (!confirm(`Kategorie "${name}" wirklich löschen?`)) return;
-  try { await backendApi(`/api/admin/kategorien/${id}`, 'DELETE'); zeigeToast('✅ Kategorie gelöscht'); ladeKategorienSeite(); }
+  try { await backendApi(`/api/admin/kategorien/${id}`, 'DELETE'); zeigeToast('Kategorie gelöscht'); ladeKategorienSeite(); }
   catch(e) { zeigeToast('Fehler: ' + e.message, true); }
 }
 
@@ -1408,7 +1476,7 @@ async function ladeKundenprofile() {
         <td>${Number(p.bonus_prozent || 0).toFixed(1)} %</td>
         <td style="font-size:12px;">${za.map(h).join(', ') || '—'}</td>
         <td>${p.rechnung_erlaubt ? '<span class="badge badge-green">ja</span>' : '<span class="badge badge-red">nein</span>'}</td>
-        <td style="display:flex;gap:6px;flex-wrap:wrap;"><button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="bearbeiteKunde(${p.id})">✏️ Bearbeiten</button>${adminMe.ist_super_admin ? `<button class="btn btn-red btn-sm" onclick="kundePapierkorb(${p.id})">🗑 Löschen</button>` : ''}</td>
+        <td style="display:flex;gap:6px;flex-wrap:wrap;"><button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="bearbeiteKunde(${p.id})">${vtIco('pencil')} Bearbeiten</button>${adminMe.ist_super_admin ? `<button class="btn btn-red btn-sm" onclick="kundePapierkorb(${p.id})">${vtIco('trash')} Löschen</button>` : ''}</td>
       </tr>`;
     }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:20px;">Keine B2B-Kunden vorhanden</td></tr>';
   } catch (e) { zeigeToast('Fehler beim Laden: ' + e.message, true); }
@@ -1440,7 +1508,7 @@ function bearbeiteKunde(id) {
   document.getElementById('kuMitarbeiter').innerHTML =
     `<div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;margin:8px 0 4px;">Mitarbeiter (${mits.length})</div>` +
     (mits.length
-      ? mits.map(m => `<div style="font-size:13px;padding:3px 0;">${m.rolle === 'einkaufsleiter' ? '👤 ' : '• '}${h(m.name || m.email)} <span style="color:var(--gray);">(${h(m.email)})</span> ${m.aktiv ? '<span class="badge badge-green">aktiv</span>' : '<span class="badge badge-red">inaktiv</span>'} ${m.hat_bestellt ? '<span class="badge" style="background:var(--oak-pale);color:var(--oak);">hat bestellt</span>' : ''}</div>`).join('')
+      ? mits.map(m => `<div style="font-size:13px;padding:3px 0;">${m.rolle === 'einkaufsleiter' ? (vtIco('user') + ' ') : '• '}${h(m.name || m.email)} <span style="color:var(--gray);">(${h(m.email)})</span> ${m.aktiv ? '<span class="badge badge-green">aktiv</span>' : '<span class="badge badge-red">inaktiv</span>'} ${m.hat_bestellt ? '<span class="badge" style="background:var(--oak-pale);color:var(--oak);">hat bestellt</span>' : ''}</div>`).join('')
       : '<div style="font-size:13px;color:var(--gray);">Noch keine Mitarbeiter</div>');
 
   document.getElementById('kundeModal').classList.add('open');
@@ -1470,7 +1538,7 @@ async function speichereKunde() {
   };
   try {
     await backendApi(`/api/admin/kunden/${id}`, 'PATCH', body);
-    zeigeToast('✅ B2B-Kunde gespeichert');
+    zeigeToast('B2B-Kunde gespeichert');
     schliesseModal('kundeModal');
     ladeKundenprofile();
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
@@ -1581,7 +1649,7 @@ function renderTestmodusBanner() {
     document.body.appendChild(el);
   }
   const ziel = adminMe.mail_test_empfaenger || '—';
-  el.textContent = `⚠️ TESTMODUS AKTIV – alle Mails gehen NUR an ${ziel}. Zum Livegang MAIL_TEST_EMPFAENGER in Railway entfernen.`;
+  el.innerHTML = `${vtIco('alert')} TESTMODUS AKTIV – alle Mails gehen NUR an ${h(ziel)}. Zum Livegang MAIL_TEST_EMPFAENGER in Railway entfernen.`;
   document.body.style.paddingTop = el.offsetHeight + 'px';
 }
 
@@ -1593,7 +1661,7 @@ async function ladeAdminMe() {
 
   const setNav = (id, ok) => { const el=document.getElementById(id); if (el) el.style.display = ok ? '' : 'none'; };
   // Erst ALLES verbergen, dann gezielt freigeben.
-  ['navDashboard','navProdukte','navKategorien','navBestellungen','navLager','navVersandplanung','navNachrichten','navKunden','navPreise','navAdminusers','navAuditlog','navPapierkorb']
+  ['navDashboard','navProdukte','navKategorien','navBestellungen','navLager','navVersandplanung','navNachrichten','navPreisanfragen','navKunden','navPreise','navAdminusers','navAuditlog','navPapierkorb']
     .forEach(id => setNav(id, false));
 
   const nurLager = istNurLager();
@@ -1609,6 +1677,7 @@ async function ladeAdminMe() {
     setNav('navBestellungen', darf('bestellungen.ansehen'));
     setNav('navVersandplanung', darf('bestellungen.ansehen'));
     setNav('navNachrichten',  darf('messages.view') || darf('bestellungen.ansehen'));
+    setNav('navPreisanfragen', darf('bestellungen.ansehen')); // NUR Nicht-Lager (Verkauf)
     setNav('navKunden',       darf('b2b.ansehen'));
     setNav('navPreise',       darf('lieferkosten.ansehen'));
     setNav('navAdminusers',   adminMe.ist_super_admin === true);
@@ -1637,12 +1706,19 @@ async function ladeAdminUsers() {
   catch (e) { tb.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--red);padding:20px;">${h(e.message)}</td></tr>`; return; }
   if (!adminUsersCache.length) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray);padding:20px;">Keine Admin-Benutzer.</td></tr>'; return; }
   tb.innerHTML = adminUsersCache.map(a => {
-    const rolle = a.ist_super_admin ? '<span class="badge badge-green">Super-Admin</span>' : 'Admin';
+    // Rolle rein rechte-abgeleitet (keine separate Spalte): nur warehouse.*-Rechte = „Lager".
+    const _r = a.rechte || [];
+    const istLagerRolle = !a.ist_super_admin
+      && WAREHOUSE_KEYS_FE.some(k => _r.includes(k))
+      && !MONEY_ADMIN_KEYS_FE.some(k => _r.includes(k));
+    const rolle = a.ist_super_admin
+      ? '<span class="badge badge-green">Super-Admin</span>'
+      : (istLagerRolle ? '<span class="badge badge-blue">Lager</span>' : 'Admin');
     const status = a.aktiv ? '<span class="badge badge-green">aktiv</span>' : '<span class="badge badge-red">inaktiv</span>';
     const aktionen = a.ist_super_admin
       ? `<button class="btn btn-sm" onclick="oeffneAdminBearbeiten('${h(a.email)}')">Rechte</button>`
       : `<button class="btn btn-sm" onclick="oeffneAdminBearbeiten('${h(a.email)}')">Bearbeiten</button>
-         <button class="btn btn-sm" onclick="neuEinladen('${h(a.email)}')">📧 Einladung erneut senden</button>
+         <button class="btn btn-sm" onclick="neuEinladen('${h(a.email)}')">${vtIco('mail')} Einladung erneut senden</button>
          <button class="btn btn-sm" onclick="toggleAdminAktiv('${h(a.email)}', ${a.aktiv ? 'false':'true'})">${a.aktiv?'Deaktivieren':'Aktivieren'}</button>
          <button class="btn btn-red btn-sm" onclick="loescheAdminUser('${h(a.email)}')">Löschen</button>`;
     return `<tr><td>${h(a.email)}</td><td>${h(a.name||'—')}</td><td>${rolle}</td><td>${status}</td><td style="display:flex;gap:6px;flex-wrap:wrap;">${aktionen}</td></tr>`;
@@ -1651,7 +1727,7 @@ async function ladeAdminUsers() {
 
 // Kritische Rechte (Löschen, Preise, Zahlungsstatus, Kauf-auf-Rechnung,
 // Admin-Verwaltung, Übergabe an Spedition …) – werden in geschlossenen Karten
-// als ⚠ Kritisch markiert.
+// als Kritisch markiert.
 const KRITISCHE_RECHTE = new Set([
   'produkte.loeschen','produkte.preise','kategorien.loeschen',
   'bestellungen.zahlungsstatus','bestellungen.stornieren','bestellungen.loeschen',
@@ -1681,7 +1757,7 @@ function renderPermAccordion(aktiveKeys, disabled) {
       <button type="button" class="permCardHead" onclick="togglePermCard(this)" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--cream);border:none;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;">
         <span style="flex:1;font-weight:700;color:var(--walnut);">${g.gruppe}</span>
         <span class="permCardBadge" style="font-size:12px;color:var(--gray);"></span>
-        <span class="permCardKrit" style="display:none;font-size:11px;font-weight:700;color:#B45309;background:#FFF0DA;border-radius:6px;padding:1px 6px;">⚠ Kritisch</span>
+        <span class="permCardKrit" style="display:none;font-size:11px;font-weight:700;color:#B45309;background:#FFF0DA;border-radius:6px;padding:1px 6px;">${vtIco('alert')} Kritisch</span>
         <span class="permCardChev" style="color:var(--gray);transition:transform .15s;">▼</span>
       </button>
       <div class="permCardBody" style="display:none;padding:10px 12px;border-top:1px solid var(--gray-light);">
@@ -1783,7 +1859,7 @@ function oeffneAdminBearbeiten(email) {
     document.querySelectorAll('.amPerm').forEach(c => c.disabled = this.checked);
     updateAllePermCounts();
   };
-  document.getElementById('amSaveBtn').textContent = '💾 Speichern';
+  document.getElementById('amSaveBtn').innerHTML = '' + vtIco('save') + ' Speichern';
   document.getElementById('adminModal').classList.add('open');
 }
 
@@ -1802,10 +1878,10 @@ async function speichereAdminUser() {
   try {
     if (istEdit) {
       await backendApi('/api/admin/admins', 'PATCH', { email, name: name || null, ist_super_admin: document.getElementById('amSuper').checked, rechte });
-      zeigeToast('✅ Admin gespeichert');
+      zeigeToast('Admin gespeichert');
     } else {
       await backendApi('/api/admin/admins/einladen', 'POST', { email, name: name || null, rechte });
-      zeigeToast('✅ Einladung an ' + email + ' gesendet');
+      zeigeToast('Einladung an ' + email + ' gesendet');
     }
     schliesseModal('adminModal');
     ladeAdminUsers();
@@ -1824,7 +1900,7 @@ async function loescheAdminUser(email) {
 }
 
 async function neuEinladen(email) {
-  try { await backendApi('/api/admin/admins/neu-einladen', 'POST', { email }); zeigeToast('✅ Neue Einladung an ' + email + ' gesendet'); }
+  try { await backendApi('/api/admin/admins/neu-einladen', 'POST', { email }); zeigeToast('Neue Einladung an ' + email + ' gesendet'); }
   catch (e) { zeigeToast('Fehler: ' + e.message, true); }
 }
 
@@ -1877,7 +1953,7 @@ async function ladePapierkorb() {
       <td>${h(r.typ)}</td><td>${h(r.name)}</td>
       <td>${r.am ? h(new Date(r.am).toLocaleString('de-DE')) : '—'}</td>
       <td>${h(r.von || '—')}</td>
-      <td><button class="btn btn-green btn-sm" onclick="${r.restore}">♻️ Wiederherstellen</button></td>
+      <td><button class="btn btn-green btn-sm" onclick="${r.restore}">${vtIco('recycle')} Wiederherstellen</button></td>
     </tr>`).join('');
   } catch (e) { tb.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--red);padding:20px;">${h(e.message)}</td></tr>`; }
 }
@@ -1896,19 +1972,19 @@ async function anSpedition(id) {
   if (!confirm('Bestellung jetzt versenden? Der Kunde wird per E-Mail informiert (Versandbestätigung + Rechnung) und der Status auf „Versendet" gesetzt.\n\nHinweis: nur möglich, wenn das Lager die Abholung bestätigt hat – ansonsten bitte über „Versandplanung".')) return;
   try {
     await backendApi(`/api/admin/versand/${id}/versenden`, 'POST', {});
-    zeigeToast('📨 Versendet – Kunde informiert, Rechnung versendet');
+    zeigeToast('Versendet – Kunde informiert, Rechnung versendet');
     ladeBestellungen();
     schliesseModal('bestellModal');
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
 }
 async function rechnungErneut(id) {
   if (!confirm('Eine Kopie der Rechnung (als „RECHNUNGSKOPIE" gekennzeichnet) an den Kunden senden? Es wird keine neue Rechnung erstellt.')) return;
-  try { await backendApi(`/api/admin/bestellungen/${id}/rechnung-senden`, 'POST', {}); zeigeToast('✅ Rechnungskopie versendet'); }
+  try { await backendApi(`/api/admin/bestellungen/${id}/rechnung-senden`, 'POST', {}); zeigeToast('Rechnungskopie versendet'); }
   catch (e) { zeigeToast('Fehler: ' + e.message, true); }
 }
 async function alsGeliefert(id) {
   if (!confirm('Bestellung als geliefert markieren?')) return;
-  try { await backendApi(`/api/admin/bestellungen/${id}/geliefert`, 'POST', {}); zeigeToast('✅ Als geliefert markiert'); ladeBestellungen(); schliesseModal('bestellModal'); }
+  try { await backendApi(`/api/admin/bestellungen/${id}/geliefert`, 'POST', {}); zeigeToast('Als geliefert markiert'); ladeBestellungen(); schliesseModal('bestellModal'); }
   catch (e) { zeigeToast('Fehler: ' + e.message, true); }
 }
 
@@ -1950,11 +2026,11 @@ async function ladeLager() {
     const sektion = (titel, arr) => arr.length
       ? `<div style="margin:14px 0 6px;font-weight:700;color:var(--walnut);font-size:15px;">${titel} (${arr.length})</div>` + arr.map(lagerCardHtml).join('')
       : '';
-    const html = sektion('📋 Zu kommissionieren', zuKomm)
-      + sektion('📦 Selbstabholung – abholbereit melden', abholung)
-      + sektion('🚛 Wartet auf Abholung durch Spedition', wartetAbholung)
-      + sektion('✅ Abholbereit gemeldet', abholbereit);
-    box.innerHTML = html || '<div style="text-align:center;color:var(--gray);padding:30px;">Keine Bestellungen zur Vorbereitung. 🎉</div>';
+    const html = sektion('' + vtIco('clipboard') + ' Zu kommissionieren', zuKomm)
+      + sektion('' + vtIco('package') + ' Selbstabholung – abholbereit melden', abholung)
+      + sektion('' + vtIco('truck') + ' Wartet auf Abholung durch Spedition', wartetAbholung)
+      + sektion('' + vtIco('check-circle') + ' Abholbereit gemeldet', abholbereit);
+    box.innerHTML = html || '<div style="text-align:center;color:var(--gray);padding:30px;">Keine Bestellungen zur Vorbereitung. ' + vtIco('sparkles') + '</div>';
   } catch (e) { box.innerHTML = '<div style="text-align:center;color:var(--red);padding:20px;">Fehler: ' + h(e.message) + '</div>'; }
 }
 
@@ -1988,29 +2064,29 @@ function lagerCardHtml(b) {
   const vd = b.versanddaten;
   if (vd) {
     const vdT = [vd.pakete ? h(vd.pakete) + ' Paket(e)' : '', Array.isArray(vd.paletten) && vd.paletten.length ? h(vd.paletten.length) + ' Palette(n)' : '', vd.gesamtgewicht ? h(vd.gesamtgewicht) + ' kg' : ''].filter(Boolean).join(' · ');
-    if (vdT) infoTeile.push('📦 ' + vdT);
-    if (vd.bemerkungen) infoTeile.push('📝 ' + h(vd.bemerkungen));
+    if (vdT) infoTeile.push('' + vtIco('package') + ' ' + vdT);
+    if (vd.bemerkungen) infoTeile.push('' + vtIco('clipboard') + ' ' + h(vd.bemerkungen));
   }
   if (b.phase === 'spedition_beauftragt' || b.phase === 'abgeholt') {
     const det = [b.spediteur ? 'Spedition: ' + h(b.spediteur) : '', b.abholdatum ? 'Abholung: ' + new Date(b.abholdatum).toLocaleDateString('de-DE') : '', b.tracking_nr ? 'Tracking: ' + h(b.tracking_nr) : ''].filter(Boolean).join(' · ');
-    if (det) infoTeile.push('🚛 ' + det);
+    if (det) infoTeile.push('' + vtIco('truck') + ' ' + det);
   }
   const infoBlock = infoTeile.length ? `<div style="font-size:12px;color:var(--gray);margin-top:8px;">${infoTeile.map(t => `<div>${t}</div>`).join('')}</div>` : '';
   // Phasenabhängige Lager-Aktion (Spedition/Versand liegt beim Büro).
-  const wart = txt => `<span style="font-size:12px;color:var(--gray);align-self:center;">⏳ ${txt}</span>`;
+  const wart = txt => `<span style="font-size:12px;color:var(--gray);align-self:center;">${vtIco('clock')} ${txt}</span>`;
   let aktion = '';
   if (b.phase === 'in_bearbeitung') {
-    aktion = darfKomm ? `<button class="btn btn-sm" style="background:#1f7a4d;color:#fff;" onclick="versanddatenOeffnen(${b.id})">✅ Kommissionierung fertig</button>` : wart('Wartet auf Kommissionierung');
+    aktion = darfKomm ? `<button class="btn btn-sm" style="background:#1f7a4d;color:#fff;" onclick="versanddatenOeffnen(${b.id})">${vtIco('check-circle')} Kommissionierung fertig</button>` : wart('Wartet auf Kommissionierung');
   } else if (b.phase === 'an_disposition' && b.lieferart === 'abholung') {
-    aktion = darfKomm ? `<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="lagerAbholbereit(${b.id})">📦 Abholbereit melden</button>` : wart('Wartet auf Abholbereit-Meldung');
+    aktion = darfKomm ? `<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="lagerAbholbereit(${b.id})">${vtIco('package')} Abholbereit melden</button>` : wart('Wartet auf Abholbereit-Meldung');
   } else if (b.phase === 'spedition_beauftragt') {
-    aktion = darfAbgeholt ? `<button class="btn btn-green btn-sm" onclick="lagerAbgeholt(${b.id})">🚚 Bestellung abgeholt</button>` : wart('Wartet auf Abholung durch Spedition');
+    aktion = darfAbgeholt ? `<button class="btn btn-green btn-sm" onclick="lagerAbgeholt(${b.id})">${vtIco('truck')} Bestellung abgeholt</button>` : wart('Wartet auf Abholung durch Spedition');
   } else if (b.phase === 'abholbereit') {
     aktion = wart('Kunde informiert – wartet auf Abholung');
   }
   return `<div style="background:var(--white);border:1px solid var(--gray-light);border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.05);">
     <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px;">
-      <div style="font-weight:700;font-size:16px;color:var(--walnut);">📦 Bestellung #${b.id}</div>
+      <div style="font-weight:700;font-size:16px;color:var(--walnut);">${vtIco('package')} Bestellung #${b.id}</div>
       ${lagerStatusLabel(b)}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;">
@@ -2027,10 +2103,10 @@ function lagerCardHtml(b) {
     </div>
     ${infoBlock}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
-      ${b.lieferschein_verfuegbar && darfDruck ? `<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="zeigeAdminDokument(${b.id},'lieferschein','Lieferschein')">📄 Lieferschein ansehen</button>` : (darfDruck ? '<span style="font-size:12px;color:var(--red);align-self:center;">⚠️ Lieferschein fehlt</span>' : '')}
-      ${b.lieferschein_verfuegbar && darfDruck ? `<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="lagerLieferscheinDrucken(${b.id})">🖨 Drucken</button>` : ''}
+      ${b.lieferschein_verfuegbar && darfDruck ? `<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="zeigeAdminDokument(${b.id},'lieferschein','Lieferschein')">${vtIco('file-text')} Lieferschein ansehen</button>` : (darfDruck ? '<span style="font-size:12px;color:var(--red);align-self:center;">' + vtIco('alert') + ' Lieferschein fehlt</span>' : '')}
+      ${b.lieferschein_verfuegbar && darfDruck ? `<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="lagerLieferscheinDrucken(${b.id})">${vtIco('printer')} Drucken</button>` : ''}
       ${aktion}
-      ${darfChat ? `<button class="btn btn-sm" style="background:#eef;color:#334;" onclick="lagerChatOeffnen(${b.id})">🏭 Interner Chat</button>` : ''}
+      ${darfChat ? `<button class="btn btn-sm" style="background:#eef;color:#334;" onclick="lagerChatOeffnen(${b.id})">${vtIco('warehouse')} Interner Chat</button>` : ''}
     </div>
   </div>`;
 }
@@ -2097,7 +2173,7 @@ async function versanddatenAbsenden() {
   try {
     await backendApi(`/api/admin/lager/${id}/an-disposition`, 'POST', payload);
     schliesseModal('versanddatenModal');
-    zeigeToast('✅ An Disposition weitergegeben');
+    zeigeToast('An Disposition weitergegeben');
     ladeLager();
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
@@ -2109,7 +2185,7 @@ async function lagerAbgeholt(id) {
   if (!confirm('Bestellung als vom Lager abgeholt bestätigen? (Die Spedition hat die Ware abgeholt.)')) return;
   try {
     await backendApi(`/api/admin/lager/${id}/abgeholt`, 'POST', {});
-    zeigeToast('✅ Abholung bestätigt');
+    zeigeToast('Abholung bestätigt');
     ladeLager();
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
@@ -2120,7 +2196,7 @@ async function lagerAbholbereit(id) {
   if (!confirm('Ware als abholbereit melden? Der Kunde wird per E-Mail informiert.')) return;
   try {
     await backendApi(`/api/admin/lager/${id}/abholbereit`, 'POST', {});
-    zeigeToast('✅ Abholbereit gemeldet – Kunde informiert');
+    zeigeToast('Abholbereit gemeldet – Kunde informiert');
     ladeLager();
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
@@ -2150,7 +2226,7 @@ async function ladeVersandplanung() {
   try {
     const r = await backendApi('/api/admin/versandplanung');
     versandplanungCache = r.bestellungen || [];
-    if (!versandplanungCache.length) { tb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--gray);padding:24px;">Keine Bestellungen in der Versandplanung. 🎉</td></tr>'; return; }
+    if (!versandplanungCache.length) { tb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--gray);padding:24px;">Keine Bestellungen in der Versandplanung. ' + vtIco('sparkles') + '</td></tr>'; return; }
     tb.innerHTML = versandplanungCache.map(versandplanungRow).join('');
   } catch (e) { tb.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--red);padding:20px;">${h(e.message)}</td></tr>`; }
 }
@@ -2170,13 +2246,13 @@ function versandplanungRow(b) {
   let aktion = '<span style="color:var(--gray);font-size:12px;">—</span>';
   if (b.phase === 'an_disposition') {
     if (b.lieferart === 'abholung') aktion = '<span style="color:var(--gray);font-size:12px;">Selbstabholung – Lager meldet abholbereit</span>';
-    else aktion = darfBeauftragen ? `<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="versandSpeditionOeffnen(${b.id})">🚚 Spedition beauftragen</button>` : '<span style="color:var(--gray);font-size:12px;">keine Berechtigung</span>';
+    else aktion = darfBeauftragen ? `<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="versandSpeditionOeffnen(${b.id})">${vtIco('truck')} Spedition beauftragen</button>` : '<span style="color:var(--gray);font-size:12px;">keine Berechtigung</span>';
   } else if (b.phase === 'spedition_beauftragt') {
-    aktion = '<span style="color:var(--gray);font-size:12px;">⏳ Wartet auf Abholbestätigung durch Lager</span>';
+    aktion = '<span style="color:var(--gray);font-size:12px;">' + vtIco('clock') + ' Wartet auf Abholbestätigung durch Lager</span>';
   } else if (b.phase === 'abgeholt' || b.phase === 'abholbereit') {
     if (!darfVersenden) aktion = '<span style="color:var(--gray);font-size:12px;">keine Berechtigung</span>';
-    else if (b.lieferart === 'abholung') aktion = `<button class="btn btn-green btn-sm" onclick="versandAbholungAbschliessen(${b.id})">✅ Abholung abschließen</button>`;
-    else aktion = `<button class="btn btn-green btn-sm" onclick="versandVersenden(${b.id})">📨 Kunde informieren / Versenden</button>`;
+    else if (b.lieferart === 'abholung') aktion = `<button class="btn btn-green btn-sm" onclick="versandAbholungAbschliessen(${b.id})">${vtIco('check-circle')} Abholung abschließen</button>`;
+    else aktion = `<button class="btn btn-green btn-sm" onclick="versandVersenden(${b.id})">${vtIco('send')} Kunde informieren / Versenden</button>`;
   }
   return `<tr style="border-top:1px solid var(--gray-light);">
     <td style="padding:10px;font-weight:600;">#${b.id}</td>
@@ -2220,7 +2296,7 @@ async function versandSpeditionBeauftragen() {
   try {
     await backendApi(`/api/admin/versand/${id}/spedition-beauftragen`, 'POST', payload);
     schliesseModal('versandSpeditionModal');
-    zeigeToast('🚚 Spedition beauftragt');
+    zeigeToast('Spedition beauftragt');
     ladeVersandplanung();
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
@@ -2251,7 +2327,7 @@ async function versandVersendenAbsenden() {
   try {
     await backendApi(`/api/admin/versand/${id}/versenden`, 'POST', payload);
     schliesseModal('versandVersendenModal');
-    zeigeToast('📨 Versendet – Kunde informiert, Rechnung erstellt');
+    zeigeToast('Versendet – Kunde informiert, Rechnung erstellt');
     ladeVersandplanung();
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
@@ -2263,7 +2339,7 @@ async function versandAbholungAbschliessen(id) {
   if (!confirm('Abholung abschließen und Bestellung auf „Versendet" setzen?\n\nDer Kunde wurde bereits bei „abholbereit" per E-Mail (inkl. Rechnung) informiert – es geht KEINE weitere Mail raus.')) return;
   try {
     await backendApi(`/api/admin/versand/${id}/versenden`, 'POST', {});
-    zeigeToast('✅ Abholung abgeschlossen');
+    zeigeToast('Abholung abgeschlossen');
     ladeVersandplanung();
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
@@ -2332,12 +2408,12 @@ async function ladeBestellungen() {
         ? `<span class="badge ${reservierungBadge(b.reservierung_status)}">${reservierungLabel(b.reservierung_status)}</span>${reserviertBis && b.reservierung_status === 'reserved' ? `<div style="font-size:11px;color:var(--gray);margin-top:4px;">bis ${reserviertBis}</div>` : ''}`
         : '—';
       const paymentActions = offenVorkasse
-        ? `<button class="btn btn-green btn-sm" onclick="vorkasseZahlungErhalten(${b.id})">✅ Zahlung erhalten</button>
-           <button class="btn btn-red btn-sm" onclick="adminStorniereVorkasse(${b.id})">❌ Stornieren</button>`
+        ? `<button class="btn btn-green btn-sm" onclick="vorkasseZahlungErhalten(${b.id})">${vtIco('check-circle')} Zahlung erhalten</button>
+           <button class="btn btn-red btn-sm" onclick="adminStorniereVorkasse(${b.id})">${vtIco('x-circle')} Stornieren</button>`
         : '';
       // Bezahlt & in Bearbeitung → an Spedition übergeben (Rechnung wird dann erzeugt).
       const speditionAction = (b.status === 'bezahlt' && (darf('warehouse.mark_handed_to_carrier') || adminMe.ist_super_admin))
-        ? `<button class="btn btn-green btn-sm" onclick="anSpedition(${b.id})">🚚 An Spedition übergeben</button>`
+        ? `<button class="btn btn-green btn-sm" onclick="anSpedition(${b.id})">${vtIco('truck')} An Spedition übergeben</button>`
         : '';
 
       return `
@@ -2352,15 +2428,15 @@ async function ladeBestellungen() {
         <td>${reservierung}</td>
         <td>
           <div class="admin-action-row">
-            <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="zeigeBestellung(${b.id})">👁 Details</button>
-            <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="oeffneThreadFuerBestellung(${b.id})">💬 Nachrichten${(adminUnread[b.id] > 0) ? `<span style="background:#B91C1C;color:#fff;border-radius:10px;padding:0 6px;font-size:11px;margin-left:4px;font-weight:700;">${adminUnread[b.id]}</span>` : ''}</button>
+            <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="zeigeBestellung(${b.id})">${vtIco('eye')} Details</button>
+            <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="oeffneThreadFuerBestellung(${b.id})">${vtIco('message-circle')} Nachrichten${(adminUnread[b.id] > 0) ? `<span style="background:#B91C1C;color:#fff;border-radius:10px;padding:0 6px;font-size:11px;margin-left:4px;font-weight:700;">${adminUnread[b.id]}</span>` : ''}</button>
             ${paymentActions}
             ${speditionAction}
             <select class="admin-select" onchange="aktualisiereStatus(${b.id}, this.value, '${b.status || ''}', '${b.zahlungsart || ''}')">
               ${anzeigeStatus(b) === 'abgeholt_final' ? '<option value="abgeholt_final" selected>Abgeholt</option>' : ''}
               ${STATUS_OPTIONEN.map(s => `<option value="${s}" ${(anzeigeStatus(b) !== 'abgeholt_final' && (b.status === s || (b.status === 'bestätigt' && s === 'bestaetigt'))) ? 'selected' : ''}>${statusLabel(s)}</option>`).join('')}
             </select>
-            ${adminMe.ist_super_admin ? `<button class="btn btn-red btn-sm" onclick="bestellungPapierkorb(${b.id})">🗑 Löschen</button>` : ''}
+            ${adminMe.ist_super_admin ? `<button class="btn btn-red btn-sm" onclick="bestellungPapierkorb(${b.id})">${vtIco('trash')} Löschen</button>` : ''}
           </div>
         </td>
       </tr>`;
@@ -2397,7 +2473,7 @@ async function aktualisiereStatus(id, neuerStatus, alterStatus = '', zahlungsart
     const patch = { status: neuerStatus };
     if (neuerStatus === 'geliefert') { patch.geliefert_am = new Date().toISOString(); patch.tracking_status = 'zugestellt'; }
     await backendApi(`/api/admin/bestellungen/${id}`, 'PATCH', patch);
-    zeigeToast('✅ Status aktualisiert');
+    zeigeToast('Status aktualisiert');
     ladeBestellungen();
     ladeDashboard();
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); ladeBestellungen(); }
@@ -2425,10 +2501,10 @@ async function zeigeBestellung(id) {
     const vorkasseButtons = b.zahlungsart === 'vorkasse' && b.status === 'warte_auf_zahlung'
       ? `<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn btn-green btn-sm" onclick="vorkasseZahlungErhalten(${b.id})">
-            ✅ Zahlung erhalten & echte Rechnung erstellen
+            ${vtIco('check-circle')} Zahlung erhalten & echte Rechnung erstellen
           </button>
           <button class="btn btn-red btn-sm" onclick="adminStorniereVorkasse(${b.id})">
-            ❌ Vorkasse stornieren & Reservierung freigeben
+            ${vtIco('x-circle')} Vorkasse stornieren & Reservierung freigeben
           </button>
         </div>`
       : '';
@@ -2471,19 +2547,19 @@ async function zeigeBestellung(id) {
           <div style="font-size:14px;line-height:1.8;">
             Lager-Status: <strong>${b.lager_status === 'uebergeben' ? ('An Spedition' + (b.lieferkosten_spediteur ? ' ' + h(b.lieferkosten_spediteur) : '') + ' übergeben') : (b.lager_status === 'in_bearbeitung' ? 'In Bearbeitung' : '—')}</strong><br>
             ${b.geliefert_am ? 'Geliefert am: <strong>' + h(new Date(b.geliefert_am).toLocaleString('de-DE')) + '</strong><br>' : ''}
-            Auftragsbestätigung: <strong>${b.auftragsbestaetigung_versendet_am ? '✅ versendet' : '—'}</strong><br>
-            Lieferschein ans Lager: <strong>${b.lieferschein_versendet_am ? '✅ versendet' : '—'}</strong><br>
-            Rechnung: <strong>${b.rechnung_versendet_am ? '✅ versendet' : (b.lexoffice_id ? '✅ erstellt' : '— noch nicht (kommt bei Spedition)')}</strong><br>
+            Auftragsbestätigung: <strong>${b.auftragsbestaetigung_versendet_am ? '' + vtIco('check-circle') + ' versendet' : '—'}</strong><br>
+            Lieferschein ans Lager: <strong>${b.lieferschein_versendet_am ? '' + vtIco('check-circle') + ' versendet' : '—'}</strong><br>
+            Rechnung: <strong>${b.rechnung_versendet_am ? '' + vtIco('check-circle') + ' versendet' : (b.lexoffice_id ? '' + vtIco('check-circle') + ' erstellt' : '— noch nicht (kommt bei Spedition)')}</strong><br>
             Rechnungsnummer: <strong><span id="rechnungNummer_${b.id}">${b.rechnung_nummer ? h(b.rechnung_nummer) : ((b.lexoffice_id || b.rechnung_pdf_storage_path) ? '… wird geladen' : '—')}</span></strong>
             ${b.an_spedition_uebergeben_am ? '<br>Übergeben am: <strong>' + h(new Date(b.an_spedition_uebergeben_am).toLocaleString('de-DE')) + '</strong>' : ''}
           </div>
           <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-            ${b.auftragsbestaetigung_versendet_am ? `<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="zeigeAdminDokument(${b.id},'auftragsbestaetigung','Auftragsbestätigung')">📄 Auftragsbestätigung</button>` : ''}
-            ${b.lieferschein_versendet_am ? `<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="zeigeAdminDokument(${b.id},'lieferschein','Lieferschein')">📄 Lieferschein</button>` : ''}
-            ${((b.lexoffice_id || b.rechnung_pdf_storage_path) && (adminMe.ist_super_admin || darf('orders.view_invoice_pdf'))) ? `<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="zeigeRechnungPdf(${b.id})">📄 Rechnung ansehen</button>` : ''}
-            ${(b.status === 'bezahlt' && (adminMe.ist_super_admin || darf('warehouse.mark_handed_to_carrier'))) ? `<button class="btn btn-green btn-sm" onclick="anSpedition(${b.id})">🚚 An Spedition übergeben</button>` : ''}
-            ${(b.status === 'versendet' && (adminMe.ist_super_admin || darf('warehouse.mark_handed_to_carrier'))) ? `<button class="btn btn-green btn-sm" onclick="alsGeliefert(${b.id})">✅ Als geliefert markieren</button>` : ''}
-            ${(adminMe.ist_super_admin && b.rechnung_versendet_am) ? `<button class="btn btn-sm" onclick="rechnungErneut(${b.id})">📄 Rechnung erneut senden</button>` : ''}
+            ${b.auftragsbestaetigung_versendet_am ? `<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="zeigeAdminDokument(${b.id},'auftragsbestaetigung','Auftragsbestätigung')">${vtIco('file-text')} Auftragsbestätigung</button>` : ''}
+            ${b.lieferschein_versendet_am ? `<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="zeigeAdminDokument(${b.id},'lieferschein','Lieferschein')">${vtIco('file-text')} Lieferschein</button>` : ''}
+            ${((b.lexoffice_id || b.rechnung_pdf_storage_path) && (adminMe.ist_super_admin || darf('orders.view_invoice_pdf'))) ? `<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="zeigeRechnungPdf(${b.id})">${vtIco('file-text')} Rechnung ansehen</button>` : ''}
+            ${(b.status === 'bezahlt' && (adminMe.ist_super_admin || darf('warehouse.mark_handed_to_carrier'))) ? `<button class="btn btn-green btn-sm" onclick="anSpedition(${b.id})">${vtIco('truck')} An Spedition übergeben</button>` : ''}
+            ${(b.status === 'versendet' && (adminMe.ist_super_admin || darf('warehouse.mark_handed_to_carrier'))) ? `<button class="btn btn-green btn-sm" onclick="alsGeliefert(${b.id})">${vtIco('check-circle')} Als geliefert markieren</button>` : ''}
+            ${(adminMe.ist_super_admin && b.rechnung_versendet_am) ? `<button class="btn btn-sm" onclick="rechnungErneut(${b.id})">${vtIco('file-text')} Rechnung erneut senden</button>` : ''}
           </div>
         </div>
 
@@ -2515,11 +2591,11 @@ async function zeigeBestellung(id) {
             Umsatzsteuer 19 %: <strong>${euro(Number(b.gesamtbetrag||0)*0.19)}</strong><br>
             <span style="font-size:16px;">Gesamtbetrag brutto: <strong style="color:var(--oak);">${euro(Number(b.gesamtbetrag||0)*1.19)}</strong></span>
           </div>
-          <div style="font-size:12px;color:var(--gray);margin-top:8px;">🚚 Lieferzeit: ca. 7–8 Arbeitstage nach Auftragsbestätigung bzw. Geldeingang.</div>
+          <div style="font-size:12px;color:var(--gray);margin-top:8px;">${vtIco('truck')} Lieferzeit: ca. 7–8 Arbeitstage nach Auftragsbestätigung bzw. Geldeingang.</div>
         </div>
 
         <div style="background:var(--cream);padding:14px;border-radius:var(--radius-sm);">
-          <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;margin-bottom:6px;">💬 Nachrichten</div>
+          <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;margin-bottom:6px;">${vtIco('message-circle')} Nachrichten</div>
           <div id="bestellNachrichten_${b.id}" style="font-size:14px;color:var(--gray);">Wird geladen…</div>
         </div>
 
@@ -2553,15 +2629,15 @@ async function speichereTracking(id) {
   const nr = document.getElementById('trackingInput').value.trim();
   try {
     await backendApi(`/api/admin/bestellungen/${id}`, 'PATCH', { tracking_nr: nr, spediteur: 'Raben' });
-    zeigeToast('✅ Tracking gespeichert');
+    zeigeToast('Tracking gespeichert');
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
 }
 
 // ===== NACHRICHTEN (Chat/Thread pro Bestellung) =====
 const NACHRICHT_TYP_LABEL = { nachricht:'Nachricht', lieferung:'Frage zur Lieferung', rechnung:'Frage zur Rechnung', reklamation:'Reklamation', ruecksendung:'Rücksendung', sonstiges:'Sonstiges' };
-const KANAL_LABEL = { shop:'💬 Shop', email:'✉️ E-Mail', telegram_support:'📨 Telegram', whatsapp:'🟢 WhatsApp' };
+const KANAL_LABEL = { shop:'' + vtIco('message-circle') + ' Shop', email:'' + vtIco('mail') + ' E-Mail', telegram_support:'' + vtIco('send') + ' Telegram', whatsapp:'' + vtIco('circle-dot') + ' WhatsApp' };
 function kanalChip(kanal) {
-  const l = KANAL_LABEL[kanal] || '💬 Shop';
+  const l = KANAL_LABEL[kanal] || '' + vtIco('message-circle') + ' Shop';
   return `<span style="font-size:11px;background:var(--oak-pale);color:var(--oak);border-radius:6px;padding:1px 7px;font-weight:600;">${l}</span>`;
 }
 const NACHRICHT_STATUS_LABEL = { offen:'Offen', kundenantwort:'Kundenantwort', in_bearbeitung:'In Bearbeitung', beantwortet:'Beantwortet', erledigt:'Erledigt', geschlossen:'Geschlossen' };
@@ -2612,9 +2688,9 @@ function threadKarteHtml(t) {
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
       <div>
         ${t.preisanfrage_id
-          ? `<strong>📩 Preisanfrage ${h(t.pa_nummer || ('PA-' + t.preisanfrage_id))}</strong> <span style="color:var(--gray);">${t.pa_firma ? '· ' + h(t.pa_firma) : ''}${t.pa_status ? ' · <strong style="color:var(--oak);">' + h((typeof PA_STATUS_LABEL !== 'undefined' && PA_STATUS_LABEL[t.pa_status]) || t.pa_status) + '</strong>' : ''}</span>`
+          ? `<strong>${vtIco('inbox')} Preisanfrage ${h(t.pa_nummer || ('PA-' + t.preisanfrage_id))}</strong> <span style="color:var(--gray);">${t.pa_firma ? '· ' + h(t.pa_firma) : ''}${t.pa_status ? ' · <strong style="color:var(--oak);">' + h((typeof PA_STATUS_LABEL !== 'undefined' && PA_STATUS_LABEL[t.pa_status]) || t.pa_status) + '</strong>' : ''}</span>`
           : `${kanalChip(t.kanal_letzte_nachricht || 'shop')} <strong>${h(typ)}</strong> <span style="color:var(--gray);">${(b.id || t.bestellung_id) ? '· Bestellung #' + (b.id || t.bestellung_id) + (b.rechnung_nummer ? ' · ' + h(b.rechnung_nummer) : '') + (b.firma ? ' · ' + h(b.firma) : '') : '· Allgemeine Anfrage (nicht zugeordnet)'}</span>`}
-        <div style="font-size:12px;color:var(--gray);margin-top:3px;">${h(t.erstellt_von_name || b.kundenname || '—')}${t.erstellt_von_email ? ' · ' + h(t.erstellt_von_email) : ''} · ${zeit}${t.anzahl_anhaenge ? ' · 📎 ' + t.anzahl_anhaenge : ''}</div>
+        <div style="font-size:12px;color:var(--gray);margin-top:3px;">${h(t.erstellt_von_name || b.kundenname || '—')}${t.erstellt_von_email ? ' · ' + h(t.erstellt_von_email) : ''} · ${zeit}${t.anzahl_anhaenge ? ' · ' + vtIco('paperclip') + ' ' + t.anzahl_anhaenge : ''}</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
         ${t.ungelesen > 0 ? `<span style="background:#B91C1C;color:#fff;border-radius:10px;padding:0 7px;font-size:11px;font-weight:700;">${t.ungelesen} neu</span>` : ''}
@@ -2733,14 +2809,14 @@ function paModalBodyHtml(pa) {
     const zeilen = (pa.positionen || []).map(p => `<div style="font-size:12px;color:#374151;">${h(p.produktname || '')}: <strong>${adMengen[p.id] != null ? adMengen[p.id] : p.menge_m2_wunsch} m²</strong></div>`).join('');
     const adr = [la.empfaenger, la.strasse, [la.plz, la.ort].filter(Boolean).join(' '), la.land].filter(Boolean).join(', ');
     annahmeBlock = `<div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:12px;margin-bottom:14px;">
-      <div style="font-weight:700;color:#065F46;margin-bottom:6px;">✅ Vom Kunden angenommen (Preis/m² fix)</div>
+      <div style="font-weight:700;color:#065F46;margin-bottom:6px;">${vtIco('check-circle')} Vom Kunden angenommen (Preis/m² fix)</div>
       ${zeilen}
       ${adr ? `<div style="font-size:12px;color:#374151;margin-top:6px;">Lieferadresse: <strong>${h(adr)}</strong></div>` : ''}
       ${ad.hinweis ? `<div style="font-size:12px;color:#374151;">Hinweis: ${h(ad.hinweis)}</div>` : ''}
-      <button class="btn btn-green btn-sm" style="margin-top:10px;" onclick="paBestellungErstellen(${pa.id})">📦 Verbindliche Bestellung erstellen</button>
+      <button class="btn btn-green btn-sm" style="margin-top:10px;" onclick="paBestellungErstellen(${pa.id})">${vtIco('package')} Verbindliche Bestellung erstellen</button>
     </div>`;
   } else if (pa.status === 'in_bestellung') {
-    annahmeBlock = `<div style="background:#EDE9FE;border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:#5B21B6;">📦 In Bestellung #${pa.bestellung_id || ''} umgewandelt.</div>`;
+    annahmeBlock = `<div style="background:#EDE9FE;border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:#5B21B6;">${vtIco('package')} In Bestellung #${pa.bestellung_id || ''} umgewandelt.</div>`;
   }
 
   return `
@@ -2847,7 +2923,7 @@ async function angebotSenden(id) {
   } catch (e) {
     zeigeToast('Fehler: ' + e.message, true);
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '📤 Angebot senden'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = '' + vtIco('upload') + ' Angebot senden'; }
   }
 }
 
@@ -2922,11 +2998,11 @@ function rebuildThreadModusSelect() {
   const sel = document.getElementById('threadModus');
   if (!sel) return;
   const opts = [];
-  if (threadModi.kunde) opts.push(['kunde', '✉️ Antwort an Kunden']);
-  if (threadModi.intern_admin) opts.push(['intern_admin', '🔒 Interne Notiz']);
-  if (threadModi.intern_admin_freigegeben) opts.push(['intern_admin_freigegeben', '🔓 Superadmin-Notiz – für Admins freigegeben']);
-  if (threadModi.intern_superadmin) opts.push(['intern_superadmin', '🛡️ Nur Superadmin']);
-  if (!opts.length) opts.push(['kunde', '✉️ Antwort an Kunden']);
+  if (threadModi.kunde) opts.push(['kunde', 'Antwort an Kunden']);
+  if (threadModi.intern_admin) opts.push(['intern_admin', 'Interne Notiz']);
+  if (threadModi.intern_admin_freigegeben) opts.push(['intern_admin_freigegeben', 'Superadmin-Notiz – für Admins freigegeben']);
+  if (threadModi.intern_superadmin) opts.push(['intern_superadmin', 'Nur Superadmin']);
+  if (!opts.length) opts.push(['kunde', 'Antwort an Kunden']);
   sel.innerHTML = opts.map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
   threadSchnellantwortBefuellen();
   threadModusGewechselt();
@@ -2961,7 +3037,7 @@ function threadModusGewechselt() {
 function threadSchnellantwortBefuellen() {
   const sel = document.getElementById('threadSchnellantwort');
   if (!sel) return;
-  sel.innerHTML = '<option value="">⚡ Schnellantwort wählen…</option>' +
+  sel.innerHTML = '<option value="">Schnellantwort wählen…</option>' +
     SCHNELLANTWORTEN.map((s, i) => `<option value="${i}">${h(s.label)}</option>`).join('');
 }
 
@@ -3005,10 +3081,10 @@ function renderThreadOrderPane(b, pos, dok) {
   const _nl = istNurLager();
   threadOrderAktuell = b;
   // Lager: „Bestellung ansehen" (Geld-Modal), Rechnung und AB (enthalten Preise) ausblenden.
-  const docBtns = _nl ? [] : [`<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="oeffneBestellungAusThread(${b.id})">👁 Bestellung ansehen</button>`];
-  if (!_nl && dok.rechnung) docBtns.push(`<button class="btn btn-sm" onclick="zeigeRechnungPdf(${b.id})">📄 Rechnung</button>`);
-  if (!_nl && dok.auftragsbestaetigung) docBtns.push(`<button class="btn btn-sm" onclick="zeigeAdminDokument(${b.id},'auftragsbestaetigung','Auftragsbestätigung')">📄 AB</button>`);
-  if (dok.lieferschein) docBtns.push(`<button class="btn btn-sm" onclick="zeigeAdminDokument(${b.id},'lieferschein','Lieferschein')">📄 Lieferschein</button>`);
+  const docBtns = _nl ? [] : [`<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="oeffneBestellungAusThread(${b.id})">${vtIco('eye')} Bestellung ansehen</button>`];
+  if (!_nl && dok.rechnung) docBtns.push(`<button class="btn btn-sm" onclick="zeigeRechnungPdf(${b.id})">${vtIco('file-text')} Rechnung</button>`);
+  if (!_nl && dok.auftragsbestaetigung) docBtns.push(`<button class="btn btn-sm" onclick="zeigeAdminDokument(${b.id},'auftragsbestaetigung','Auftragsbestätigung')">${vtIco('file-text')} AB</button>`);
+  if (dok.lieferschein) docBtns.push(`<button class="btn btn-sm" onclick="zeigeAdminDokument(${b.id},'lieferschein','Lieferschein')">${vtIco('file-text')} Lieferschein</button>`);
   // Versand-Workflow direkt aus dem Nachrichtenfenster – phasenbasiert, rollen-gegated,
   // mit Hinweis, warum ein Schritt (noch) nicht verfügbar ist. Gleiche Endpoints wie in
   // Lager-/Versandplanung-Ansicht (keine zweite Logik).
@@ -3017,30 +3093,30 @@ function renderThreadOrderPane(b, pos, dok) {
   const _darfAbgeholt = darf('warehouse.mark_handed_to_carrier') || adminMe.ist_super_admin;
   const _darfBeauftragen = darf('bestellungen.tracking') || adminMe.ist_super_admin;
   const _darfVersenden = darf('bestellungen.status') || adminMe.ist_super_admin;
-  const _hint = txt => docBtns.push(`<span style="font-size:12px;color:var(--gray);align-self:center;">⏳ ${txt}</span>`);
+  const _hint = txt => docBtns.push(`<span style="font-size:12px;color:var(--gray);align-self:center;">${vtIco('clock')} ${txt}</span>`);
   if (b.status === 'bezahlt') {
     if (_phase === 'in_bearbeitung') {
-      if (_darfKomm) docBtns.push(`<button class="btn btn-sm" style="background:#1f7a4d;color:#fff;" onclick="versanddatenOeffnen(${b.id})">✅ Kommissionierung fertig</button>`);
+      if (_darfKomm) docBtns.push(`<button class="btn btn-sm" style="background:#1f7a4d;color:#fff;" onclick="versanddatenOeffnen(${b.id})">${vtIco('check-circle')} Kommissionierung fertig</button>`);
       else _hint('Wartet auf Kommissionierung durch Lager');
     } else if (_phase === 'an_disposition' && b.lieferart === 'abholung') {
-      if (_darfKomm) docBtns.push(`<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="lagerAbholbereit(${b.id})">📦 Abholbereit melden</button>`);
+      if (_darfKomm) docBtns.push(`<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="lagerAbholbereit(${b.id})">${vtIco('package')} Abholbereit melden</button>`);
       else _hint('Selbstabholung – Lager meldet abholbereit');
     } else if (_phase === 'an_disposition') {
-      if (_darfBeauftragen && !_nl) docBtns.push(`<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="versandSpeditionOeffnen(${b.id})">🚚 Spedition beauftragen</button>`);
+      if (_darfBeauftragen && !_nl) docBtns.push(`<button class="btn btn-sm" style="background:#1f5a8a;color:#fff;" onclick="versandSpeditionOeffnen(${b.id})">${vtIco('truck')} Spedition beauftragen</button>`);
       else _hint('Wartet auf Spedition-Beauftragung durch Büro');
     } else if (_phase === 'spedition_beauftragt') {
-      if (_darfAbgeholt) docBtns.push(`<button class="btn btn-green btn-sm" onclick="lagerAbgeholt(${b.id})">🚚 Bestellung abgeholt</button>`);
+      if (_darfAbgeholt) docBtns.push(`<button class="btn btn-green btn-sm" onclick="lagerAbgeholt(${b.id})">${vtIco('truck')} Bestellung abgeholt</button>`);
       else _hint('Wartet auf Abholbestätigung durch Lager');
     } else if (_phase === 'abgeholt' || _phase === 'abholbereit') {
-      if (_darfVersenden && !_nl) docBtns.push(`<button class="btn btn-green btn-sm" onclick="versandVersenden(${b.id})">📨 Kunde informieren / Versenden</button>`);
+      if (_darfVersenden && !_nl) docBtns.push(`<button class="btn btn-green btn-sm" onclick="versandVersenden(${b.id})">${vtIco('send')} Kunde informieren / Versenden</button>`);
       else _hint('Wartet auf Versand durch Büro');
     }
   }
   // Vorkasse-Aktionen direkt im Nachrichtenfenster – NUR offene Vorkasse, nicht für Lager.
   // Gleiche Bedingung + Handler wie im Bestelldetail-Modal (keine zweite Logik), volle Spaltenbreite.
   if (!_nl && b.zahlungsart === 'vorkasse' && b.status === 'warte_auf_zahlung') {
-    docBtns.push(`<button class="btn btn-green btn-sm" style="width:100%;" onclick="vorkasseZahlungErhalten(${b.id})">✅ Zahlung erhalten & echte Rechnung erstellen</button>`);
-    docBtns.push(`<button class="btn btn-red btn-sm" style="width:100%;" onclick="adminStorniereVorkasse(${b.id})">❌ Vorkasse stornieren & Reservierung freigeben</button>`);
+    docBtns.push(`<button class="btn btn-green btn-sm" style="width:100%;" onclick="vorkasseZahlungErhalten(${b.id})">${vtIco('check-circle')} Zahlung erhalten & echte Rechnung erstellen</button>`);
+    docBtns.push(`<button class="btn btn-red btn-sm" style="width:100%;" onclick="adminStorniereVorkasse(${b.id})">${vtIco('x-circle')} Vorkasse stornieren & Reservierung freigeben</button>`);
   }
   const positions = (pos || []).map(p => `<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--gray-light);padding:4px 0;"><span>${h(p.produktname || 'Parkett')} · ${Number(p.menge_m2_gesamt || 0).toFixed(2)} m²${p.anzahl_pakete ? ' · ' + h(p.anzahl_pakete) + ' Pkt' : ''}${p.bauvorhaben ? '<br><span style="color:var(--gray);font-size:12px;">BV: ' + h(p.bauvorhaben) + '</span>' : ''}</span>${_nl ? '' : '<strong>' + euro(p.gesamtpreis) + '</strong>'}</div>`).join('') || '<span style="color:var(--gray);">—</span>';
   el.innerHTML = `
@@ -3074,14 +3150,14 @@ function renderThreadPaPane(pa) {
   const farbe = (typeof PA_STATUS_FARBE !== 'undefined' && PA_STATUS_FARBE[pa.status]) || '#6B7280';
   const angenommen = pa.status === 'angenommen';
   el.innerHTML = `
-    <div style="font-weight:700;color:var(--oak);margin-bottom:6px;">📩 ${h(pa.pa_nummer || 'Preisanfrage')}</div>
+    <div style="font-weight:700;color:var(--oak);margin-bottom:6px;">${vtIco('inbox')} ${h(pa.pa_nummer || 'Preisanfrage')}</div>
     <div style="line-height:1.7;font-size:13px;">
       Firma: <strong>${h(pa.firma || '—')}</strong><br>
       Status: <span style="display:inline-block;background:${farbe}1A;color:${farbe};border-radius:8px;padding:2px 8px;font-size:12px;font-weight:600;">${h(pa.status_label || pa.status || '')}</span>
       ${pa.bestellung_id ? `<br>Bestellung: <strong>#${pa.bestellung_id}</strong>` : ''}
     </div>
-    ${angenommen ? `<div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:10px;margin-top:10px;font-size:12px;color:#065F46;">✅ Vom Kunden angenommen – jetzt die verbindliche Bestellung erstellen.</div>` : ''}
-    <button class="btn btn-sm ${angenommen ? 'btn-green' : ''}" style="${angenommen ? '' : 'background:var(--oak-pale);color:var(--oak);'}margin-top:10px;width:100%;" onclick="oeffnePaAusThread(${pa.id})">📩 Preisanfrage bearbeiten${angenommen ? ' / Bestellung erstellen' : ''}</button>`;
+    ${angenommen ? `<div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:10px;margin-top:10px;font-size:12px;color:#065F46;">${vtIco('check-circle')} Vom Kunden angenommen – jetzt die verbindliche Bestellung erstellen.</div>` : ''}
+    <button class="btn btn-sm ${angenommen ? 'btn-green' : ''}" style="${angenommen ? '' : 'background:var(--oak-pale);color:var(--oak);'}margin-top:10px;width:100%;" onclick="oeffnePaAusThread(${pa.id})">${vtIco('inbox')} Preisanfrage bearbeiten${angenommen ? ' / Bestellung erstellen' : ''}</button>`;
 }
 
 // Aus dem Nachrichten-Thread direkt in die Preisanfragen-Bearbeitung springen.
@@ -3101,7 +3177,7 @@ function oeffneBestellungAusThread(id) {
 function threadAnhangHtml(a) {
   if (!a.url) return '';
   if (String(a.mime_type || '').startsWith('image/')) return `<a href="${a.url}" target="_blank" rel="noopener"><img src="${a.url}" style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid #ddd;"></a>`;
-  return `<a href="${a.url}" target="_blank" rel="noopener" style="font-size:12px;color:var(--oak);text-decoration:underline;">📄 ${h(a.dateiname || 'Datei')}</a>`;
+  return `<a href="${a.url}" target="_blank" rel="noopener" style="font-size:12px;color:var(--oak);text-decoration:underline;">${vtIco('file-text')} ${h(a.dateiname || 'Datei')}</a>`;
 }
 
 function threadBubbleHtml(m) {
@@ -3115,19 +3191,19 @@ function threadBubbleHtml(m) {
   const bg = intern ? '#FEF6E0' : (istAdmin ? '#E8F5EE' : '#ffffff');
   const border = intern ? '#E0C36B' : 'var(--gray-light)';
   const TAGS = {
-    intern_admin: '🔒 INTERNE NOTIZ',
-    intern_admin_freigegeben: '🔓 SUPERADMIN – FÜR ADMINS',
-    intern_superadmin: '🛡️ NUR SUPERADMIN'
+    intern_admin: '' + vtIco('lock') + ' INTERNE NOTIZ',
+    intern_admin_freigegeben: '' + vtIco('unlock') + ' SUPERADMIN – FÜR ADMINS',
+    intern_superadmin: '' + vtIco('shield') + ' NUR SUPERADMIN'
   };
   const istLagerNotiz = m.quelle === 'lager_internal_chat' || m.absender_rolle === 'lager';
-  const tagText = istLagerNotiz ? '🏭 LAGER INTERN' : (TAGS[sicht] || '🔒 INTERN');
+  const tagText = istLagerNotiz ? '' + vtIco('warehouse') + ' LAGER INTERN' : (TAGS[sicht] || '' + vtIco('lock') + ' INTERN');
   const tag = intern ? `<span style="background:${istLagerNotiz ? '#1f5a8a' : '#B45309'};color:#fff;border-radius:6px;padding:0 6px;font-size:10px;margin-left:6px;">${tagText}</span>` : '';
   // Super-Admin (bzw. manage_visibility): reine Superadmin-Notiz nachträglich für Admins freigeben.
   const freigabe = (threadDarfFreigeben && sicht === 'intern_superadmin')
-    ? `<button onclick="nachrichtFreigeben(${m.id})" style="margin-top:6px;font-size:11px;background:none;border:1px solid #B45309;color:#B45309;border-radius:6px;padding:2px 8px;cursor:pointer;">🔓 Für Admins freigeben</button>`
+    ? `<button onclick="nachrichtFreigeben(${m.id})" style="margin-top:6px;font-size:11px;background:none;border:1px solid #B45309;color:#B45309;border-radius:6px;padding:2px 8px;cursor:pointer;">${vtIco('unlock')} Für Admins freigeben</button>`
     : '';
   const istTelegram = m.quelle === 'telegram_support' || m.external_channel === 'telegram_support';
-  const kanalTag = istTelegram ? ' · <span style="color:#229ED9;font-weight:600;">📨 Telegram</span>' : (m.quelle === 'email_inbound' ? ' · <span style="color:#888;">✉️ E-Mail</span>' : '');
+  const kanalTag = istTelegram ? ' · <span style="color:#229ED9;font-weight:600;">' + vtIco('send') + ' Telegram</span>' : (m.quelle === 'email_inbound' ? ' · <span style="color:#888;">' + vtIco('mail') + ' E-Mail</span>' : '');
   const anh = (m.anhaenge || []).map(threadAnhangHtml).join('');
   return `<div style="display:flex;justify-content:${align};margin-bottom:10px;">
     <div style="max-width:80%;background:${bg};border:1px solid ${border};border-radius:10px;padding:9px 12px;">
@@ -3143,7 +3219,7 @@ async function nachrichtFreigeben(nachrichtId) {
   if (!confirm('Diese Super-Admin-Notiz für berechtigte Admins freigeben? (Kunde sieht sie weiterhin NICHT.)')) return;
   try {
     await backendApi(`/api/admin/nachrichten/${nachrichtId}/sichtbarkeit`, 'PATCH', { sichtbarkeit: 'intern_admin_freigegeben' });
-    zeigeToast('✅ Notiz für Admins freigegeben');
+    zeigeToast('Notiz für Admins freigegeben');
     threadLetzteAnzahl = -1;
     ladeThreadDetail(false);
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
@@ -3173,7 +3249,7 @@ function threadFilesGewaehlt(ev) {
   }))).then(arr => {
     threadAntwortFilesData = arr.filter(Boolean);
     box.innerHTML = threadAntwortFilesData.map(a => a.typ === 'application/pdf'
-      ? `<span style="font-size:12px;background:#eee;border-radius:6px;padding:4px 8px;">📄 ${h(a.name)}</span>`
+      ? `<span style="font-size:12px;background:#eee;border-radius:6px;padding:4px 8px;">${vtIco('file-text')} ${h(a.name)}</span>`
       : `<img src="${a.contentBase64}" style="width:46px;height:46px;object-fit:cover;border-radius:6px;border:1px solid #ddd;">`).join('');
   });
 }
@@ -3198,9 +3274,9 @@ async function threadAntwortSenden() {
     if (modus === 'kunde') { const sel = document.getElementById('threadStatusSelect'); if (sel) sel.value = 'beantwortet'; }
     if (data.warnung) {
       fehler.textContent = data.warnung; fehler.style.display = 'block';
-      zeigeToast('⚠️ Nachricht gespeichert, aber nicht zugestellt', true);
+      zeigeToast('Nachricht gespeichert, aber nicht zugestellt', true);
     } else {
-      zeigeToast(modus === 'kunde' ? '✅ Antwort an Kunden/Gast gesendet' : '✅ Interne Notiz gespeichert');
+      zeigeToast(modus === 'kunde' ? 'Antwort an Kunden/Gast gesendet' : 'Interne Notiz gespeichert');
     }
     aktualisiereNachrichtenBadge();
     if (document.getElementById('page-nachrichten')?.classList.contains('active')) ladeNachrichten(true);
@@ -3215,7 +3291,7 @@ async function threadStatusSetzen(status) {
   if (!threadAktuelleId) return;
   try {
     await backendApi(`/api/admin/threads/${threadAktuelleId}/status`, 'PATCH', { status });
-    zeigeToast('✅ Status: ' + (NACHRICHT_STATUS_LABEL[status] || status));
+    zeigeToast('Status: ' + (NACHRICHT_STATUS_LABEL[status] || status));
     aktualisiereNachrichtenBadge();
     if (document.getElementById('page-nachrichten')?.classList.contains('active')) ladeNachrichten(true);
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
@@ -3230,7 +3306,7 @@ async function ladeBestellNachrichten(id) {
     if (!data.thread) { el.innerHTML = '<span style="color:var(--gray);">Keine Nachrichten zu dieser Bestellung.</span>'; return; }
     const msgs = data.nachrichten || [];
     const vorschau = msgs.slice(-3).map(m => `<div style="font-size:13px;margin:4px 0;"><strong>${m.ist_admin_antwort ? 'Team' : h(m.absender_name || 'Kunde')}:</strong> ${h((m.nachricht_text || '').slice(0, 140))}</div>`).join('');
-    el.innerHTML = `${vorschau}<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);margin-top:6px;" onclick="oeffneThread(${data.thread.id})">💬 Nachrichten öffnen (${msgs.length})</button>`;
+    el.innerHTML = `${vorschau}<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);margin-top:6px;" onclick="oeffneThread(${data.thread.id})">${vtIco('message-circle')} Nachrichten öffnen (${msgs.length})</button>`;
   } catch (e) {
     el.innerHTML = `<span style="color:#B91C1C;">Fehler: ${h(e.message)}</span>`;
   }
@@ -3331,7 +3407,7 @@ async function vorkasseZahlungErhalten(bestellungId) {
       throw new Error(data.error || 'Unbekannter Fehler');
     }
 
-    zeigeToast('✅ Zahlung markiert, Rechnung erstellt und E-Mail gesendet');
+    zeigeToast('Zahlung markiert, Rechnung erstellt und E-Mail gesendet');
     schliesseModal('bestellModal');
     ladeBestellungen();
     ladeDashboard();
@@ -3371,7 +3447,7 @@ async function adminStorniereVorkasse(bestellungId) {
       throw new Error(data.error || 'Unbekannter Fehler');
     }
 
-    zeigeToast('✅ Vorkasse storniert und Reservierung freigegeben');
+    zeigeToast('Vorkasse storniert und Reservierung freigegeben');
     schliesseModal('bestellModal');
     ladeBestellungen();
     ladeDashboard();
@@ -3404,7 +3480,7 @@ async function reservierungenFreigeben() {
       throw new Error(data.error || 'Unbekannter Fehler');
     }
 
-    zeigeToast(`✅ Abgelaufene Reservierungen freigegeben: ${data.released_count ?? 0}`);
+    zeigeToast(`Abgelaufene Reservierungen freigegeben: ${data.released_count ?? 0}`);
     ladeBestellungen();
     ladeDashboard();
   } catch (err) {
