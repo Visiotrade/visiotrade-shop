@@ -5514,8 +5514,17 @@ function aktualisiereNachMengenAenderung() {
   const abwChecked = document.getElementById('checkAbwLieferadresse')?.checked || false;
   if (abwChecked) { if (typeof aktualisiereFrachtAbw === 'function') aktualisiereFrachtAbw(); }
   else { if (typeof aktualisiereFracht === 'function') aktualisiereFracht(); }
-  // Bestellübersicht (Kasse) neu aufbauen, falls vorhanden -> Lieferkosten/MwSt/Gesamt sofort aktuell
-  if (document.getElementById('uebersichtContent') && typeof zeigeBestelluebersicht === 'function') {
+  // Bestellübersicht nur dann neu aufbauen, wenn sie GERADE ANGEZEIGT wird
+  // -> Lieferkosten/MwSt/Gesamt bleiben dort sofort aktuell.
+  //
+  // Vorher wurde auf `document.getElementById('uebersichtContent')` geprüft. Dieses Element
+  // existiert aber IMMER im Dokument – es liegt nur auf einem ausgeblendeten Screen. Die
+  // Bedingung war also immer wahr, und da zeigeBestelluebersicht() am Ende showScreen('uebersicht')
+  // aufruft, sprang der Kunde bei JEDER Mengenänderung im Warenkorb ungewollt auf die
+  // Bestellübersicht – mitten im Bearbeiten. (Trat nur auf, wenn die Checkout-Felder bereits
+  // ausgefüllt waren, sonst brach die Validierung vorher ab.)
+  const uebersichtSichtbar = document.getElementById('screen-uebersicht')?.classList.contains('active');
+  if (uebersichtSichtbar && typeof zeigeBestelluebersicht === 'function') {
     zeigeBestelluebersicht();
   }
 }
