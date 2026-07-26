@@ -1691,7 +1691,14 @@ async function ladeAdminMe() {
 
   // Hintergrund-Funktionen nur, wenn erlaubt (keine Daten für Lager-only).
   if (!nurLager && (darf('bestellungen.ansehen') || darf('messages.view'))) { aktualisiereNachrichtenBadge(); aktualisierePreisanfrageBadge(); aktualisiereBestellBadge(); startNachrichtenPoller(); }
-  if (nurLager && (darf('messages.view') || darf('warehouse.chat_view'))) { aktualisiereNachrichtenBadge(); startNachrichtenPoller(); }
+  if (nurLager) {
+    // Badge nur mit Chat-Recht abrufen (Lager-RBAC: keine Daten holen, die nicht sichtbar sind).
+    if (darf('messages.view') || darf('warehouse.chat_view')) aktualisiereNachrichtenBadge();
+    // Poller IMMER starten – auch OHNE Chat-Recht. Er hält die Lager-Liste aktuell, und die ist
+    // für ein reines Lagerkonto die einzige Arbeitsfläche. Vorher hing der Start allein am
+    // Chat-Recht: ein Lagerist mit nur `warehouse.view_orders` bekam nie eine Aktualisierung.
+    startNachrichtenPoller();
+  }
   if (!nurLager && (darf('produkte.ansehen') || darf('kategorien.ansehen'))) { try { ladeKategorienListe(); } catch (_) {} }
 
   // Zugriff erlaubt, wenn Super, Lager-Zugang oder mindestens ein breites Recht.
@@ -2956,6 +2963,14 @@ async function paBestellungErstellen(id) {
 
 // --- Thread-Detail (Modal mit Bestellübersicht + Chat) ---
 function oeffneThread(id) {
+  // Das Bestelldetail-Fenster schließen, bevor der Thread aufgeht (Wunschliste W-03).
+  // Grund: oeffneBestellungAusThread() setzt #bestellModal INLINE auf z-index 500, damit es
+  // über dem Thread (450) liegt. Dieser Inline-Wert wurde nie zurückgesetzt – ab dem ersten
+  // "Bestellung ansehen" blieb das Bestellfenster für den Rest der Sitzung auf 500, und jeder
+  // später geöffnete Thread verschwand dahinter (auch bei einer ganz anderen Bestellung).
+  // Zwei Fenster übereinander sind hier ohnehin nicht gewollt: Nachrichten sollen groß und
+  // allein im Vordergrund stehen. schliesseModal() räumt den Inline-z-index jetzt mit auf.
+  schliesseModal('bestellModal');
   threadAktuelleId = id; threadLetzteAnzahl = -1; threadAntwortFilesData = [];
   document.getElementById('threadAntwortText').value = '';
   document.getElementById('threadAntwortFiles').value = '';
@@ -3353,10 +3368,16 @@ function startNachrichtenPoller() {
   if (nachrichtenPoller) return;
   const tick = () => {
     if (document.hidden) return;
-    aktualisiereNachrichtenBadge();
-    aktualisierePreisanfrageBadge();
-    aktualisiereBestellBadge();
-    ladeAdminUngelesen(true);
+    // Lager-RBAC: Für ein reines Lagerkonto KEINE kaufmännischen Zähler abrufen (Preisanfragen,
+    // Bestellungen, Admin-Ungelesen). Das sind Bereiche, die es ohnehin nicht sehen darf – und
+    // seit der Poller auch ohne Chat-Recht läuft, würden hier sonst dauerhaft 403er erzeugt.
+    const _nurLager = (typeof istNurLager === 'function') ? istNurLager() : false;
+    if (!_nurLager || darf('messages.view') || darf('warehouse.chat_view')) aktualisiereNachrichtenBadge();
+    if (!_nurLager) {
+      aktualisierePreisanfrageBadge();
+      aktualisiereBestellBadge();
+      ladeAdminUngelesen(true);
+    }
     if (document.getElementById('page-nachrichten')?.classList.contains('active')) ladeNachrichten(true);
     // Bestellliste live halten, solange die Seite offen ist – aber NICHT mitten in einer
     // Interaktion neu rendern (offenes Modal oder fokussiertes Feld/Dropdown in der Tabelle).
@@ -3366,6 +3387,20 @@ function startNachrichtenPoller() {
       const fokusInTabelle = tabelle && tabelle.contains(document.activeElement);
       if (!modalOffen && !fokusInTabelle) ladeBestellungen();
     }
+    // Lager + Versandplanung live halten (gemeldet beim Test am 26.07.2026).
+    // Ein reines Lagerkonto sieht NUR diese Seite. Sie stand bisher nicht im Poller: Eine frisch
+    // bezahlte Bestellung erschien erst nach manuellem Klick auf „Aktualisieren" – der Lieferschein
+    // lag da längst im Postfach, die Liste zeigte aber weiter „Keine Bestellungen zur Vorbereitung".
+    // Versandplanung hatte dieselbe Lücke und ist derselbe Arbeitsablauf, deshalb gleich mit.
+    // Schutzregel wie bei den Bestellungen: nicht neu rendern, solange ein Fenster offen ist oder
+    // in der Seite getippt wird (interner Lager-Chat, Sendungsnummer) – sonst verliert man Eingaben.
+    [['lager', ladeLager], ['versandplanung', ladeVersandplanung]].forEach(([seite, laden]) => {
+      const el = document.getElementById('page-' + seite);
+      if (!el || !el.classList.contains('active')) return;
+      if (document.querySelector('.modal-overlay.open')) return;
+      if (el.contains(document.activeElement)) return;
+      try { laden(); } catch (_) {}
+    });
     // Offener Chat: nur den Verlauf aktualisieren (Flacker-/Scrollschutz in renderThreadVerlauf).
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
   };
@@ -3495,8 +3530,24 @@ async function speichereEinstellungen() {
 }
 
 // ===== UTILS =====
-function schliesseModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+// Wunschliste W-03: Nur #bestellModal bekommt seine Ebene zur Laufzeit per JS zugewiesen
+// (oeffneBestellungAusThread setzt z-index 500, damit es über dem Thread liegt). Dieser Wert
+// blieb bisher für die ganze Sitzung kleben – jeder später geöffnete Thread verschwand dahinter.
+// Deshalb wird er beim Schließen gezielt zurückgenommen.
+//
+// WICHTIG: Bewusst NUR für #bestellModal. #threadModal (450) und #rechnungPdfModal (600) tragen
+// ihre Ebene als style-Attribut im Markup – das ist technisch ebenfalls ein Inline-Stil. Ein
+// pauschales Leeren von style.zIndex würde diese beiden Fenster dauerhaft auf 200 zurückwerfen.
+function modalEbeneZuruecksetzen(el) {
+  if (el && el.id === 'bestellModal' && el.style) el.style.zIndex = '';
+}
+function schliesseModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('open');
+  modalEbeneZuruecksetzen(el);
+}
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) { m.classList.remove('open'); modalEbeneZuruecksetzen(m); } }));
 
 function zeigeToast(msg, error = false) {
   const t = document.getElementById('toast');
