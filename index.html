@@ -6128,11 +6128,11 @@ function zeigeBestelluebersicht() {
     liefHtml = `<div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
       <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">${vtIco('truck')} Abweichende Lieferadresse</div>
       <div style="font-size:14px;line-height:1.8;color:var(--walnut);">
-        ${liefEmpf}<br>${liefStr}<br>${liefPlz} ${liefOrt}<br>${liefLand}
-        ${liefTel ? '<br>' + vtIco('phone') + ' ' + liefTel : ''}
+        ${escapeHtml(liefEmpf)}<br>${escapeHtml(liefStr)}<br>${escapeHtml(liefPlz)} ${escapeHtml(liefOrt)}<br>${escapeHtml(liefLand)}
+        ${liefTel ? '<br>' + vtIco('phone') + ' ' + escapeHtml(liefTel) : ''}
         ${liefHeb ? '<br>✓ Anlieferung mit Hebebühne' : ''}
         ${liefEigen ? '<br>✓ Eigenständige Entladung durch den Käufer' : ''}
-        ${liefSonst ? '<br><em style="color:var(--gray)">Hinweis: ' + liefSonst + '</em>' : ''}
+        ${liefSonst ? '<br><em style="color:var(--gray)">Hinweis: ' + escapeHtml(liefSonst) + '</em>' : ''}
       </div>
     </div>`;
   } else if (lieferart === 'lieferung' && !abwChecked) {
@@ -6145,7 +6145,7 @@ function zeigeBestelluebersicht() {
         <div style="font-size:14px;line-height:1.8;color:var(--walnut);">
           ${heb ? '✓ Anlieferung mit Hebebühne<br>' : ''}
           ${eigen ? '✓ Eigenständige Entladung durch den Käufer<br>' : ''}
-          ${sonst ? '<em style="color:var(--gray)">Hinweis: ' + sonst + '</em>' : ''}
+          ${sonst ? '<em style="color:var(--gray)">Hinweis: ' + escapeHtml(sonst) + '</em>' : ''}
         </div>
       </div>`;
     }
@@ -6182,12 +6182,12 @@ function zeigeBestelluebersicht() {
     <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
       <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">${vtIco('building')} Rechnungsdaten</div>
       <div style="font-size:14px;line-height:1.8;color:var(--walnut);">
-        <strong>${vorname} ${nachname}</strong><br>
-        ${firma}<br>
-        ${document.getElementById('ustid')?.value ? 'USt-IdNr.: ' + document.getElementById('ustid').value + '<br>' : ''}
-        ${rechStr}<br>${rechPlz} ${rechOrt}<br>${rechLand}<br>
-        <br>${email}<br>
-        ${telefon}
+        <strong>${escapeHtml(vorname)} ${escapeHtml(nachname)}</strong><br>
+        ${escapeHtml(firma)}<br>
+        ${document.getElementById('ustid')?.value ? 'USt-IdNr.: ' + escapeHtml(document.getElementById('ustid').value) + '<br>' : ''}
+        ${escapeHtml(rechStr)}<br>${escapeHtml(rechPlz)} ${escapeHtml(rechOrt)}<br>${escapeHtml(rechLand)}<br>
+        <br>${escapeHtml(email)}<br>
+        ${escapeHtml(telefon)}
       </div>
     </div>
     ${liefHtml}
