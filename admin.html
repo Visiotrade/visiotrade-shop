@@ -2212,6 +2212,12 @@ async function lagerAbholbereit(id) {
 // ===== VERSANDPLANUNG (Büro/Disposition) =====
 let versandplanungCache = [];
 let threadOrderAktuell = null;
+// Zu WELCHEM Thread die oben zwischengespeicherte Bestellung gehört. Ohne diese Bindung war
+// `threadOrderAktuell` ein globaler Zustand, der beim Wechsel des Vorgangs stehen blieb – die
+// Schnellantwort füllte dann Firma, Bestell- und Rechnungsnummer eines FREMDEN Kunden ein und
+// verschickte sie an einen anderen. Beides wird ab jetzt immer gemeinsam gesetzt und gemeinsam
+// zurückgesetzt; vor der Verwendung wird gegen `threadAktuelleId` geprüft.
+let threadOrderAktuellThreadId = null;
 
 // Spiegel der Backend-Funktion versandPhase(b) für die Button-Freischaltung.
 function feVersandPhase(b) {
@@ -2971,6 +2977,11 @@ function oeffneThread(id) {
   // Zwei Fenster übereinander sind hier ohnehin nicht gewollt: Nachrichten sollen groß und
   // allein im Vordergrund stehen. schliesseModal() räumt den Inline-z-index jetzt mit auf.
   schliesseModal('bestellModal');
+  // Bestellkontext des VORIGEN Vorgangs restlos verwerfen, bevor der neue aufgebaut wird.
+  // Er wird weiter unten in renderThreadOrderPane() neu gesetzt – aber nur, wenn dieser Vorgang
+  // tatsächlich eine Bestellung hat. Ohne diesen Reset überlebte er den Wechsel.
+  threadOrderAktuell = null; threadOrderAktuellThreadId = null;
+  const _sa = document.getElementById('threadSchnellantwort'); if (_sa) _sa.value = '';
   threadAktuelleId = id; threadLetzteAnzahl = -1; threadAntwortFilesData = [];
   document.getElementById('threadAntwortText').value = '';
   document.getElementById('threadAntwortFiles').value = '';
@@ -3064,8 +3075,25 @@ function threadSchnellantwortGewaehlt() {
   const idx = parseInt(sel.value, 10);
   sel.value = ''; // Dropdown zurück auf „wählen…"
   if (!Number.isInteger(idx) || !SCHNELLANTWORTEN[idx]) return;
-  const b = threadOrderAktuell || {};
-  const text = SCHNELLANTWORTEN[idx].text
+
+  // Der Text wird AUSSCHLIESSLICH aus der Bestellung des GERADE geöffneten Vorgangs gebaut.
+  // Die Bindung threadOrderAktuellThreadId === threadAktuelleId ist die eigentliche Absicherung:
+  // Selbst wenn irgendein künftiger Pfad das Zurücksetzen vergisst, kann hier kein Datensatz
+  // eines anderen Vorgangs mehr einfließen.
+  const _kontextGueltig = threadAktuelleId != null && threadOrderAktuellThreadId === threadAktuelleId;
+  const b = _kontextGueltig ? (threadOrderAktuell || {}) : {};
+
+  const rohtext = SCHNELLANTWORTEN[idx].text;
+  const brauchtBestelldaten = /\{\{(name|firma|bestellnummer|rechnungsnummer)\}\}/.test(rohtext);
+  if (brauchtBestelldaten && !b.id) {
+    // Lieber gar nichts einfügen als einen Text mit leeren oder – schlimmer – fremden Angaben.
+    alert('Dieser Textbaustein enthält Platzhalter für Kunden- und Bestelldaten.\n\n'
+        + 'Dieser Vorgang ist keiner Bestellung zugeordnet (z. B. Preisanfrage oder allgemeine Anfrage).\n'
+        + 'Bitte den Text hier von Hand schreiben.');
+    return;
+  }
+
+  const text = rohtext
     .replace(/\{\{name\}\}/g, b.kundenname || '')
     .replace(/\{\{firma\}\}/g, b.firma || '')
     .replace(/\{\{bestellnummer\}\}/g, b.id != null ? b.id : '')
@@ -3088,13 +3116,19 @@ function renderThreadOrderPane(b, pos, dok) {
   if (!el) return;
   // Allgemeine Anfrage ohne Bestellung (z. B. Telegram-Support ohne Bezug).
   if (!b || !b.id) {
+    // Vorgang OHNE Bestellbezug: Kontext ausdrücklich leeren. Vorher blieb hier der Wert des
+    // zuletzt geöffneten Vorgangs stehen – genau der Weg, über den fremde Kundendaten in eine
+    // Schnellantwort gerieten (Vorgang mit Bestellung öffnen, dann allgemeine Anfrage öffnen).
+    threadOrderAktuell = null; threadOrderAktuellThreadId = null;
     el.innerHTML = `
       <div style="font-weight:700;color:var(--oak);margin-bottom:6px;">Allgemeine Anfrage</div>
       <div style="font-size:13px;color:var(--gray);line-height:1.6;">Diese Konversation ist noch keiner Bestellung zugeordnet. Du kannst aus dem Chatverlauf erkennen, worum es geht, und sie bei Bedarf manuell zuordnen.</div>`;
     return;
   }
   const _nl = istNurLager();
+  // Bestellung IMMER zusammen mit ihrem Vorgang merken – nie einzeln.
   threadOrderAktuell = b;
+  threadOrderAktuellThreadId = threadAktuelleId;
   // Lager: „Bestellung ansehen" (Geld-Modal), Rechnung und AB (enthalten Preise) ausblenden.
   const docBtns = _nl ? [] : [`<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="oeffneBestellungAusThread(${b.id})">${vtIco('eye')} Bestellung ansehen</button>`];
   if (!_nl && dok.rechnung) docBtns.push(`<button class="btn btn-sm" onclick="zeigeRechnungPdf(${b.id})">${vtIco('file-text')} Rechnung</button>`);
@@ -3162,6 +3196,9 @@ function renderThreadOrderPane(b, pos, dok) {
 function renderThreadPaPane(pa) {
   const el = document.getElementById('threadOrderPane');
   if (!el) return;
+  // Preisanfrage-Vorgang hat keine Bestellung: Kontext leeren, sonst würden die Platzhalter
+  // der Schnellantwort mit der zuletzt geöffneten Bestellung eines anderen Kunden gefüllt.
+  threadOrderAktuell = null; threadOrderAktuellThreadId = null;
   const farbe = (typeof PA_STATUS_FARBE !== 'undefined' && PA_STATUS_FARBE[pa.status]) || '#6B7280';
   const angenommen = pa.status === 'angenommen';
   el.innerHTML = `
@@ -3274,11 +3311,25 @@ async function threadAntwortSenden() {
   const fehler = document.getElementById('threadFehler');
   if (!text) { fehler.textContent = 'Bitte Antwort eingeben.'; fehler.style.display = 'block'; return; }
   const modus = document.getElementById('threadModus')?.value || 'kunde';
+  // Ziel-Vorgang JETZT festhalten und ab hier nur noch diesen verwenden. Wechselt der Vorgang
+  // während des Sendens (Poller, Klick), geht die Nachricht trotzdem an den Vorgang, den der
+  // Bearbeiter beim Schreiben vor sich hatte – und nicht an den zufällig gerade offenen.
+  const zielThreadId = threadAktuelleId;
+  if (zielThreadId == null) { fehler.textContent = 'Kein Vorgang geöffnet.'; fehler.style.display = 'block'; return; }
+  // Sicherheitsnetz: Ein Textbaustein wurde eingefügt, während ein ANDERER Vorgang offen war.
+  if (threadOrderAktuell && threadOrderAktuellThreadId !== zielThreadId) {
+    fehler.textContent = 'Der Bestellbezug passt nicht zum geöffneten Vorgang. Bitte den Vorgang neu öffnen und den Text erneut erstellen.';
+    fehler.style.display = 'block';
+    return;
+  }
   const btn = document.getElementById('threadSendBtn');
   const altLabel = btn.textContent;
   btn.disabled = true; btn.textContent = 'Senden…';
   try {
-    const data = await backendApi(`/api/admin/threads/${threadAktuelleId}/antwort`, 'POST', { nachricht: text, anhaenge: threadAntwortFilesData, modus });
+    const data = await backendApi(`/api/admin/threads/${zielThreadId}/antwort`, 'POST', { nachricht: text, anhaenge: threadAntwortFilesData, modus });
+    // Nach dem Warten prüfen, ob noch derselbe Vorgang offen ist – sonst NICHT in ein fremdes
+    // Fenster hineinrendern und dessen Eingabefeld leeren.
+    if (threadAktuelleId !== zielThreadId) { zeigeToast('Nachricht gesendet'); return; }
     document.getElementById('threadAntwortText').value = '';
     document.getElementById('threadAntwortFiles').value = '';
     document.getElementById('threadFileVorschau').innerHTML = '';
