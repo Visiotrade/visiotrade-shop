@@ -3398,7 +3398,15 @@ function startNachrichtenPoller() {
       const el = document.getElementById('page-' + seite);
       if (!el || !el.classList.contains('active')) return;
       if (document.querySelector('.modal-overlay.open')) return;
-      if (el.contains(document.activeElement)) return;
+      // NUR echte Eingaben schützen – nicht jeden fokussierten Knopf.
+      // Erster Entwurf prüfte `el.contains(document.activeElement)`. Ein angeklickter BUTTON behält
+      // unter Windows/Chrome den Fokus: Wer einmal „Aktualisieren", „Drucken" oder „Interner Chat"
+      // gedrückt hatte, schaltete damit die Auto-Aktualisierung DAUERHAFT ab – ausgerechnet der
+      // manuelle Klick legte die Automatik lahm, und der eben behobene Fehler war zurück.
+      const _ae = document.activeElement;
+      const _tippt = _ae && el.contains(_ae)
+        && (/^(INPUT|TEXTAREA|SELECT)$/.test(_ae.tagName) || _ae.isContentEditable);
+      if (_tippt) return;
       try { laden(); } catch (_) {}
     });
     // Offener Chat: nur den Verlauf aktualisieren (Flacker-/Scrollschutz in renderThreadVerlauf).

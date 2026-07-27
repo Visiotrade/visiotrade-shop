@@ -6547,7 +6547,14 @@ async function setzeNeuesPasswort() {
       setTimeout(() => { window.location.href = '/admin.html'; }, 1500);
     } else {
       spSuccess('Passwort erfolgreich geändert. Sie können sich jetzt anmelden.');
-      setTimeout(() => { window.history.replaceState({}, document.title, window.location.pathname); showScreen('konto'); }, 1800);
+      // 'login', NICHT 'konto': Einen Screen `screen-konto` gibt es im Markup nicht (vorhanden sind
+      // home, produktliste, produkt, warenkorb, preisanfrage, kasse, uebersicht, erfolg, setpassword,
+      // vorkasse-erfolg, impressum, login, kundenbuero). showScreen() nimmt zuerst allen Screens die
+      // Klasse `active` und greift danach auf `getElementById('screen-konto').classList` zu → TypeError.
+      // Ergebnis war eine komplett WEISSE SEITE für jeden neu eingeladenen Mitarbeiter und jeden
+      // Passwort-Reset; nur ein manuelles Neuladen half. Die Sitzung wird oben bewusst verworfen
+      // (localStorage/kbUser), deshalb ist der Login genau das passende Ziel zur Meldung.
+      setTimeout(() => { window.history.replaceState({}, document.title, window.location.pathname); showScreen('login'); }, 1800);
     }
   } catch (e) { spError(e.message); }
 }
