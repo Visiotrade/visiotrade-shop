@@ -1,1 +1,62 @@
+name: HTML-Syntax
 
+# Prüft, ob das Inline-JavaScript in index.html und admin.html syntaktisch gültig ist.
+#
+# Hintergrund: Vercel liefert diese Dateien als statische Dateien aus, ohne sie zu
+# parsen. Ein Tippfehler beim Bearbeiten über den GitHub-Web-Editor ging bisher
+# unbemerkt live und legte den kompletten Shop bzw. das Admin-Panel lahm.
+#
+# Keine Abhängigkeiten, kein npm install – nur Node-Bordmittel. Laufzeit ~10 Sekunden.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+# BEWUSST OHNE `paths`-Filter.
+# --------------------------------------------------------------------------
+# Naheliegend wäre, nur bei Änderungen an index.html/admin.html/dieser Datei zu
+# laufen. In Kombination mit einer PFLICHTPRÜFUNG (Required Status Check) wäre das
+# aber eine Falle: Ein Pull Request, der KEINEN dieser Pfade anfasst, startet den
+# Lauf nie – GitHub wartet dann dauerhaft auf ein Ergebnis, das nie kommt
+# ("Expected — Waiting for status to be reported"), und der PR lässt sich nicht
+# mehr mergen. Da der Lauf ohne npm install nur Sekunden dauert, ist Immer-Laufen
+# die einfachere und verlässlichere Lösung.
+
+concurrency:
+  group: html-syntax-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          # Fest auf 22, weil das die im Gesamtprojekt verbindlich festgelegte
+          # Node-Version ist und bereits die CI-Version des Backends
+          # (package.json: "engines": { "node": "22.x" }).
+          # NICHT die Standardversion des Runners verwenden – sonst würde sich die
+          # Bewertung moderner Syntax (Optional Chaining, Nullish Coalescing,
+          # Klassenfelder) mit jedem Runner-Update stillschweigend ändern.
+          #
+          # Hinweis: Dieses Repo wird von Vercel ausgeliefert, nicht von Railway.
+          # Railway hostet ausschließlich das Backend. Die Versionswahl folgt der
+          # Projektfestlegung, nicht der Laufzeit dieses Repos – das Frontend hat
+          # zur Laufzeit ohnehin keine Node-Abhängigkeit (statische Auslieferung).
+          node-version: '22'
+
+      # Läuft VOR der eigentlichen Prüfung und weist nach, dass die Prüflogik
+      # greift – u. a. dass defekter Code zuverlässig als Fehler erkannt und
+      # gültige Browser-Syntax NICHT fälschlich beanstandet wird.
+      # Ohne diesen Schritt wüsste man bei einem grünen Lauf nie, ob überhaupt
+      # geprüft wurde.
+      - name: Selbsttest der Prüflogik
+        run: node scripts/check-inline-js.js --selftest
+
+      - name: Inline-JavaScript prüfen
+        run: node scripts/check-inline-js.js index.html admin.html
