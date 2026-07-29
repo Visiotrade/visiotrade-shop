@@ -6559,6 +6559,14 @@ async function setzeNeuesPasswort() {
   } catch (e) { spError(e.message); }
 }
 
+// Wertet einen Zahlungsrücklauf aus und meldet dem Startablauf, WELCHER Fall vorlag:
+//   'keine'   – kein Zahlungsrücklauf in der URL (normaler Seitenaufruf)
+//   'abbruch' – Kunde hat die Zahlung abgebrochen
+//   'erfolg'  – Erfolgsseite wurde gesetzt und muss stehen bleiben
+//   'fehler'  – Rücklauf vorhanden, aber nicht zuordenbar (Meldung gezeigt)
+// Hintergrund (Audit R-02): Der Startablauf darf NICHT anhand der URL entscheiden, ob er die
+// Produktliste öffnet – diese Funktion räumt die URL selbst auf, und der Stripe-Zweig läuft
+// dabei komplett synchron durch. Nur ein zurückgegebener Status ist eindeutig.
 async function checkPayPalReturn() {
   const params = new URLSearchParams(window.location.search);
 
@@ -6566,10 +6574,11 @@ async function checkPayPalReturn() {
   if (params.get('cancelled') === '1' || params.get('canceled') === '1') {
     alert('Die Zahlung wurde abgebrochen. Ihre Bestellung ist nicht abgeschlossen – Sie können den Vorgang jederzeit erneut starten.');
     window.history.replaceState({}, document.title, window.location.pathname);
-    return;
+    return 'abbruch';
   }
 
   if (params.get('success') === '1') {
+    let ergebnis = 'fehler';
     const bestellungId = params.get('bestellung_id');
     const zahlung = params.get('zahlung');
     if (zahlung === 'paypal' && bestellungId) {
@@ -6577,7 +6586,7 @@ async function checkPayPalReturn() {
       if (!token) {
         alert('PayPal-Zahlung konnte nicht zugeordnet werden: Zahlungs-Token fehlt. Bitte prüfen Sie Ihr Kundenkonto oder kontaktieren Sie uns.');
         window.history.replaceState({}, document.title, window.location.pathname);
-        return;
+        return 'fehler';
       }
       try {
         let headers = { 'Content-Type': 'application/json' };
@@ -6596,19 +6605,43 @@ async function checkPayPalReturn() {
           body:JSON.stringify({bestellung_id:bestellungId})
         });
         const captureData = await captureRes.json().catch(() => ({}));
-        if (!captureRes.ok) throw new Error(captureData.error || 'PayPal Capture fehlgeschlagen');
+        if (!captureRes.ok) {
+          // Der Server liefert bei 4xx/5xx einen fertigen, kundentauglichen Text (schwebende
+          // Zahlung, Ablehnung, Storno, Erstattung). Der wird unverändert gezeigt – das
+          // pauschale „konnte nicht zugeordnet werden" wäre dort schlicht falsch.
+          const fehler = new Error(captureData.error || 'PayPal Capture fehlgeschlagen');
+          fehler.textFertig = Boolean(captureData.error);
+          throw fehler;
+        }
+        // HTTP 200 heißt nur „PayPal hat geantwortet", nicht „bezahlt".
+        // Maßgeblich ist `capture_status` (Status der Zahlung), NICHT `order_status`: Eine Order
+        // meldet 'COMPLETED', sobald der Capture angelegt ist – der Capture selbst kann dabei
+        // 'PENDING' (eCheck, Pending Review) oder 'DECLINED' sein. Der Server wickelt die
+        // Bestellung nur bei capture_status='COMPLETED' ab; das Frontend muss dieselbe Quelle
+        // verwenden, sonst zeigt es Erfolg für eine nicht verarbeitete Bestellung.
+        // ACHTUNG Deploy-Reihenfolge: `capture_status` liefert erst das Backend ab 29.07.2026 –
+        // erst Railway deployen, dann Vercel. Sonst meldet diese Prüfung fälschlich „unbekannt".
+        if (captureData.capture_status !== 'COMPLETED') {
+          throw new Error(`PayPal-Zahlung ist noch nicht abgeschlossen (Status: ${captureData.capture_status || 'unbekannt'}).`);
+        }
         warenkorb=[]; document.getElementById('cartCount').textContent=0; showScreen('erfolg');
+        ergebnis = 'erfolg';
       } catch (e) {
-        alert('PayPal-Zahlung konnte nicht zugeordnet werden: ' + e.message);
+        alert(e.textFertig ? e.message : ('PayPal-Zahlung konnte nicht zugeordnet werden: ' + e.message));
+        ergebnis = 'fehler';
       }
     } else {
       warenkorb=[]; document.getElementById('cartCount').textContent=0; showScreen('erfolg');
+      ergebnis = 'erfolg';
     }
     window.history.replaceState({}, document.title, window.location.pathname);
+    return ergebnis;
   }
+
+  return 'keine';
 }
 
-window.addEventListener('DOMContentLoaded',()=>{
+window.addEventListener('DOMContentLoaded', async () => {
   if (window.Telegram?.WebApp) {
     try { window.Telegram.WebApp.ready(); } catch (_) {}
     window.Telegram.WebApp.expand();
@@ -6633,19 +6666,29 @@ window.addEventListener('DOMContentLoaded',()=>{
   });
   pruefeCheckboxen();
 
-  checkSetPassword();
-  checkPayPalReturn();
+  // Katalog immer laden – unabhängig vom Rückkehrtyp. Bewusst nicht abgewartet, damit die
+  // Kategorien parallel zum PayPal-Capture geladen werden.
   ladeKategorien();
 
-  // Standard-Startseite: direkt in die Produktübersicht „Stabparkett" – ohne vorgeschaltete Landingpage.
-  // Sonderflüsse (Passwort setzen, Stripe/PayPal-Rückkehr, Fehler-Links) behalten ihren eigenen Screen.
-  const _p = new URLSearchParams(window.location.search);
-  const _h = window.location.hash || '';
-  const _sonderfluss =
-    _p.has('set_password') || _p.has('error') || _p.has('error_description') ||
-    _p.has('success') || _p.has('cancelled') || _p.has('canceled') ||
-    /access_token|type=(recovery|invite)|error/.test(_h);
-  if (!_sonderfluss) zeigeProduktliste(1, 'Stabparkett');
+  // Startbildschirm nach RÜCKKEHRTYP steuern (Audit R-02) – NICHT über eine einmalig
+  // berechnete URL-Prüfung. Grund: checkSetPassword() und checkPayPalReturn() räumen die URL
+  // selbst per history.replaceState auf, und der Stripe-Zweig läuft dabei komplett synchron
+  // durch (nur der PayPal-Zweig enthält ein `await`). Eine nachträgliche URL-Auswertung sah
+  // deshalb keinen Zahlungsrücklauf mehr und überschrieb die Erfolgsseite mit der Produktliste
+  // – bei JEDER Kartenzahlung. Eine vorgezogene URL-Auswertung wiederum hätte den Abbruchfall
+  // (?cancelled=1) mit einem leeren Produktbereich enden lassen. Beide Fehler entstehen aus
+  // derselben Ursache: eine Variable für vier verschiedene Fälle.
+  //
+  //   Passwort-/Einladungslink → Passwortseite stehen lassen
+  //   Zahlungserfolg           → Erfolgsseite stehen lassen
+  //   Zahlungsabbruch/-fehler  → Meldung ist gezeigt, danach normal in die Produktliste
+  //   normaler Aufruf          → Produktliste
+  if (checkSetPassword()) return;
+
+  const _rueckkehr = await checkPayPalReturn();
+  if (_rueckkehr === 'erfolg') return;
+
+  zeigeProduktliste(1, 'Stabparkett');
 });
 
 // Startzustand im Checkout: Abholung ist vorausgewählt und Lieferkosten sind ausgeblendet.

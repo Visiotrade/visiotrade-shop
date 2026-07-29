@@ -1001,14 +1001,20 @@ function istOffeneVorkasse(b) {
   return String(b?.zahlungsart || '').toLowerCase() === 'vorkasse' && b?.status === 'warte_auf_zahlung';
 }
 
+// Audit R-06: 'storniert' ist hier BEWUSST NICHT enthalten – ein Storno ist ein Vorgang, kein
+// Statuswechsel (Reservierungsfreigabe, Kundenmail, Vorgangseintrag, Recht bestellungen.stornieren).
+// Der Server weist einen generischen PATCH auf 'storniert' zusätzlich mit 400 ab.
+// Offene Vorkasse wird über die Schaltfläche „Stornieren" abgewickelt (adminStorniereVorkasse).
+// WICHTIG: Bereits stornierte Bestellungen werden deshalb NICHT über diese Liste dargestellt,
+// sondern über ein eigenes, deaktiviertes Feld – sonst stünde bei ihnen fälschlich „Offen"
+// (erster Listeneintrag) im Auswahlfeld.
 const STATUS_OPTIONEN = [
   'offen',
   'warte_auf_zahlung',
   'bezahlt',
   'bestaetigt',
   'versendet',
-  'geliefert',
-  'storniert'
+  'geliefert'
 ];
 
 // ===== AUTH =====
@@ -2445,10 +2451,12 @@ async function ladeBestellungen() {
             <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="oeffneThreadFuerBestellung(${b.id})">${vtIco('message-circle')} Nachrichten${(adminUnread[b.id] > 0) ? `<span style="background:#B91C1C;color:#fff;border-radius:10px;padding:0 6px;font-size:11px;margin-left:4px;font-weight:700;">${adminUnread[b.id]}</span>` : ''}</button>
             ${paymentActions}
             ${speditionAction}
-            <select class="admin-select" onchange="aktualisiereStatus(${b.id}, this.value, '${b.status || ''}', '${b.zahlungsart || ''}')">
+            ${String(b.status) === 'storniert'
+              ? `<select class="admin-select" disabled title="Diese Bestellung ist storniert. Ein Wiederbeleben über das Status-Feld ist nicht vorgesehen."><option selected>${statusLabel('storniert')}</option></select>`
+              : `<select class="admin-select" onchange="aktualisiereStatus(${b.id}, this.value, '${b.status || ''}', '${b.zahlungsart || ''}')">
               ${anzeigeStatus(b) === 'abgeholt_final' ? '<option value="abgeholt_final" selected>Abgeholt</option>' : ''}
               ${STATUS_OPTIONEN.map(s => `<option value="${s}" ${(anzeigeStatus(b) !== 'abgeholt_final' && (b.status === s || (b.status === 'bestätigt' && s === 'bestaetigt'))) ? 'selected' : ''}>${statusLabel(s)}</option>`).join('')}
-            </select>
+            </select>`}
             ${adminMe.ist_super_admin ? `<button class="btn btn-red btn-sm" onclick="bestellungPapierkorb(${b.id})">${vtIco('trash')} Löschen</button>` : ''}
           </div>
         </td>
@@ -2472,8 +2480,19 @@ async function aktualisiereStatus(id, neuerStatus, alterStatus = '', zahlungsart
       return;
     }
 
-    if (z === 'vorkasse' && alterStatus === 'warte_auf_zahlung' && neuerStatus === 'storniert') {
-      await adminStorniereVorkasse(id);
+    // Audit R-06: Storno NIE als generischer Statuswechsel. Offene Vorkasse läuft über den
+    // dedizierten Endpunkt (Reservierungsfreigabe, Kundenmail, Vorgangseintrag, Recht
+    // bestellungen.stornieren). Jeder andere Fall wird hier abgefangen – bezahlte Karten-/
+    // PayPal-Zahlungen brauchen eine Erstattung, die es noch nicht gibt. Zweite Verteidigungs-
+    // linie: 'storniert' steht nicht mehr in STATUS_OPTIONEN, und der Server antwortet auf
+    // einen generischen PATCH mit 400.
+    if (neuerStatus === 'storniert') {
+      if (z === 'vorkasse' && alterStatus === 'warte_auf_zahlung') {
+        await adminStorniereVorkasse(id);
+        return;
+      }
+      zeigeToast('Stornieren ist über das Status-Feld nicht möglich. Offene Vorkasse-Bestellungen über „Stornieren" abwickeln; bezahlte Karten- oder PayPal-Zahlungen brauchen eine Erstattung.', true);
+      ladeBestellungen();
       return;
     }
 
