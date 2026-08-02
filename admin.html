@@ -904,6 +904,7 @@ function statusLabel(status) {
     offen: 'Offen',
     warte_auf_zahlung: 'Warte auf Zahlung',
     bezahlt: 'Bezahlt',
+    auf_rechnung: 'Auf Rechnung (Forderung offen)',
     bestaetigt: 'Bestätigt',
     'bestätigt': 'Bestätigt',
     in_bearbeitung: 'In Bearbeitung',
@@ -940,6 +941,7 @@ function statusBadge(status) {
     offen: 'badge-gray',
     warte_auf_zahlung: 'badge-yellow',
     bezahlt: 'badge-green',
+    auf_rechnung: 'badge-blue',
     bestaetigt: 'badge-blue',
     'bestätigt': 'badge-blue',
     in_bearbeitung: 'badge-yellow',
@@ -2434,6 +2436,25 @@ async function ladeBestellungen() {
       const speditionAction = (b.status === 'bezahlt' && (darf('warehouse.mark_handed_to_carrier') || adminMe.ist_super_admin))
         ? `<button class="btn btn-green btn-sm" onclick="anSpedition(${b.id})">${vtIco('truck')} An Spedition übergeben</button>`
         : '';
+      // Storniert, aber Ware noch reserviert → gezielte Wiederholung der Freigabe.
+      // Die allgemeine Schaltfläche „Reservierungen freigeben" greift hier NICHT, sie räumt
+      // nur ABGELAUFENE Reservierungen ab; eine frisch stornierte Bestellung bliebe blockiert.
+      // Bewusst NICHT `b.reservierung_status && …`: Bei null, fehlendem Feld oder Altbestand
+      // wäre der Knopf sonst ausgeblendet – also genau dort, wo der Zustand unklar ist und
+      // eine Freigabe am ehesten nötig wäre. Der Endpunkt ist idempotent, ein überflüssiger
+      // Klick schadet nicht; ein fehlender Knopf lässt Ware blockiert.
+      const reservierungAction = (b.status === 'storniert'
+        && b.reservierung_status !== 'released'
+        && (darf('bestellungen.stornieren') || adminMe.ist_super_admin))
+        ? `<button class="btn btn-red btn-sm" onclick="reservierungErneutFreigeben(${b.id})">${vtIco('alert-triangle')} Reservierung erneut freigeben</button>`
+        : '';
+      // Kauf auf Rechnung: EIGENER Stornoweg (B-14). Der Bestand wurde beim Bestellen
+      // direkt abgebucht, es gibt KEINE Reservierungszeile – „Reservierung freigeben"
+      // fände nichts, und das Status-Feld ist für diese Bestellungen gesperrt.
+      const rechnungStornoAction = (b.status === 'auf_rechnung'
+        && (darf('bestellungen.stornieren') || adminMe.ist_super_admin))
+        ? `<button class="btn btn-red btn-sm" onclick="adminStorniereRechnungskauf(${b.id})">${vtIco('x-circle')} Rechnungskauf stornieren</button>`
+        : '';
 
       return `
       <tr>
@@ -2451,8 +2472,12 @@ async function ladeBestellungen() {
             <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="oeffneThreadFuerBestellung(${b.id})">${vtIco('message-circle')} Nachrichten${(adminUnread[b.id] > 0) ? `<span style="background:#B91C1C;color:#fff;border-radius:10px;padding:0 6px;font-size:11px;margin-left:4px;font-weight:700;">${adminUnread[b.id]}</span>` : ''}</button>
             ${paymentActions}
             ${speditionAction}
+            ${reservierungAction}
+            ${rechnungStornoAction}
             ${String(b.status) === 'storniert'
               ? `<select class="admin-select" disabled title="Diese Bestellung ist storniert. Ein Wiederbeleben über das Status-Feld ist nicht vorgesehen."><option selected>${statusLabel('storniert')}</option></select>`
+              : String(b.status) === 'auf_rechnung'
+              ? `<select class="admin-select" disabled title="Kauf auf Rechnung: Der Bestand wurde bereits direkt abgebucht. Der weitere Ablauf läuft über die Lager- und Versandaktionen; zum Zurücknehmen die Schaltfläche „Rechnungskauf stornieren&quot; verwenden (bucht den Bestand zurück)."><option selected>${statusLabel('auf_rechnung')}</option></select>`
               : `<select class="admin-select" onchange="aktualisiereStatus(${b.id}, this.value, '${b.status || ''}', '${b.zahlungsart || ''}')">
               ${anzeigeStatus(b) === 'abgeholt_final' ? '<option value="abgeholt_final" selected>Abgeholt</option>' : ''}
               ${STATUS_OPTIONEN.map(s => `<option value="${s}" ${(anzeigeStatus(b) !== 'abgeholt_final' && (b.status === s || (b.status === 'bestätigt' && s === 'bestaetigt'))) ? 'selected' : ''}>${statusLabel(s)}</option>`).join('')}
@@ -2491,7 +2516,23 @@ async function aktualisiereStatus(id, neuerStatus, alterStatus = '', zahlungsart
         await adminStorniereVorkasse(id);
         return;
       }
-      zeigeToast('Stornieren ist über das Status-Feld nicht möglich. Offene Vorkasse-Bestellungen über „Stornieren" abwickeln; bezahlte Karten- oder PayPal-Zahlungen brauchen eine Erstattung.', true);
+      if (alterStatus === 'auf_rechnung') {
+        await adminStorniereRechnungskauf(id);
+        return;
+      }
+      zeigeToast('Stornieren ist über das Status-Feld nicht möglich. Offene Vorkasse-Bestellungen über „Stornieren" abwickeln, Rechnungskäufe über „Rechnungskauf stornieren"; bezahlte Karten- oder PayPal-Zahlungen brauchen eine Erstattung.', true);
+      ladeBestellungen();
+      return;
+    }
+
+    // Kauf auf Rechnung (B-14): Der Bestand wurde beim Bestellen DIREKT abgebucht, es
+    // gibt keine Reservierung. Ein generischer Statuswechsel würde die Information
+    // „Forderung offen" ersatzlos löschen und den einzigen Zustand zerstören, aus dem
+    // storniere_rechnungskauf zurückbuchen kann; ein Wechsel auf 'bezahlt' wäre zudem ein
+    // Zahlungszustand ohne Zahlung. Zweite Verteidigungslinie: Das Auswahlfeld ist für
+    // diese Bestellungen deaktiviert, und der Server weist den PATCH mit 400 ab.
+    if (alterStatus === 'auf_rechnung') {
+      zeigeToast('Der Status einer Rechnungsbestellung kann hier nicht geändert werden. Der weitere Ablauf läuft über die Lager- und Versandaktionen; zum Zurücknehmen „Rechnungskauf stornieren" verwenden.', true);
       ladeBestellungen();
       return;
     }
@@ -3560,7 +3601,21 @@ async function adminStorniereVorkasse(bestellungId) {
       throw new Error(data.error || 'Unbekannter Fehler');
     }
 
-    zeigeToast('Vorkasse storniert und Reservierung freigegeben');
+    // Der Server meldet ausdrücklich, ob die Storno-Mail an den Kunden rausging. Schlägt sie
+    // fehl, ist der Storno trotzdem vollzogen – der Admin muss es aber erfahren und den Kunden
+    // von Hand informieren, sonst wartet der weiter auf seine Ware oder überweist noch.
+    // NUR ein ausdrückliches `true` gilt als Erfolg. `false`, `undefined` und ein fehlendes
+    // Feld (z. B. altes Backend) führen zur Warnung – im Zweifel lieber einmal zu viel
+    // nachfassen als einen Kunden im Unklaren lassen.
+    const warnungen = [];
+    if (data.reservierung_freigegeben !== true) warnungen.push('Die Lagerreservierung wurde NICHT freigegeben – bitte in der Bestellzeile „Reservierung erneut freigeben" klicken.');
+    else if (data.reservierung_status_aktualisiert !== true) warnungen.push('Die Ware ist freigegeben, die Anzeige konnte aber nicht aktualisiert werden.');
+    if (data.mail_versendet !== true) warnungen.push('Die Storno-E-Mail an den Kunden ist nicht (vollständig) zugestellt – bitte den Kunden manuell informieren.');
+    if (warnungen.length) {
+      zeigeToast('Bestellung storniert. ACHTUNG: ' + warnungen.join(' '), true);
+    } else {
+      zeigeToast('Vorkasse storniert, Reservierung freigegeben, Kunde per E-Mail informiert');
+    }
     schliesseModal('bestellModal');
     ladeBestellungen();
     ladeDashboard();
@@ -3571,6 +3626,81 @@ async function adminStorniereVorkasse(bestellungId) {
     ladeBestellungen();
   } finally {
     _vorkasseAktionLaeuft = false;
+  }
+}
+
+// Kauf auf Rechnung stornieren (B-14). EIGENER Weg – nicht mit adminStorniereVorkasse
+// verwechseln: Dort wird eine RESERVIERUNG freigegeben, hier wird direkt abgebuchter
+// BESTAND zurückgebucht. Der Server macht Rückbuchung und Statuswechsel in einer
+// DB-Transaktion (storniere_rechnungskauf) und bucht HÖCHSTENS EINMAL zurück; ein
+// zweiter Klick meldet `bereits_storniert` und ändert nichts.
+let _rechnungStornoLaeuft = false;
+async function adminStorniereRechnungskauf(bestellungId) {
+  if (_rechnungStornoLaeuft) return;
+  if (!confirm('Rechnungsbestellung wirklich stornieren?\n\nDer beim Bestellen abgebuchte Lagerbestand wird zurückgebucht und der Kunde per E-Mail informiert.')) {
+    ladeBestellungen();
+    return;
+  }
+  _rechnungStornoLaeuft = true;
+  try {
+    const data = await backendApi(`/api/admin/bestellungen/${bestellungId}/rechnungskauf-stornieren`, 'POST', {});
+
+    // Zwei getrennte Wahrheiten, wie beim Vorkasse-Storno: Ob der Bestand tatsächlich
+    // zurückgebucht wurde, und ob die Kundenmail rausging. Nur ein ausdrückliches `true`
+    // gilt als Erfolg – `undefined` (altes Backend) führt zur Warnung.
+    // Wiederholungsaufruf: Der Server hat bewusst NICHTS erneut ausgelöst – keine
+    // zweite Mail, kein zweiter Vorgangseintrag, kein zweiter Audit-Übergang. Die
+    // sonstigen Warnungen wären hier irreführend: `mail_versendet=false` bedeutet
+    // in diesem Zweig „absichtlich nicht erneut verschickt", nicht „fehlgeschlagen".
+    if (data.bereits_storniert === true) {
+      zeigeToast('Diese Bestellung war bereits storniert. Es wurde kein Bestand erneut gutgeschrieben und keine zweite E-Mail verschickt.');
+    } else {
+      const warnungen = [];
+      if (data.zurueckgebucht !== true) {
+        warnungen.push('Der Lagerbestand wurde NICHT zurückgebucht – bitte prüfen, bevor erneut storniert wird.');
+      }
+      if (data.mail_versendet !== true) {
+        warnungen.push('Die Storno-E-Mail an den Kunden ist nicht (vollständig) zugestellt – bitte den Kunden manuell informieren.');
+      }
+      if (data.vorgang_geschrieben !== true) {
+        warnungen.push('Der Eintrag im Vorgangsverlauf konnte nicht geschrieben werden.');
+      }
+      if (data.audit_geschrieben !== true) {
+        warnungen.push('Der Audit-Eintrag konnte nicht geschrieben werden.');
+      }
+      if (warnungen.length) {
+        zeigeToast('Rechnungskauf storniert. ACHTUNG: ' + warnungen.join(' '), true);
+      } else {
+        zeigeToast(`Rechnungskauf storniert, ${data.menge_gesamt} Paket(e) zurückgebucht, Kunde per E-Mail informiert`);
+      }
+    }
+    schliesseModal('bestellModal');
+    ladeBestellungen();
+    ladeDashboard();
+    if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
+  } catch (err) {
+    zeigeToast('Fehler: ' + err.message, true);
+    ladeBestellungen();
+  } finally {
+    _rechnungStornoLaeuft = false;
+  }
+}
+
+// Gezielte Wiederholung für EINE stornierte Bestellung. Idempotent – ein zweiter Klick
+// schadet nicht. Nicht zu verwechseln mit reservierungenFreigeben() weiter unten, das
+// ausschließlich ABGELAUFENE Reservierungen global abräumt.
+async function reservierungErneutFreigeben(bestellungId) {
+  if (!confirm('Lagerreservierung dieser stornierten Bestellung jetzt freigeben?')) return;
+  try {
+    const data = await backendApi(`/api/admin/bestellungen/${bestellungId}/reservierung-freigeben`, 'POST', {});
+    if (data.reservierung_status_aktualisiert !== true) {
+      zeigeToast('Ware freigegeben – die Anzeige konnte nicht aktualisiert werden. Bitte Liste neu laden.', true);
+    } else {
+      zeigeToast('Lagerreservierung freigegeben');
+    }
+    ladeBestellungen();
+  } catch (err) {
+    zeigeToast('Fehler: ' + err.message, true);
   }
 }
 
