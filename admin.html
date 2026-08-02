@@ -2444,6 +2444,7 @@ async function ladeBestellungen() {
       // eine Freigabe am ehesten nötig wäre. Der Endpunkt ist idempotent, ein überflüssiger
       // Klick schadet nicht; ein fehlender Knopf lässt Ware blockiert.
       const reservierungAction = (b.status === 'storniert'
+        && b.zahlungsart !== 'rechnung'
         && b.reservierung_status !== 'released'
         && (darf('bestellungen.stornieren') || adminMe.ist_super_admin))
         ? `<button class="btn btn-red btn-sm" onclick="reservierungErneutFreigeben(${b.id})">${vtIco('alert-triangle')} Reservierung erneut freigeben</button>`
