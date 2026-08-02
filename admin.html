@@ -922,6 +922,14 @@ function statusLabel(status) {
 
 // Anzeige-Status (nur intern/Admin): technischer status bleibt bezahlt bis Versand,
 // die Versandphase wird für die Anzeige abgeleitet.
+// Gleiche fachliche Regel wie im Backend: Rechnungskäufe sind lagerfähig, ohne
+// fälschlich als bezahlt markiert zu werden.
+function istLagerfaehigFrontend(b) {
+  const status = String(b && b.status || '');
+  const zahlungsart = String(b && b.zahlungsart || '');
+  return status === 'bezahlt' || (status === 'auf_rechnung' && zahlungsart === 'rechnung');
+}
+
 function anzeigeStatus(b) {
   // Abgeschlossene Abholung: technischer Status bleibt 'versendet', Anzeige = „Abgeholt".
   if (b.status === 'versendet' && String(b.lieferart || '') === 'abholung') return 'abgeholt_final';
@@ -2026,10 +2034,13 @@ async function zeigeAdminDokument(id, typ, titel) {
 }
 
 // ===== LAGER =====
-async function ladeLager() {
+let lagerLadenAktiv = false;
+async function ladeLager({ silent = false } = {}) {
   const box = document.getElementById('lagerCards');
   if (!box) return;
-  box.innerHTML = '<div style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</div>';
+  if (lagerLadenAktiv) return;
+  lagerLadenAktiv = true;
+  if (!silent) box.innerHTML = '<div style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</div>';
   try {
     const r = await backendApi('/api/admin/lager');
     const alle = r.bestellungen || [];
@@ -2046,7 +2057,15 @@ async function ladeLager() {
       + sektion('' + vtIco('truck') + ' Wartet auf Abholung durch Spedition', wartetAbholung)
       + sektion('' + vtIco('check-circle') + ' Abholbereit gemeldet', abholbereit);
     box.innerHTML = html || '<div style="text-align:center;color:var(--gray);padding:30px;">Keine Bestellungen zur Vorbereitung. ' + vtIco('sparkles') + '</div>';
-  } catch (e) { box.innerHTML = '<div style="text-align:center;color:var(--red);padding:20px;">Fehler: ' + h(e.message) + '</div>'; }
+  } catch (e) {
+    // Beim automatischen Hintergrundabruf die zuletzt sichtbaren Karten stehen lassen.
+    // Sonst springt die Lagerseite alle 12 Sekunden auf "Wird geladen…" bzw. eine
+    // kurzzeitige Fehlermeldung, obwohl die vorhandenen Daten weiterhin brauchbar sind.
+    if (!silent) box.innerHTML = '<div style="text-align:center;color:var(--red);padding:20px;">Fehler: ' + h(e.message) + '</div>';
+    else console.warn('Stille Lager-Aktualisierung fehlgeschlagen:', e);
+  } finally {
+    lagerLadenAktiv = false;
+  }
 }
 
 function lagerLieferadresse(b) {
@@ -2240,16 +2259,24 @@ function feVersandPhase(b) {
   if (vs === 'an_disposition' || vs === 'bereit_zur_abholung') return 'an_disposition';
   return 'in_bearbeitung';
 }
-async function ladeVersandplanung() {
+let versandplanungLadenAktiv = false;
+async function ladeVersandplanung({ silent = false } = {}) {
   const tb = document.getElementById('versandplanungTable');
   if (!tb) return;
-  tb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</td></tr>';
+  if (versandplanungLadenAktiv) return;
+  versandplanungLadenAktiv = true;
+  if (!silent) tb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</td></tr>';
   try {
     const r = await backendApi('/api/admin/versandplanung');
     versandplanungCache = r.bestellungen || [];
     if (!versandplanungCache.length) { tb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--gray);padding:24px;">Keine Bestellungen in der Versandplanung. ' + vtIco('sparkles') + '</td></tr>'; return; }
     tb.innerHTML = versandplanungCache.map(versandplanungRow).join('');
-  } catch (e) { tb.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--red);padding:20px;">${h(e.message)}</td></tr>`; }
+  } catch (e) {
+    if (!silent) tb.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--red);padding:20px;">${h(e.message)}</td></tr>`;
+    else console.warn('Stille Versandplanungs-Aktualisierung fehlgeschlagen:', e);
+  } finally {
+    versandplanungLadenAktiv = false;
+  }
 }
 
 function versandPhaseLabel(p) {
@@ -3204,7 +3231,7 @@ function renderThreadOrderPane(b, pos, dok) {
   const _darfBeauftragen = darf('bestellungen.tracking') || adminMe.ist_super_admin;
   const _darfVersenden = darf('bestellungen.status') || adminMe.ist_super_admin;
   const _hint = txt => docBtns.push(`<span style="font-size:12px;color:var(--gray);align-self:center;">${vtIco('clock')} ${txt}</span>`);
-  if (b.status === 'bezahlt') {
+  if (istLagerfaehigFrontend(b)) {
     if (_phase === 'in_bearbeitung') {
       if (_darfKomm) docBtns.push(`<button class="btn btn-sm" style="background:#1f7a4d;color:#fff;" onclick="versanddatenOeffnen(${b.id})">${vtIco('check-circle')} Kommissionierung fertig</button>`);
       else _hint('Wartet auf Kommissionierung durch Lager');
@@ -3519,7 +3546,7 @@ function startNachrichtenPoller() {
       const _tippt = _ae && el.contains(_ae)
         && (/^(INPUT|TEXTAREA|SELECT)$/.test(_ae.tagName) || _ae.isContentEditable);
       if (_tippt) return;
-      try { laden(); } catch (_) {}
+      try { laden({ silent: true }); } catch (_) {}
     });
     // Offener Chat: nur den Verlauf aktualisieren (Flacker-/Scrollschutz in renderThreadVerlauf).
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
