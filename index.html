@@ -1648,6 +1648,39 @@ const SUPABASE_URL = 'https://rvouqjhrbjsmqyzvqtxy.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_gr_VMD5No5n8McWg93vq1A_gO6pKoUQ';
 const API_URL = 'https://visiotrade-backend-production.up.railway.app';
 
+// -----------------------------------------------------------------------------
+// Lieferzeit-Hinweis – abhängig von LIEFERART und ZAHLUNGSART.
+// -----------------------------------------------------------------------------
+// WORTGLEICH mit services/pricing.js im Backend. Dort steht die maßgebliche
+// Fassung für E-Mails und PDF, hier die für Warenkorb und Bestätigungsmeldung.
+// Beide MÜSSEN übereinstimmen: Der Kunde liest sie unmittelbar nacheinander –
+// erst im Warenkorb, Sekunden später in der Auftragsbestätigung. Weichen sie ab,
+// wirkt das wie eine nachträglich geänderte Zusage.
+// Wird der Text hier geändert, MUSS services/pricing.js mitgeändert werden.
+//
+// Die Zahlungsart gehört hinein, weil die Frist bei jeder an einem anderen
+// Ereignis beginnt: Rechnung ab Auftragsbestätigung, Vorkasse ab Zahlungseingang,
+// Stripe/PayPal ab erfolgreicher Zahlung.
+const LIEFERZEIT_LIEFERUNG = 'Lieferzeit: ca. 7–8 Arbeitstage nach Auftragsbestätigung bzw. Geldeingang.';
+const ABHOLUNG_BASIS = {
+  rechnung: 'Abholung: in der Regel innerhalb von 24 Stunden nach Auftragsbestätigung abholbereit.',
+  vorkasse: 'Abholung: in der Regel innerhalb von 24 Stunden nach Zahlungseingang abholbereit.',
+  stripe:   'Abholung: in der Regel innerhalb von 24 Stunden nach erfolgreicher Zahlung abholbereit.',
+  paypal:   'Abholung: in der Regel innerhalb von 24 Stunden nach erfolgreicher Zahlung abholbereit.',
+  _standard: 'Abholung: in der Regel innerhalb von 24 Stunden nach Auftragsbestätigung bzw. Geldeingang abholbereit.'
+};
+const ABHOLUNG_ZUSATZ =
+  ' Bei Bestellungen an Wochenenden oder Feiertagen gilt der nächste Werktag.' +
+  ' Sie erhalten eine E-Mail, sobald die Ware tatsächlich abholbereit ist.';
+
+// Alles, was nicht ausdrücklich 'abholung' ist, gilt als Lieferung – im Zweifel
+// die längere und damit vorsichtigere Zusage.
+function lieferzeitHinweis(art, zahlung) {
+  if (String(art || '').trim().toLowerCase() !== 'abholung') return LIEFERZEIT_LIEFERUNG;
+  const z = String(zahlung || '').trim().toLowerCase();
+  return (ABHOLUNG_BASIS[z] || ABHOLUNG_BASIS._standard) + ABHOLUNG_ZUSATZ;
+}
+
 // --- Cloudflare Turnstile (Bot-Schutz für Gast-Checkout + Passwort-Reset) ---
 // Öffentlicher Site-Key (das Secret liegt ausschließlich im Backend/Railway).
 // Widgets werden erst gerendert, wenn der jeweilige Screen sichtbar ist –
@@ -6224,7 +6257,7 @@ function zeigeBestelluebersicht() {
         <span>Gesamt inkl. MwSt.</span><span>${((gesamt + (lieferart==='lieferung' && aktuellerFrachtKunde ? aktuellerFrachtKunde : 0))*1.19).toFixed(2).replace('.',',')} €</span>
       </div>
       <div style="margin-top:10px;background:#FFF4D6;border:1px solid #E0C36B;border-radius:8px;padding:10px 12px;font-size:12.5px;color:#6B4E00;">
-        ${vtIco('truck')} <strong>Lieferzeit: ca. 7–8 Arbeitstage nach Auftragsbestätigung bzw. Geldeingang.</strong>
+        ${vtIco(lieferart === 'abholung' ? 'factory' : 'truck')} <strong>${lieferzeitHinweis(lieferart, zahlungsart)}</strong>
       </div>
     </div>
     <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
@@ -6448,7 +6481,7 @@ async function bestellungAbsenden() {
     if (zahlungsart === 'rechnung') {
       warenkorb = [];
       document.getElementById('cartCount').textContent = 0;
-      alert('Vielen Dank! Ihre Bestellung auf Rechnung wurde aufgenommen. Eine Auftragsbestätigung wurde per E-Mail versendet.\n\nLieferzeit: ca. 7–8 Arbeitstage nach Auftragsbestätigung bzw. Geldeingang.');
+      alert('Vielen Dank! Ihre Bestellung auf Rechnung wurde aufgenommen. Eine Auftragsbestätigung wurde per E-Mail versendet.\n\n' + lieferzeitHinweis(lieferart, 'rechnung'));
       showScreen('erfolg');
       return;
     }
