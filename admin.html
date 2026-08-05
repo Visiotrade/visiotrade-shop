@@ -899,6 +899,39 @@ function istAdminUser(user) {
   );
 }
 
+// -----------------------------------------------------------------------------
+// Lieferzeit-Hinweis in den Bestelldetails.
+// -----------------------------------------------------------------------------
+// Der GESPEICHERTE Wert hat Vorrang: `bestellungen.lieferzeit_hinweis` hält fest,
+// was dem Kunden tatsächlich zugesagt wurde. Würde der Admin den Text neu
+// berechnen, stünde bei einer alten Bestellung etwas anderes auf dem Bildschirm
+// als in der Auftragsbestätigung, die der Kunde in der Hand hält – und im Gespräch
+// könnte niemand mehr sagen, was gilt.
+// Neu berechnet wird nur bei leerem Feld (Altbestellungen vor der Einführung).
+// Texte WORTGLEICH mit services/pricing.js und index.html.
+const ABHOLUNG_BASIS = {
+  rechnung: 'Abholung: in der Regel innerhalb von 24 Stunden nach Auftragsbestätigung abholbereit.',
+  vorkasse: 'Abholung: in der Regel innerhalb von 24 Stunden nach Zahlungseingang abholbereit.',
+  stripe:   'Abholung: in der Regel innerhalb von 24 Stunden nach erfolgreicher Zahlung abholbereit.',
+  paypal:   'Abholung: in der Regel innerhalb von 24 Stunden nach erfolgreicher Zahlung abholbereit.',
+  _standard: 'Abholung: in der Regel innerhalb von 24 Stunden nach Auftragsbestätigung bzw. Geldeingang abholbereit.'
+};
+const ABHOLUNG_ZUSATZ =
+  ' Bei Bestellungen an Wochenenden oder Feiertagen gilt der nächste Werktag.' +
+  ' Sie erhalten eine E-Mail, sobald die Ware tatsächlich abholbereit ist.';
+
+function istAbholung(lieferart) {
+  return String(lieferart || '').trim().toLowerCase() === 'abholung';
+}
+
+function lieferzeitHinweisFuerBestellung(b) {
+  const gespeichert = String(b?.lieferzeit_hinweis || '').trim();
+  if (gespeichert) return gespeichert;
+  if (!istAbholung(b?.lieferart)) return 'Lieferzeit: ca. 7–8 Arbeitstage nach Auftragsbestätigung bzw. Geldeingang.';
+  const z = String(b?.zahlungsart || '').trim().toLowerCase();
+  return (ABHOLUNG_BASIS[z] || ABHOLUNG_BASIS._standard) + ABHOLUNG_ZUSATZ;
+}
+
 function statusLabel(status) {
   const labels = {
     offen: 'Offen',
@@ -2692,7 +2725,7 @@ async function zeigeBestellung(id) {
             Umsatzsteuer 19 %: <strong>${euro(Number(b.gesamtbetrag||0)*0.19)}</strong><br>
             <span style="font-size:16px;">Gesamtbetrag brutto: <strong style="color:var(--oak);">${euro(Number(b.gesamtbetrag||0)*1.19)}</strong></span>
           </div>
-          <div style="font-size:12px;color:var(--gray);margin-top:8px;">${vtIco('truck')} Lieferzeit: ca. 7–8 Arbeitstage nach Auftragsbestätigung bzw. Geldeingang.</div>
+          <div style="font-size:12px;color:var(--gray);margin-top:8px;">${vtIco(istAbholung(b.lieferart) ? 'factory' : 'truck')} ${h(lieferzeitHinweisFuerBestellung(b))}</div>
         </div>
 
         <div style="background:var(--cream);padding:14px;border-radius:var(--radius-sm);">
