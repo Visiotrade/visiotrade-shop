@@ -2635,12 +2635,16 @@ async function zeigeBestellung(id) {
     const vorkasseButtons = b.zahlungsart === 'vorkasse' && b.status === 'warte_auf_zahlung'
       ? `<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn btn-green btn-sm" onclick="vorkasseZahlungErhalten(${b.id})">
-            ${vtIco('check-circle')} Zahlung erhalten & echte Rechnung erstellen
+            ${vtIco('check-circle')} Zahlung erhalten & Lager buchen
           </button>
           <button class="btn btn-red btn-sm" onclick="adminStorniereVorkasse(${b.id})">
             ${vtIco('x-circle')} Vorkasse stornieren & Reservierung freigeben
           </button>
         </div>`
+      : b.zahlungsart === 'vorkasse' && b.status === 'bezahlt' && b.reservierung_status !== 'consumed'
+        ? `<div style="margin-top:12px;"><button class="btn btn-red btn-sm" onclick="vorkasseZahlungErhalten(${b.id})">
+            ${vtIco('refresh-cw')} Lagerbuchung sicher wiederholen
+          </button></div>`
       : '';
 
     document.getElementById('bestellModalTitle').textContent = `Bestellung #${b.id}`;
@@ -3285,8 +3289,10 @@ function renderThreadOrderPane(b, pos, dok) {
   // Vorkasse-Aktionen direkt im Nachrichtenfenster – NUR offene Vorkasse, nicht für Lager.
   // Gleiche Bedingung + Handler wie im Bestelldetail-Modal (keine zweite Logik), volle Spaltenbreite.
   if (!_nl && b.zahlungsart === 'vorkasse' && b.status === 'warte_auf_zahlung') {
-    docBtns.push(`<button class="btn btn-green btn-sm" style="width:100%;" onclick="vorkasseZahlungErhalten(${b.id})">${vtIco('check-circle')} Zahlung erhalten & echte Rechnung erstellen</button>`);
+    docBtns.push(`<button class="btn btn-green btn-sm" style="width:100%;" onclick="vorkasseZahlungErhalten(${b.id})">${vtIco('check-circle')} Zahlung erhalten & Lager buchen</button>`);
     docBtns.push(`<button class="btn btn-red btn-sm" style="width:100%;" onclick="adminStorniereVorkasse(${b.id})">${vtIco('x-circle')} Vorkasse stornieren & Reservierung freigeben</button>`);
+  } else if (!_nl && b.zahlungsart === 'vorkasse' && b.status === 'bezahlt' && b.reservierung_status !== 'consumed') {
+    docBtns.push(`<button class="btn btn-red btn-sm" style="width:100%;" onclick="vorkasseZahlungErhalten(${b.id})">${vtIco('refresh-cw')} Lagerbuchung sicher wiederholen</button>`);
   }
   const positions = (pos || []).map(p => `<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--gray-light);padding:4px 0;"><span>${h(p.produktname || 'Parkett')} · ${Number(p.menge_m2_gesamt || 0).toFixed(2)} m²${p.anzahl_pakete ? ' · ' + h(p.anzahl_pakete) + ' Pkt' : ''}${p.bauvorhaben ? '<br><span style="color:var(--gray);font-size:12px;">BV: ' + h(p.bauvorhaben) + '</span>' : ''}</span>${_nl ? '' : '<strong>' + euro(p.gesamtpreis) + '</strong>'}</div>`).join('') || '<span style="color:var(--gray);">—</span>';
   el.innerHTML = `
@@ -3599,7 +3605,7 @@ let _vorkasseAktionLaeuft = false;
 
 async function vorkasseZahlungErhalten(bestellungId) {
   if (_vorkasseAktionLaeuft) return;
-  if (!confirm('Zahlung wirklich als erhalten markieren, Reservierung verbrauchen und echte Rechnung erstellen?')) {
+  if (!confirm('Zahlung als erhalten markieren und die Lagerbuchung sicher ausführen bzw. wiederholen?')) {
     ladeBestellungen();
     return;
   }
@@ -3622,7 +3628,15 @@ async function vorkasseZahlungErhalten(bestellungId) {
       throw new Error(data.error || 'Unbekannter Fehler');
     }
 
-    zeigeToast('Zahlung markiert, Rechnung erstellt und E-Mail gesendet');
+    if (data.lagerbuchung_erfolgreich === false) {
+      zeigeToast(data.message || 'Zahlung erfasst, Lagerbuchung noch offen. Bitte erneut ausführen.', true);
+      ladeBestellungen();
+      ladeDashboard();
+      if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
+      return;
+    }
+
+    zeigeToast(data.already_processed ? 'Zahlung und Lagerbuchung waren bereits erledigt' : 'Zahlung erfasst und Lager erfolgreich gebucht');
     schliesseModal('bestellModal');
     ladeBestellungen();
     ladeDashboard();
