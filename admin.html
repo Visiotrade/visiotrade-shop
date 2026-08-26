@@ -1044,6 +1044,119 @@ function istOffeneVorkasse(b) {
   return String(b?.zahlungsart || '').toLowerCase() === 'vorkasse' && b?.status === 'warte_auf_zahlung';
 }
 
+// ---------------------------------------------------------------------------
+// Wiederholung der Vorkasse-Lagerbuchung.
+//
+// Der Knopf ist NUR bei exakt 'reserved' klickbar – Default-Deny.
+//
+// Das ist bewusst die umgekehrte Regel wie bei „Reservierung erneut freigeben":
+// Dort GIBT ein Klick Ware frei; überflüssig ist harmlos, ein fehlender Knopf
+// lässt Ware blockiert. Hier BUCHT ein Klick Bestand AB. Ein Klick zu viel nimmt
+// echte Ware aus dem Lager. Wer die beiden Stellen später angleichen will, hat
+// den Unterschied übersehen.
+//
+// Die alte Bedingung `reservierung_status !== 'consumed'` genügte nicht: null,
+// Leerstring, Leerzeichen und jeder unbekannte Wert bestehen sie. Genau in
+// diesem Zustand standen die Bestellungen 128 und 129 (gemessen: NULL).
+// Seit Migration L lehnt die Datenbank solche Fälle mit 409 ab – der Knopf soll
+// aber gar nicht erst dazu einladen, es zu versuchen.
+// Der Marker allein reicht als Gate NICHT aus. Die Datenbank lehnt Fälle ab, die
+// er gar nicht abbildet – etwa `reserved` neben einer historischen consumed-Zeile
+// oder `reserved` ganz ohne passende Reservierungszeile. In beiden Fällen bliebe
+// der Marker unverändert `reserved`, und die frisch geladene Liste böte den Knopf
+// erneut an. Deshalb merkt sich die Oberfläche eine erhaltene 409-Sperre.
+//
+// Die dauerhafte Zustandsfuehrung liegt nach Migration N in `private` und wird
+// vom Backend nur in seine rechtegeprueften Admin-Antworten eingemischt. Diese
+// Map bleibt fuer das kurze Fenster zwischen 409-Antwort und Neuladen bestehen.
+const _vorkasseSperren = new Map();
+
+function vorkasseSperreMerken(bestellungId, sperrgrund) {
+  if (bestellungId === null || typeof bestellungId === 'undefined') return;
+  _vorkasseSperren.set(String(bestellungId), String(sperrgrund || 'GESPERRT'));
+}
+
+function vorkasseSperreVergessen(bestellungId) {
+  if (bestellungId === null || typeof bestellungId === 'undefined') return;
+  _vorkasseSperren.delete(String(bestellungId));
+}
+
+function vorkasseSperreGrund(b) {
+  if (b?.id === null || typeof b?.id === 'undefined') return null;
+  if (b?.lagerbuchung_gesperrt_grund !== null
+      && typeof b?.lagerbuchung_gesperrt_grund !== 'undefined') {
+    return String(b.lagerbuchung_gesperrt_grund);
+  }
+  return _vorkasseSperren.get(String(b.id)) || null;
+}
+
+function vorkasseLagerbuchungWiederholbar(b) {
+  // Eine bekannte Sperre schlägt den Marker. Reihenfolge ist hier die ganze
+  // Aussage: Erst prüfen, ob wir es schon besser wissen, dann erst den Marker.
+  if (vorkasseSperreGrund(b)) return false;
+  // Backend vor Migration N oder fehlender Lese-RPC: Nichtwissen ist keine
+  // Freigabe. Voruebergehend bleibt nur der nicht klickbare Warnhinweis.
+  if (b?.lagerbuchung_sperrstatus_geprueft === false) return false;
+  return String(b?.zahlungsart || '').toLowerCase() === 'vorkasse'
+    && b?.status === 'bezahlt'
+    && b?.reservierung_status === 'reserved';
+}
+
+// Bezahlt und noch nicht verbucht, aber ohne eindeutiges 'reserved'.
+// Kein Knopf, sondern ein sichtbarer Hinweis: Der Fall verschwindet sonst
+// lautlos aus der Oberfläche und niemand kümmert sich darum.
+function vorkasseLagerbuchungManuell(b) {
+  return String(b?.zahlungsart || '').toLowerCase() === 'vorkasse'
+    && b?.status === 'bezahlt'
+    // Eine gemerkte Sperre gilt auch bei Marker 'consumed': Genau dort liegt
+    // der Mischzustand, und dann ist die Bestellung eben nicht erledigt.
+    && (b?.reservierung_status !== 'consumed'
+        || !!vorkasseSperreGrund(b)
+        || b?.lagerbuchung_sperrstatus_geprueft === false)
+    && !vorkasseLagerbuchungWiederholbar(b);
+}
+
+function vorkasseLagerHinweisText(b) {
+  // Die Antwort des Backends ist genauer als jede Ableitung aus dem Marker:
+  // Sie kennt die tatsächlichen Reservierungszeilen. Also hat sie Vorrang.
+  const gemerkt = vorkasseSperreGrund(b);
+  if (gemerkt === 'VORKASSE_LAGERBUCHUNG_MISCHZUSTAND') {
+    return 'Die Reservierungszeilen widersprechen dem gespeicherten Zustand.';
+  }
+  if (gemerkt === 'VORKASSE_LAGERBUCHUNG_OHNE_BELEGTE_RESERVIERUNG') {
+    return 'Es liegt keine belegte Reservierung vor.';
+  }
+  if (gemerkt) return `Die Lagerbuchung wurde abgelehnt: „${h(gemerkt)}".`;
+
+  if (b?.lagerbuchung_sperrstatus_geprueft === false) {
+    return 'Der interne Lagerbuchungs-Sperrstatus konnte noch nicht geprüft werden.';
+  }
+
+  const roh = b?.reservierung_status;
+  if (roh === null || typeof roh === 'undefined') {
+    return 'Kein Reservierungszustand hinterlegt.';
+  }
+  const wert = String(roh);
+  if (wert.trim() === '') return 'Reservierungszustand ist leer.';
+  if (wert === 'released') return 'Die Reservierung wurde bereits freigegeben.';
+  if (wert === 'consumed') return 'Der gespeicherte Zustand ist widersprüchlich.';
+  // Unbekannter Wert: im Klartext zeigen. Für die manuelle Prüfung ist genau
+  // dieser Wert die entscheidende Information – h() gegen Einschleusung.
+  return `Unklarer Reservierungszustand: „${h(wert)}".`;
+}
+
+// Ein Baustein für beide Aufrufer. Die äußere Breite setzt der Aufrufer.
+// b.id wird escaped wie jeder andere Wert auch: Die ID SOLL numerisch sein,
+// aber „soll" ist keine Zusicherung, und eine Ausnahme von der Regel müsste
+// jeder spätere Leser erst als Ausnahme erkennen.
+function vorkasseLagerHinweisHtml(b) {
+  return `<div style="padding:10px 12px;border-radius:var(--radius-sm);background:#FEF3C7;color:#92400E;font-size:13px;line-height:1.5;">
+      <strong>Lagerbuchung nicht möglich</strong><br>
+      ${vorkasseLagerHinweisText(b)} Eine Wiederholung würde daran nichts ändern –
+      Bestellung #${h(b?.id)} muss manuell geprüft werden.
+    </div>`;
+}
+
 // Audit R-06: 'storniert' ist hier BEWUSST NICHT enthalten – ein Storno ist ein Vorgang, kein
 // Statuswechsel (Reservierungsfreigabe, Kundenmail, Vorgangseintrag, Recht bestellungen.stornieren).
 // Der Server weist einen generischen PATCH auf 'storniert' zusätzlich mit 400 ab.
@@ -2641,10 +2754,12 @@ async function zeigeBestellung(id) {
             ${vtIco('x-circle')} Vorkasse stornieren & Reservierung freigeben
           </button>
         </div>`
-      : b.zahlungsart === 'vorkasse' && b.status === 'bezahlt' && b.reservierung_status !== 'consumed'
+      : vorkasseLagerbuchungWiederholbar(b)
         ? `<div style="margin-top:12px;"><button class="btn btn-red btn-sm" onclick="vorkasseZahlungErhalten(${b.id})">
             ${vtIco('refresh-cw')} Lagerbuchung sicher wiederholen
           </button></div>`
+      : vorkasseLagerbuchungManuell(b)
+        ? `<div style="margin-top:12px;">${vorkasseLagerHinweisHtml(b)}</div>`
       : '';
 
     document.getElementById('bestellModalTitle').textContent = `Bestellung #${b.id}`;
@@ -3291,8 +3406,12 @@ function renderThreadOrderPane(b, pos, dok) {
   if (!_nl && b.zahlungsart === 'vorkasse' && b.status === 'warte_auf_zahlung') {
     docBtns.push(`<button class="btn btn-green btn-sm" style="width:100%;" onclick="vorkasseZahlungErhalten(${b.id})">${vtIco('check-circle')} Zahlung erhalten & Lager buchen</button>`);
     docBtns.push(`<button class="btn btn-red btn-sm" style="width:100%;" onclick="adminStorniereVorkasse(${b.id})">${vtIco('x-circle')} Vorkasse stornieren & Reservierung freigeben</button>`);
-  } else if (!_nl && b.zahlungsart === 'vorkasse' && b.status === 'bezahlt' && b.reservierung_status !== 'consumed') {
+  } else if (!_nl && vorkasseLagerbuchungWiederholbar(b)) {
     docBtns.push(`<button class="btn btn-red btn-sm" style="width:100%;" onclick="vorkasseZahlungErhalten(${b.id})">${vtIco('refresh-cw')} Lagerbuchung sicher wiederholen</button>`);
+  } else if (!_nl && vorkasseLagerbuchungManuell(b)) {
+    // Kein Knopf. Der Hinweis bleibt an `!_nl` gebunden: Die Lagerrolle sieht
+    // hier keine Vorkasse-Aktionen und soll auch deren Störfälle nicht sehen.
+    docBtns.push(`<div style="width:100%;">${vorkasseLagerHinweisHtml(b)}</div>`);
   }
   const positions = (pos || []).map(p => `<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--gray-light);padding:4px 0;"><span>${h(p.produktname || 'Parkett')} · ${Number(p.menge_m2_gesamt || 0).toFixed(2)} m²${p.anzahl_pakete ? ' · ' + h(p.anzahl_pakete) + ' Pkt' : ''}${p.bauvorhaben ? '<br><span style="color:var(--gray);font-size:12px;">BV: ' + h(p.bauvorhaben) + '</span>' : ''}</span>${_nl ? '' : '<strong>' + euro(p.gesamtpreis) + '</strong>'}</div>`).join('') || '<span style="color:var(--gray);">—</span>';
   el.innerHTML = `
@@ -3624,6 +3743,32 @@ async function vorkasseZahlungErhalten(bestellungId) {
 
     const data = await res.json();
 
+    // Fachliche Sperre (409). MUSS vor der allgemeinen Fehlerbehandlung stehen:
+    // Diese Antwort trägt ok:false und bewusst KEIN error-Feld. Der generische
+    // Zweig darunter machte daraus „Unbekannter Fehler" – und verschwiege damit
+    // ausgerechnet die wichtigste Aussage: Das Geld IST erfasst, nur das Lager
+    // wurde nicht gebucht. Der Bediener müsste sonst annehmen, die Zahlung sei
+    // verlorengegangen, und würde erneut klicken.
+    if (res.status === 409 && data.lagerbuchung_gesperrt === true) {
+      // ZUERST merken, DANN neu zeichnen. Umgekehrt rendern die Ansichten noch
+      // gegen den alten Kenntnisstand und stellen denselben Knopf wieder hin.
+      vorkasseSperreMerken(bestellungId, data.sperrgrund);
+      zeigeToast(data.message || 'Zahlung erfasst, Lagerbuchung gesperrt – bitte manuell prüfen.', true);
+
+      // Das offene Bestelldetail MUSS neu gerendert werden. `ladeBestellungen()`
+      // baut nur die Liste dahinter neu auf; das Modal behielte sein altes HTML,
+      // und nach dem finally wäre derselbe Knopf wieder anklickbar.
+      // Modal bleibt offen, nicht geschlossen: Der Vorgang soll nicht unbemerkt
+      // vom Bildschirm verschwinden.
+      if (document.getElementById('bestellModal')?.classList.contains('open')) {
+        await zeigeBestellung(bestellungId);
+      }
+      ladeBestellungen();
+      ladeDashboard();
+      if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
+      return;
+    }
+
     if (!res.ok || !data.ok) {
       throw new Error(data.error || 'Unbekannter Fehler');
     }
@@ -3636,6 +3781,9 @@ async function vorkasseZahlungErhalten(bestellungId) {
       return;
     }
 
+    // Ein sauberer DB-Erfolg hebt einen vorhandenen Sperrzustand in derselben
+    // Transaktion auf. Der kurzlebige Tab-Merker darf ihn nicht ueberleben.
+    vorkasseSperreVergessen(bestellungId);
     zeigeToast(data.already_processed ? 'Zahlung und Lagerbuchung waren bereits erledigt' : 'Zahlung erfasst und Lager erfolgreich gebucht');
     schliesseModal('bestellModal');
     ladeBestellungen();
