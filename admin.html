@@ -323,6 +323,10 @@
             <option value="paypal">Nur PayPal</option>
           </select>
           <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="reservierungenFreigeben()"><span data-ico="clock"></span> Abgelaufene Reservierungen freigeben</button>
+          <button id="b18AufgabenBtn" class="btn btn-sm" style="background:#FFF4E5;color:#8A4B08;" onclick="oeffneB18Aufgaben()">
+            <span data-ico="clipboard-check"></span> B-18-Aufgaben
+            <span id="b18AufgabenBadge" style="display:none;background:#B91C1C;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span>
+          </button>
         </div>
         <div class="table-wrap">
           <table><thead><tr><th>Nr.</th><th>Datum</th><th>Kunde</th><th>Firma</th><th>Betrag (brutto)</th><th>Zahlung</th><th>Status</th><th>Reservierung</th><th>Aktionen</th></tr></thead>
@@ -741,6 +745,20 @@
   </div>
 </div>
 
+<!-- B-18 RUECKZAHLUNG UND NACHARBEITEN -->
+<div class="modal-overlay" id="b18AufgabenModal" style="z-index:460;">
+  <div class="modal" style="max-width:980px;width:97%;max-height:92vh;overflow:auto;">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+      <div class="modal-title" style="margin:0;">B-18 · offene Rückzahlungen und Nacharbeiten</div>
+      <button class="btn btn-red btn-sm" onclick="schliesseModal('b18AufgabenModal')">Schließen</button>
+    </div>
+    <div style="background:#FFF4E5;border:1px solid #F0C98A;border-radius:8px;padding:10px 12px;margin:14px 0;font-size:13px;">
+      Eine Rückzahlung wird hier nur dokumentiert. Die Banküberweisung muss außerhalb des Shops tatsächlich ausgeführt werden.
+    </div>
+    <div id="b18AufgabenInhalt"><div style="text-align:center;color:var(--gray);padding:25px;">Wird geladen…</div></div>
+  </div>
+</div>
+
 <!-- NACHRICHTEN-THREAD MODAL -->
 <div class="modal-overlay" id="threadModal" style="z-index:450;">
   <div class="modal" style="max-width:1000px;width:97%;height:92vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
@@ -1155,6 +1173,60 @@ function vorkasseLagerHinweisHtml(b) {
       ${vorkasseLagerHinweisText(b)} Eine Wiederholung würde daran nichts ändern –
       Bestellung #${h(b?.id)} muss manuell geprüft werden.
     </div>`;
+}
+
+// B-18: Die Datenbank entscheidet anhand der gesperrten Einzelzeilen. Weder
+// Marker noch Status in diesem HTML sind eine Freigabe. Der Knopf erscheint
+// nur nach einem ausdruecklichen, frisch vom Backend gelieferten JA.
+function b18StornoMoeglich(b) {
+  return b?.b18_storno_geprueft === true
+    && b?.b18_storno_geeignet === true
+    && b?.b18_storniert !== true
+    && String(b?.zahlungsart || '').toLowerCase() === 'vorkasse'
+    && b?.status === 'bezahlt';
+}
+
+function b18StornoGrundText(b) {
+  const grund = String(b?.b18_storno_grund || '');
+  const texte = {
+    SOFT_DELETED: 'Bestellung liegt im Papierkorb.',
+    NICHT_VORKASSE: 'Keine Vorkasse-Bestellung.',
+    STATUS_NICHT_BEZAHLT: 'Zahlungsstatus ist nicht „bezahlt".',
+    VERSAND_FORTGESCHRITTEN: 'Versand ist bereits fortgeschritten.',
+    LAGER_FORTGESCHRITTEN: 'Lagerbearbeitung ist bereits fortgeschritten.',
+    MARKER_NICHT_EINDEUTIG: 'Reservierungszustand ist nicht eindeutig.',
+    LAGERBUCHUNG_GESPERRT: 'Lagerbuchung ist dauerhaft gesperrt.',
+    BETRAGSFELD_FEHLT: 'Mindestens ein benötigtes Betragsfeld fehlt.',
+    BETRAG_NICHT_ENDLICH: 'Ein Betragsfeld ist technisch unbrauchbar.',
+    BETRAGSBEZIEHUNG_ABWEICHEND: 'Die Betragsbeziehungen stimmen nicht.',
+    DECKUNG_FEHLT: 'Positionen oder Reservierungszeilen fehlen.',
+    POSITION_UNGUELTIG: 'Mindestens eine Bestellposition ist unbrauchbar.',
+    RESERVIERUNG_UNGUELTIG: 'Mindestens eine Reservierungszeile ist unbrauchbar.',
+    DECKUNG_JE_PAKET_ABWEICHEND: 'Positionen und Reservierungen decken sich nicht je Paket.'
+  };
+  return texte[grund] || (grund ? `Prüfgrund: ${grund}` : 'Keine sichere Freigabe erteilt.');
+}
+
+function b18StornoHtml(b, { volleBreite = false } = {}) {
+  const breite = volleBreite ? 'width:100%;' : '';
+  if (b?.b18_storniert === true) {
+    return `<div style="${breite}padding:9px 11px;border-radius:var(--radius-sm);background:#ECFDF5;color:#166534;font-size:12px;line-height:1.45;">
+      <strong>B-18-Storno verbucht</strong><br>
+      Lager: ${h(b?.b18_lageraktion || '—')} · Rückzahlung: ${h(b?.b18_rueckzahlung_status || 'offen')}
+    </div>`;
+  }
+  if (b18StornoMoeglich(b)) {
+    return `<button class="btn btn-red btn-sm" style="${breite}" onclick="adminStorniereBezahlteVorkasseB18(${Number(b.id)})">
+      ${vtIco('x-circle')} Bezahlte Vorkasse sicher stornieren
+    </button>`;
+  }
+  if (String(b?.zahlungsart || '').toLowerCase() !== 'vorkasse' || b?.status !== 'bezahlt') return '';
+  const text = b?.b18_storno_geprueft === false
+    ? 'B-18-Eignung konnte noch nicht geprüft werden. Kein Storno möglich.'
+    : b18StornoGrundText(b);
+  return `<div style="${breite}padding:9px 11px;border-radius:var(--radius-sm);background:#FEF3C7;color:#92400E;font-size:12px;line-height:1.45;">
+    <strong>B-18-Storno nicht freigegeben</strong><br>${h(text)}
+  </div>`;
 }
 
 // Audit R-06: 'storniert' ist hier BEWUSST NICHT enthalten – ein Storno ist ein Vorgang, kein
@@ -2629,6 +2701,9 @@ async function ladeBestellungen() {
         && (darf('bestellungen.stornieren') || adminMe.ist_super_admin))
         ? `<button class="btn btn-red btn-sm" onclick="adminStorniereRechnungskauf(${b.id})">${vtIco('x-circle')} Rechnungskauf stornieren</button>`
         : '';
+      const b18StornoAction = (darf('bestellungen.stornieren') || adminMe.ist_super_admin)
+        ? b18StornoHtml(b)
+        : '';
 
       return `
       <tr>
@@ -2648,6 +2723,7 @@ async function ladeBestellungen() {
             ${speditionAction}
             ${reservierungAction}
             ${rechnungStornoAction}
+            ${b18StornoAction}
             ${String(b.status) === 'storniert'
               ? `<select class="admin-select" disabled title="Diese Bestellung ist storniert. Ein Wiederbeleben über das Status-Feld ist nicht vorgesehen."><option selected>${statusLabel('storniert')}</option></select>`
               : String(b.status) === 'auf_rechnung'
@@ -2665,6 +2741,10 @@ async function ladeBestellungen() {
     // ladeBestellungen() aufrufen, aktualisiert sich der Badge unmittelbar nach jeder
     // Statusänderung. Das bloße Öffnen der Seite ändert den (live gezählten) Wert nicht.
     aktualisiereBestellBadge();
+    // Vor Migration Q bleibt der Badge leer; nach Q zeigt er die eigene,
+    // serverseitig geladene Arbeitsliste. Fehler werden hier bewusst still
+    // behandelt und erst beim ausdruecklichen Oeffnen sichtbar gemacht.
+    ladeB18Aufgaben({ modal: false, still: true });
   } catch(e) { zeigeToast('Fehler: ' + e.message, true); }
 }
 
@@ -2761,6 +2841,9 @@ async function zeigeBestellung(id) {
       : vorkasseLagerbuchungManuell(b)
         ? `<div style="margin-top:12px;">${vorkasseLagerHinweisHtml(b)}</div>`
       : '';
+    const b18Buttons = (darf('bestellungen.stornieren') || adminMe.ist_super_admin)
+      ? `<div style="margin-top:12px;">${b18StornoHtml(b, { volleBreite: true })}</div>`
+      : '';
 
     document.getElementById('bestellModalTitle').textContent = `Bestellung #${b.id}`;
     document.getElementById('bestellModalContent').innerHTML = `
@@ -2793,6 +2876,7 @@ async function zeigeBestellung(id) {
           <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;margin-bottom:6px;">Zahlung / Reservierung</div>
           <div style="font-size:14px;line-height:1.8;">${zahlungsInfo}</div>
           ${vorkasseButtons}
+          ${b18Buttons}
         </div>
 
         <div style="background:var(--cream);padding:14px;border-radius:var(--radius-sm);">
@@ -3413,6 +3497,10 @@ function renderThreadOrderPane(b, pos, dok) {
     // hier keine Vorkasse-Aktionen und soll auch deren Störfälle nicht sehen.
     docBtns.push(`<div style="width:100%;">${vorkasseLagerHinweisHtml(b)}</div>`);
   }
+  if (!_nl && (darf('bestellungen.stornieren') || adminMe.ist_super_admin)) {
+    const b18 = b18StornoHtml(b, { volleBreite: true });
+    if (b18) docBtns.push(b18);
+  }
   const positions = (pos || []).map(p => `<div style="display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--gray-light);padding:4px 0;"><span>${h(p.produktname || 'Parkett')} · ${Number(p.menge_m2_gesamt || 0).toFixed(2)} m²${p.anzahl_pakete ? ' · ' + h(p.anzahl_pakete) + ' Pkt' : ''}${p.bauvorhaben ? '<br><span style="color:var(--gray);font-size:12px;">BV: ' + h(p.bauvorhaben) + '</span>' : ''}</span>${_nl ? '' : '<strong>' + euro(p.gesamtpreis) + '</strong>'}</div>`).join('') || '<span style="color:var(--gray);">—</span>';
   el.innerHTML = `
     <div style="font-weight:700;color:var(--oak);margin-bottom:6px;">Bestellung #${b.id}</div>
@@ -3721,6 +3809,169 @@ function startNachrichtenPoller() {
 // Doppelklick-/Doppelauslöse-Schutz für die beiden Vorkasse-Aktionen (gilt für beide
 // Aufrufstellen: Bestelldetail-Modal UND Nachrichtenfenster).
 let _vorkasseAktionLaeuft = false;
+let _b18StornoLaeuft = false;
+
+async function adminStorniereBezahlteVorkasseB18(bestellungId) {
+  if (_b18StornoLaeuft) return;
+  const bestaetigt = confirm(
+    `Bezahlte Vorkasse-Bestellung #${bestellungId} wirklich stornieren?\n\n`
+    + 'Die Datenbank prüft den aktuellen Zustand erneut, gibt bzw. bucht den Bestand zurück '
+    + 'und erstellt einen manuellen Rückzahlungsauftrag.\n\n'
+    + 'WICHTIG: Das Geld wird NICHT automatisch überwiesen.'
+  );
+  if (!bestaetigt) return;
+
+  _b18StornoLaeuft = true;
+  try {
+    const data = await backendApi(`/api/admin/bestellungen/${bestellungId}/b18-stornieren`, 'POST', {});
+    zeigeToast(data.message || 'B-18-Storno verbucht. Rückzahlung und Nacharbeiten sind offen.');
+    schliesseModal('bestellModal');
+    await ladeBestellungen();
+    ladeDashboard();
+    if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) {
+      await ladeThreadDetail(true);
+    }
+  } catch (err) {
+    // 409 bleibt sichtbar und führt nie zu einer optimistischen lokalen
+    // Statusänderung. Erst ein erfolgreicher RPC-Neulauf zeichnet neu.
+    zeigeToast('B-18-Storno nicht ausgeführt: ' + err.message, true);
+    await ladeBestellungen();
+  } finally {
+    _b18StornoLaeuft = false;
+  }
+}
+
+function b18ArbeitsStatusLabel(status) {
+  return ({ offen:'Offen', angewiesen:'Bei Bank angewiesen', bestaetigt:'Ausführung bestätigt',
+    fehlgeschlagen:'Fehlgeschlagen', in_bearbeitung:'In Bearbeitung', erledigt:'Erledigt',
+    nicht_noetig:'Nicht nötig' })[status] || String(status || '—');
+}
+
+function b18NacharbeitSelect(stornoId, aufgabe, status, erlaubtNichtNoetig = false) {
+  const optionen = ['offen','in_bearbeitung','erledigt','fehlgeschlagen'];
+  if (erlaubtNichtNoetig) optionen.push('nicht_noetig');
+  const deaktiviert = !(darf('bestellungen.stornieren') || adminMe.ist_super_admin);
+  return `<select id="b18-${stornoId}-${aufgabe}" class="admin-select" ${deaktiviert ? 'disabled' : ''}>
+    ${optionen.map(x => `<option value="${x}" ${x === status ? 'selected' : ''}>${h(b18ArbeitsStatusLabel(x))}</option>`).join('')}
+  </select>${deaktiviert ? '' : `<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="b18NacharbeitSpeichern(${stornoId},'${aufgabe}')">Speichern</button>`}`;
+}
+
+function renderB18Aufgaben(aufgaben) {
+  const box = document.getElementById('b18AufgabenInhalt');
+  if (!box) return;
+  if (!Array.isArray(aufgaben) || !aufgaben.length) {
+    box.innerHTML = '<div style="text-align:center;color:var(--gray);padding:28px;">Keine offenen B-18-Aufgaben.</div>';
+    return;
+  }
+  const darfAendern = darf('bestellungen.stornieren') || adminMe.ist_super_admin;
+  box.innerHTML = aufgaben.map(a => {
+    const vorgeschlagen = Number(a.betrag_vorgeschlagen);
+    const rueckButtons = !darfAendern || a.rueckzahlung_status === 'bestaetigt' ? '' : `
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;">
+        <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="b18RueckzahlungAngewiesen(${a.storno_id})">Bei Bank angewiesen</button>
+        <button class="btn btn-green btn-sm" onclick="b18RueckzahlungBestaetigen(${a.storno_id},${JSON.stringify(vorgeschlagen)})">Ausführung bestätigen</button>
+        <button class="btn btn-red btn-sm" onclick="b18RueckzahlungFehlgeschlagen(${a.storno_id})">Fehlgeschlagen</button>
+      </div>`;
+    return `<div class="table-wrap" style="padding:15px;margin-bottom:12px;border-left:4px solid ${a.rueckzahlung_status === 'bestaetigt' ? '#2E7D32' : '#B45309'};">
+      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div><strong>Bestellung #${a.bestellung_id}</strong> · Storno ${a.storno_id}<br>
+          <span style="font-size:12px;color:var(--gray);">${a.storniert_am ? new Date(a.storniert_am).toLocaleString('de-DE') : '—'} · Lager: ${h(a.lageraktion || '—')}</span></div>
+        <div style="text-align:right;"><strong>${euro(vorgeschlagen)}</strong> ${h(a.waehrung)}<br>
+          <span class="badge">Rückzahlung: ${h(b18ArbeitsStatusLabel(a.rueckzahlung_status))}</span></div>
+      </div>
+      <div style="font-size:12px;color:var(--gray);margin-top:5px;">Nachweis: ${a.nachweis ? 'vorhanden' : 'fehlt'}${a.fehlerhinweis ? ' · Fehlerhinweis vorhanden' : ''}</div>
+      ${rueckButtons}
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin-top:14px;">
+        <div><strong style="font-size:12px;">Kunde informieren</strong><div style="display:flex;gap:6px;margin-top:5px;">${b18NacharbeitSelect(a.storno_id,'kundeninformation',a.kundeninformation_status)}</div></div>
+        <div><strong style="font-size:12px;">Lagerprozess stoppen</strong><div style="display:flex;gap:6px;margin-top:5px;">${b18NacharbeitSelect(a.storno_id,'lager_stop',a.lager_stop_status)}</div></div>
+        <div><strong style="font-size:12px;">Belege zurückziehen</strong><div style="display:flex;gap:6px;margin-top:5px;">${b18NacharbeitSelect(a.storno_id,'belegrueckzug',a.belegrueckzug_status,true)}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function ladeB18Aufgaben({ modal = true, still = false } = {}) {
+  try {
+    const data = await backendApi('/api/admin/b18-stornos?nur_offen=true');
+    const aufgaben = Array.isArray(data?.aufgaben) ? data.aufgaben : [];
+    const badge = document.getElementById('b18AufgabenBadge');
+    if (badge) {
+      badge.textContent = String(aufgaben.length);
+      badge.style.display = aufgaben.length ? 'inline-block' : 'none';
+    }
+    if (modal) renderB18Aufgaben(aufgaben);
+    return aufgaben;
+  } catch (err) {
+    const badge = document.getElementById('b18AufgabenBadge');
+    if (badge) badge.style.display = 'none';
+    if (!still) {
+      const box = document.getElementById('b18AufgabenInhalt');
+      if (box) box.innerHTML = `<div style="color:var(--red);padding:20px;">Arbeitsliste nicht verfügbar: ${h(err.message)}</div>`;
+      zeigeToast('B-18-Arbeitsliste konnte nicht geladen werden.', true);
+    }
+    return [];
+  }
+}
+
+async function oeffneB18Aufgaben() {
+  document.getElementById('b18AufgabenModal').classList.add('open');
+  document.getElementById('b18AufgabenInhalt').innerHTML = '<div style="text-align:center;color:var(--gray);padding:25px;">Wird geladen…</div>';
+  await ladeB18Aufgaben({ modal: true, still: false });
+}
+
+async function b18RueckzahlungAngewiesen(stornoId) {
+  const nachweis = prompt('Optionale Bankreferenz / Auftragsnummer (noch kein Ausführungsnachweis):', '') ?? null;
+  if (nachweis === null) return;
+  try {
+    await backendApi(`/api/admin/b18-stornos/${stornoId}/rueckzahlung`, 'PATCH', {
+      status:'angewiesen',betrag_tatsaechlich:null,nachweis,fehlerhinweis:null
+    });
+    zeigeToast('Rückzahlung als bei der Bank angewiesen gespeichert.');
+    await ladeB18Aufgaben();
+  } catch (err) { zeigeToast('Nicht gespeichert: ' + err.message, true); }
+}
+
+async function b18RueckzahlungBestaetigen(stornoId, vorgeschlagen) {
+  const betragText = prompt('Tatsächlich ausgeführter Bruttobetrag in EUR:', Number(vorgeschlagen).toFixed(2).replace('.', ','));
+  if (betragText === null) return;
+  const betrag = Number(String(betragText).trim().replace(',', '.'));
+  if (!Number.isFinite(betrag)) { zeigeToast('Ungültiger Betrag.', true); return; }
+  const nachweis = prompt('Ausführungsnachweis / Bankreferenz (Pflicht):', '');
+  if (nachweis === null || !nachweis.trim()) { zeigeToast('Ohne Nachweis wird die Rückzahlung nicht bestätigt.', true); return; }
+  if (!confirm(`Wurde die Bankrückzahlung über ${euro(betrag)} tatsächlich ausgeführt?`)) return;
+  try {
+    await backendApi(`/api/admin/b18-stornos/${stornoId}/rueckzahlung`, 'PATCH', {
+      status:'bestaetigt',betrag_tatsaechlich:betrag,nachweis,fehlerhinweis:null
+    });
+    zeigeToast('Ausgeführte Rückzahlung bestätigt.');
+    await ladeB18Aufgaben();
+  } catch (err) { zeigeToast('Nicht gespeichert: ' + err.message, true); }
+}
+
+async function b18RueckzahlungFehlgeschlagen(stornoId) {
+  const grund = prompt('Warum ist die Rückzahlung fehlgeschlagen? (Pflicht):', '');
+  if (grund === null || !grund.trim()) return;
+  try {
+    await backendApi(`/api/admin/b18-stornos/${stornoId}/rueckzahlung`, 'PATCH', {
+      status:'fehlgeschlagen',betrag_tatsaechlich:null,nachweis:null,fehlerhinweis:grund
+    });
+    zeigeToast('Fehlgeschlagene Rückzahlung dokumentiert.');
+    await ladeB18Aufgaben();
+  } catch (err) { zeigeToast('Nicht gespeichert: ' + err.message, true); }
+}
+
+async function b18NacharbeitSpeichern(stornoId, aufgabe) {
+  const feld = document.getElementById(`b18-${stornoId}-${aufgabe}`);
+  if (!feld) return;
+  const status = feld.value;
+  const hinweis = prompt('Optionaler interner Hinweis:', '');
+  if (hinweis === null) return;
+  try {
+    await backendApi(`/api/admin/b18-stornos/${stornoId}/nacharbeit`, 'PATCH', { aufgabe,status,hinweis });
+    zeigeToast('Nacharbeit gespeichert.');
+    await ladeB18Aufgaben();
+  } catch (err) { zeigeToast('Nicht gespeichert: ' + err.message, true); }
+}
 
 async function vorkasseZahlungErhalten(bestellungId) {
   if (_vorkasseAktionLaeuft) return;
