@@ -1216,11 +1216,24 @@ function b18StornoHtml(b, { volleBreite = false } = {}) {
     </div>`;
   }
   if (b18StornoMoeglich(b)) {
-    return `<button class="btn btn-red btn-sm" style="${breite}" onclick="adminStorniereBezahlteVorkasseB18(${Number(b.id)})">
+    const stoppInfo = b?.b18_versandstopp_aktiv === true
+      ? `<div style="${breite}padding:8px 10px;margin-bottom:6px;border-radius:var(--radius-sm);background:#ECFDF5;color:#166534;font-size:12px;line-height:1.4;">
+          <strong>Versandstopp bestätigt</strong><br>Die Datenbank prüft ihn beim Storno erneut.</div>`
+      : '';
+    return `${stoppInfo}<button class="btn btn-red btn-sm" style="${breite}" onclick="adminStorniereBezahlteVorkasseB18(${Number(b.id)})">
       ${vtIco('x-circle')} Bezahlte Vorkasse sicher stornieren
     </button>`;
   }
   if (String(b?.zahlungsart || '').toLowerCase() !== 'vorkasse' || b?.status !== 'bezahlt') return '';
+  if (b?.b18_versandstopp_geprueft === true && b?.b18_versandstopp_moeglich === true) {
+    return `<div style="${breite}padding:9px 11px;border-radius:var(--radius-sm);background:#FEF3C7;color:#92400E;font-size:12px;line-height:1.45;">
+      <strong>Versandstopp muss dokumentiert werden</strong><br>
+      Der sonstige B-18-Vertrag ist erfüllt. Bestätige den realen Lager- und Versandzustand unmittelbar vor dem Storno.
+      <button class="btn btn-sm" style="width:100%;margin-top:8px;background:#166534;color:#fff;" onclick="adminBestaetigeB18Versandstopp(${Number(b.id)})">
+        ${vtIco('shield-check')} Versandstopp bestätigen
+      </button>
+    </div>`;
+  }
   const text = b?.b18_storno_geprueft === false
     ? 'B-18-Eignung konnte noch nicht geprüft werden. Kein Storno möglich.'
     : b18StornoGrundText(b);
@@ -3810,6 +3823,41 @@ function startNachrichtenPoller() {
 // Aufrufstellen: Bestelldetail-Modal UND Nachrichtenfenster).
 let _vorkasseAktionLaeuft = false;
 let _b18StornoLaeuft = false;
+let _b18VersandstoppLaeuft = false;
+
+async function adminBestaetigeB18Versandstopp(bestellungId) {
+  if (_b18VersandstoppLaeuft) return;
+  const bestaetigt = confirm(
+    `Versandstopp für Bestellung #${bestellungId} dokumentieren?\n\n`
+    + 'Bitte nur bestätigen, wenn ALLE Aussagen jetzt zutreffen:\n'
+    + '• Ware befindet sich noch im Lager.\n'
+    + '• Ware wurde nicht an eine Spedition übergeben.\n'
+    + '• Eine Abholung wurde nicht beauftragt.\n'
+    + '• Der Versand ist sicher gestoppt.\n\n'
+    + 'Der Nachweis gilt 30 Minuten und ersetzt nicht die erneute Datenbankprüfung beim Storno.'
+  );
+  if (!bestaetigt) return;
+  const hinweis = prompt('Optionaler interner Hinweis zum Versandstopp:', '') ?? null;
+  if (hinweis === null) return;
+
+  _b18VersandstoppLaeuft = true;
+  try {
+    const data = await backendApi(`/api/admin/bestellungen/${bestellungId}/b18-versandstopp-bestaetigen`, 'POST', {
+      ware_im_lager: true,
+      an_spedition_uebergeben: false,
+      abholung_beauftragt: false,
+      versand_sicher_gestoppt: true,
+      hinweis
+    });
+    zeigeToast(data.message || 'Versandstopp dokumentiert.');
+    await ladeBestellungen();
+  } catch (err) {
+    zeigeToast('Versandstopp nicht dokumentiert: ' + err.message, true);
+    await ladeBestellungen();
+  } finally {
+    _b18VersandstoppLaeuft = false;
+  }
+}
 
 async function adminStorniereBezahlteVorkasseB18(bestellungId) {
   if (_b18StornoLaeuft) return;
