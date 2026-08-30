@@ -1126,7 +1126,7 @@
       <div id="vorkasseHinweis" style="display:none;margin-top:10px;background:#FFF4D6;border:1px solid #E0C36B;border-radius:10px;padding:12px 14px;">
         <div style="font-weight:700;color:#6B4E00;font-size:13px;margin-bottom:4px;"><svg class="vti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 13h6l-1 8 8-11h-6z"/></svg> Hinweis zur Vorkasse</div>
         <div style="color:#6B4E00;font-size:12.5px;line-height:1.55;">
-          Bitte zahlen Sie per <strong>Echtzeitüberweisung</strong>. Ihre Bestellung wird <strong>1 Stunde</strong> reserviert –
+          Bitte zahlen Sie per <strong>Echtzeitüberweisung</strong>. Ihre Bestellung wird <strong>8 Stunden</strong> reserviert –
           geht innerhalb dieser Frist kein Zahlungseingang ein, wird die Bestellung <strong>automatisch storniert</strong> und die
           reservierte Ware wieder freigegeben. Die Bearbeitung Ihrer Bestellung beginnt erst <strong>ab Zahlungseingang</strong>.
         </div>
@@ -2728,7 +2728,7 @@ function renderNachrichtOrderPane(b) {
   if (b.auftragsbestaetigung_versendet_am) docBtns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'auftragsbestaetigung','Auftragsbestätigung')">${vtIco('file-text')} Auftragsbestätigung</button>`);
   if (b.lieferschein_versendet_am) docBtns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'lieferschein','Lieferschein')">${vtIco('file-text')} Lieferschein</button>`);
   if (b.lexoffice_id || b.rechnung_pdf_storage_path) docBtns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'rechnung','Rechnung')">${vtIco('file-text')} Rechnung</button>`);
-  if (kbTracking(b)) docBtns.push(`<a class="kb-gray-btn" href="${trackingLink(b)}" target="_blank">${vtIco('package')} Sendungsverfolgung</a>`);
+  if (kbTracking(b)) docBtns.push(`<a class="kb-gray-btn" href="${escapeHtml(trackingLink(b))}" target="_blank" rel="noopener noreferrer">${vtIco('package')} Sendungsverfolgung</a>`);
   el.innerHTML = `
     <div style="font-weight:700;color:var(--oak);font-size:16px;margin-bottom:8px;">Bestellung #${b.id}</div>
     <button class="kb-yellow-btn" type="button" style="width:100%;margin-bottom:12px;" onclick="zeigeBestellungAusVorgang(${b.id})">Bestellung anzeigen</button>
@@ -3154,10 +3154,37 @@ function lieferAdresseHtml(b) {
   ].filter(Boolean).join('<br>') || 'Entspricht der Rechnungsadresse';
 }
 
+// Zusaetzliche Schutzschicht gegen gespeicherte XSS/Phishing ueber tracking_url.
+// Das Backend prueft verbindlich (lib/utils sichereTrackingUrl); dies ist die
+// zweite Verteidigungslinie im Browser, falls ein Altwert oder ein anderer
+// Weg die Pruefung umgeht. Nur https:// auf bekannte Spediteur-Domains oder echte
+// Subdomains davon. Host-Suffix auf Punktgrenze, KEIN includes()-Test.
+const TRACKING_DOMAINS = ['dhl.de','dpd.com','gls-group.com','ups.com','raben-group.com','boll-logistik.de'];
+// Liefert die KANONISCHE URL (u.href) oder null - NIE den Originaltext.
+// new URL() akzeptiert z. B. https://dhl.de/" onmouseover="x mit Host dhl.de;
+// erst die kanonische Form kodiert das Anfuehrungszeichen zu %22 und nimmt dem
+// Attributausbruch die Grundlage. Nur https, kein user:pass@, kein expliziter
+// Port, Host auf Punktgrenze in der Whitelist.
+function sichereTrackingUrl(wert) {
+  const roh = String(wert == null ? '' : wert).trim();
+  if (!roh) return null;
+  let u;
+  try { u = new URL(roh); } catch (_) { return null; }
+  if (u.protocol !== 'https:') return null;
+  if (u.username || u.password) return null;
+  if (u.port !== '') return null;
+  const host = u.hostname.toLowerCase();
+  if (!TRACKING_DOMAINS.some(d => host === d || host.endsWith('.' + d))) return null;
+  return u.href;
+}
+
 function trackingLink(b) {
   const nr = b.tracking_nr || '';
   if (!nr) return '';
-  if (b.tracking_url) return b.tracking_url; // falls serverseitig hinterlegt
+  // Serverseitig hinterlegte URL nur in kanonischer Form uebernehmen;
+  // sonst faellt die Funktion auf den erzeugten Muster-Link zurueck.
+  const sicher = sichereTrackingUrl(b.tracking_url);
+  if (sicher) return sicher;
   const sp = String(b.lieferkosten_spediteur || b.spediteur || '').toLowerCase();
   const e = encodeURIComponent(nr);
   if (sp.includes('dhl'))  return `https://www.dhl.de/de/privatkunden/dhl-sendungsverfolgung.html?piececode=${e}`;
@@ -3260,7 +3287,7 @@ function renderOrderCard(b, context = 'bestellungen') {
       primaryButton = `<button class="kb-yellow-btn" type="button" onclick="toggleBestellDetails('${detailId}')">Zahlungsdaten anzeigen</button>`;
     }
   } else if (context === 'tracking') {
-    if (kbTracking(b)) primaryButton = `<a class="kb-yellow-btn" href="${trackingLink(b)}" target="_blank">${vtIco('package')} Sendung verfolgen</a>`;
+    if (kbTracking(b)) primaryButton = `<a class="kb-yellow-btn" href="${escapeHtml(trackingLink(b))}" target="_blank" rel="noopener noreferrer">${vtIco('package')} Sendung verfolgen</a>`;
     else if (b.status === 'geliefert') primaryButton = `<button class="kb-gray-btn" type="button">${vtIco('check-circle')} Geliefert</button>`;
     else if (b.status === 'versendet') primaryButton = `<button class="kb-gray-btn" type="button">${vtIco('truck')} Versendet</button>`;
     else primaryButton = `<button class="kb-gray-btn" type="button">Sendung wird vorbereitet</button>`;
@@ -3277,7 +3304,7 @@ function renderOrderCard(b, context = 'bestellungen') {
     if (b.auftragsbestaetigung_versendet_am) btns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'auftragsbestaetigung','Auftragsbestätigung')">${vtIco('file-text')} Auftragsbestätigung</button>`);
     if (b.lieferschein_versendet_am) btns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'lieferschein','Lieferschein')">${vtIco('file-text')} Lieferschein</button>`);
     if (b.lexoffice_id || b.rechnung_pdf_storage_path) btns.push(`<button class="kb-gray-btn" type="button" onclick="zeigeKundeDokument(${b.id},'rechnung','Rechnung')">${vtIco('file-text')} Rechnung</button>`);
-    if (kbTracking(b)) btns.push(`<a class="kb-gray-btn" href="${trackingLink(b)}" target="_blank">${vtIco('package')} Sendungsverfolgung</a>`);
+    if (kbTracking(b)) btns.push(`<a class="kb-gray-btn" href="${escapeHtml(trackingLink(b))}" target="_blank" rel="noopener noreferrer">${vtIco('package')} Sendungsverfolgung</a>`);
     else btns.push(`<button class="kb-gray-btn" type="button" disabled style="opacity:.5;cursor:not-allowed;">${vtIco('package')} Tracking folgt</button>`);
     // Rücksendung/Reklamation direkt auf der Bestellung – nur geliefert & innerhalb der Frist.
     if (b.reklamation_moeglich) {
@@ -6290,7 +6317,7 @@ function zeigeVorkasseErfolg(bestellungId, bruttoBetrag) {
         <div style="color:var(--gray);">Verwendungszweck</div><div><strong style="color:var(--oak);font-size:16px;">${verwendung}</strong></div>
       </div>
       <div style="margin-top:14px;background:#FFFBEB;border:1px solid #FBBF24;border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:#92400E;line-height:1.5;">
-        <strong>Bitte per Echtzeitüberweisung zahlen.</strong> Ihre Bestellung ist <strong>1 Stunde</strong> reserviert – geht in dieser Zeit kein Zahlungseingang ein, wird die Bestellung automatisch storniert und die Ware wieder freigegeben. Die Bearbeitung beginnt erst ab Zahlungseingang; die offizielle Rechnung wird erst dann erstellt und per E-Mail versendet.
+        <strong>Bitte per Echtzeitüberweisung zahlen.</strong> Ihre Bestellung ist <strong>8 Stunden</strong> reserviert – geht in dieser Zeit kein Zahlungseingang ein, wird die Bestellung automatisch storniert und die Ware wieder freigegeben. Die Bearbeitung beginnt erst ab Zahlungseingang; die offizielle Rechnung wird erst dann erstellt und per E-Mail versendet.
       </div>
     `;
   }
