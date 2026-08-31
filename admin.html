@@ -1449,7 +1449,14 @@ function oeffneProduktModal(produkt = null) {
   document.getElementById('pAktiv').checked = produkt ? !!produkt.aktiv : true;
   // Kategorien befüllen
   const sel = document.getElementById('pKategorie');
-  sel.innerHTML = alleKategorien.map(k => `<option value="${k.id}" ${produkt?.kategorie_id === k.id ? 'selected' : ''}>${k.name}</option>`).join('');
+  const optionen = alleKategorien.map(k => {
+    const option = document.createElement('option');
+    option.value = String(k.id);
+    option.textContent = String(k.name == null ? '' : k.name);
+    option.selected = Number(produkt?.kategorie_id) === Number(k.id);
+    return option;
+  });
+  sel.replaceChildren(...optionen);
   document.getElementById('produktModal').classList.add('open');
 }
 
