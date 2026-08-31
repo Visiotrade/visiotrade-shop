@@ -901,7 +901,8 @@
 <!-- WARENKORB -->
 <div id="screen-warenkorb" class="screen">
   <div class="back-bar" onclick="showScreen(&#39;produktliste&#39;)">← Weiter einkaufen</div>
-  <div id="warenkorbContent"><div class="warenkorb-items"><div class="wk-item"><div class="wk-item-icon"><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="4.5" height="18" rx="0.5"/><rect x="10" y="3" width="4.5" height="18" rx="0.5"/><rect x="16" y="3" width="4.5" height="18" rx="0.5"/></svg></div><div class="wk-item-info"><div class="wk-item-name">Stabparkett · Natur · 70×500mm · 22mm stark</div><div class="wk-item-detail">1.40 m²</div><div class="wk-item-preis">63,00 €</div></div><button class="wk-remove" onclick="removeFromCart(1778499071842)">✕</button></div></div><div class="wk-summary"><div class="wk-row"><span>Nettobetrag</span><span>63,00 €</span></div><div class="wk-row"><span>MwSt. 19%</span><span>11,97 €</span></div><div class="wk-row"><span>Lieferkosten</span><span>auf Anfrage</span></div><div class="wk-row total"><span>Gesamtbetrag inkl. MwSt.</span><span>74,97 €</span></div></div><button class="checkout-btn" onclick="showScreen(&#39;kasse&#39;)">Zur Kasse →</button><div class="pb-safe"></div></div>
+  <!-- BEWUSST LEER: renderWarenkorb() baut diesen Container vor jeder Anzeige vollstaendig neu auf. Frueher stand hier ein eingefrorener Warenkorb-Schnappschuss statisch im Quelltext. -->
+  <div id="warenkorbContent"></div>
 </div>
 
 <!-- PREISANFRAGE ab 500 m² (RFQ – getrennt vom Warenkorb) -->
@@ -1163,70 +1164,12 @@
 <div id="screen-uebersicht" class="screen">
   <div class="back-bar" onclick="showScreen(&#39;kasse&#39;)">← Zurück zur Bearbeitung</div>
   <div class="section-title">Bestellübersicht</div>
-  <div id="uebersichtContent" style="padding:0 16px 16px;display:flex;flex-direction:column;gap:16px;">
-    <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;margin-bottom:8px;">
-        <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;"><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16"/><path d="M14 9h5a1 1 0 0 1 1 1v11"/><path d="M3 21h18"/><path d="M7.5 8h3M7.5 12h3M7.5 16h3"/></svg> Rechnungsdaten</div>
-        ${rechnungsdatenHinweis}
-        <div></div>
-      </div>
-      <div style="font-size:14px;line-height:1.8;color:var(--walnut);">
-        <strong>Michael Gavrilov</strong><br>
-        Gavrilov Fussbodentechnik GmbH &amp; Co KG<br>
-        
-        parkettmacher@gmail.com<br>
-        +491759588896<br>
-        <br>Dieselstr 14<br>10135 Berlin<br>Deutschland
-      </div>
-    </div>
-    <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-        <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;"><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg> Lieferhinweise</div>
-        <div style="font-size:14px;line-height:1.8;color:var(--walnut);">
-          ✓ Anlieferung mit Hebebühne<br>
-          
-        </div>
-      </div>
-    <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;"><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg> Lieferart &amp; Zahlung</div>
-      <div style="font-size:14px;line-height:1.8;color:var(--walnut);">
-        <svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18h-5"/><path d="M14 8h5.5a1 1 0 0 1 .9.55L22 12v5a1 1 0 0 1-1 1h-1"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg> Lieferung<br><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg> Kreditkarte / Debitkarte (Stripe)
-      </div>
-    </div>
-    <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;"><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg> Bestellpositionen</div>
-      
-    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--gray-light);font-size:14px;">
-      <span style="color:var(--walnut)">Stabparkett · Natur · 70×500mm · 22mm stark<br><span style="font-size:12px;color:var(--gray)">1.40 m²</span></span>
-      <span style="font-weight:600;color:var(--oak)">63,00 €</span>
-    </div>
-      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:14px;">
-      <span style="color:var(--walnut)">Lieferkosten (netto)</span>
-      <span style="font-weight:600;color:var(--oak)">68,35 €</span>
-    </div>
-      <div style="display:flex;justify-content:space-between;padding:10px 0 4px;font-size:15px;font-weight:700;color:var(--walnut);">
-        <span>Netto Waren</span><span>63,00 €</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;color:var(--gray);">
-        <span>MwSt. 19% auf Waren</span><span>11,97 €</span>
-      </div>
-      
-      <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;color:var(--gray);">
-        <span>MwSt. 19% auf Lieferkosten</span><span>12,99 €</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding:8px 0 0;font-size:17px;font-weight:700;color:var(--oak);border-top:2px solid var(--oak-pale);margin-top:6px;">
-        <span>Gesamt inkl. MwSt.</span><span>156,31 €</span>
-      </div>
-    </div>
-    <div style="background:var(--white);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);">
-      <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;"><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg> Bestätigungen</div>
-      <div style="font-size:13px;line-height:1.8;color:var(--walnut);">
-        ✓ Unternehmer/Gewerbetreibender bestätigt<br>
-        ✓ AGB akzeptiert<br>
-        ✓ Datenschutzerklärung akzeptiert<br>
-        ○ Kein Newsletter
-      </div>
-    </div>
-  </div>
+  <!-- BEWUSST LEER: Dieser Container wird von zeigeBestelluebersicht() vor
+       jeder Anzeige vollstaendig per innerHTML neu aufgebaut. Frueher stand
+       hier ein eingefrorener Sitzungs-Schnappschuss MIT ECHTEN KUNDENDATEN
+       (Name, E-Mail, Telefon, Anschrift) oeffentlich im Quelltext - statische
+       Inhalte in JS-gerenderten Containern sind in dieser Datei verboten. -->
+  <div id="uebersichtContent" style="padding:0 16px 16px;display:flex;flex-direction:column;gap:16px;"></div>
   <div style="padding:16px;">
     <div id="ts-checkout" style="display:flex;justify-content:center;margin-bottom:14px;"></div>
     <button class="bestellen-btn" id="bestellBtn" onclick="bestellungAbsenden()" style="background:var(--green);">✓ Jetzt kostenpflichtig bestellen</button>
@@ -5867,7 +5810,7 @@ function prefillCheckoutVonProfil(p, userEmail) {
   setIfEmpty('email', userEmail || p.einkaufsleiter_email);
   setIfEmpty('telefon', p.telefon || lb.telefon);
   setIfEmpty('ustid', p.ust_idnr || lb.ust_idnr);
-  // Straße + Hausnummer gehören im Checkout in EIN Feld ("Dieselstr. 14").
+  // Straße + Hausnummer gehören im Checkout in EIN Feld ("Musterstr. 1").
   const strasseMitHausnr = [p.rechnungsadresse_strasse, p.rechnungsadresse_hausnr]
     .map(v => String(v || '').trim()).filter(Boolean).join(' ');
   setIfEmpty('rech-strasse', strasseMitHausnr || lb.rechnungsadresse_strasse);
