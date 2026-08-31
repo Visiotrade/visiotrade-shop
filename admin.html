@@ -172,7 +172,7 @@
   <div class="header">
     <div class="header-logo">Visio<span>Trade</span> <span style="color:rgba(255,255,255,0.5);font-size:13px;font-weight:400;">Admin</span></div>
     <div class="header-right">
-      <div class="header-user" id="adminUserLabel">mg@gft-studio.de</div>
+      <div class="header-user" id="adminUserLabel"></div>
       <button class="logout-btn" onclick="adminLogout()">Abmelden</button>
     </div>
   </div>
@@ -209,71 +209,19 @@
       <div id="page-dashboard" class="page active">
         <div class="page-title">Dashboard</div>
         <div class="stats-grid">
-          <div class="stat-card"><div class="stat-val" id="statProdukte">37</div><div class="stat-label">Produkte</div></div>
-          <div class="stat-card"><div class="stat-val" id="statBestellungen">20</div><div class="stat-label">Bestellungen</div></div>
-          <div class="stat-card"><div class="stat-val" id="statOffen">19</div><div class="stat-label">Offene Bestellungen</div></div>
-          <div class="stat-card"><div class="stat-val" id="statUmsatz">909 €</div><div class="stat-label">Gesamtumsatz (netto)</div></div>
+          <div class="stat-card"><div class="stat-val" id="statProdukte">—</div><div class="stat-label">Produkte</div></div>
+          <div class="stat-card"><div class="stat-val" id="statBestellungen">—</div><div class="stat-label">Bestellungen</div></div>
+          <div class="stat-card"><div class="stat-val" id="statOffen">—</div><div class="stat-label">Offene Bestellungen</div></div>
+          <div class="stat-card"><div class="stat-val" id="statUmsatz">—</div><div class="stat-label">Gesamtumsatz (netto)</div></div>
         </div>
         <div class="table-wrap">
           <div class="table-header"><h3>Letzte Bestellungen</h3></div>
           <table><thead><tr><th>Nr.</th><th>Datum</th><th>Kunde</th><th>Betrag</th><th>Status</th></tr></thead>
-          <tbody id="dashBestellungen">
-      <tr>
-        <td><strong>#79</strong></td>
-        <td>8.5.2026</td>
-        <td>test Gavrilov</td>
-        <td><strong>63,00 €</strong></td>
-        <td><span class="badge badge-gray">offen</span></td>
-      </tr>
-      <tr>
-        <td><strong>#76</strong></td>
-        <td>30.3.2026</td>
-        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
-        <td><strong>44,54 €</strong></td>
-        <td><span class="badge badge-gray">bezahlt</span></td>
-      </tr>
-      <tr>
-        <td><strong>#75</strong></td>
-        <td>30.3.2026</td>
-        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
-        <td><strong>44,54 €</strong></td>
-        <td><span class="badge badge-gray">offen</span></td>
-      </tr>
-      <tr>
-        <td><strong>#74</strong></td>
-        <td>30.3.2026</td>
-        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
-        <td><strong>44,54 €</strong></td>
-        <td><span class="badge badge-gray">offen</span></td>
-      </tr>
-      <tr>
-        <td><strong>#73</strong></td>
-        <td>30.3.2026</td>
-        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
-        <td><strong>44,54 €</strong></td>
-        <td><span class="badge badge-gray">offen</span></td>
-      </tr>
-      <tr>
-        <td><strong>#72</strong></td>
-        <td>30.3.2026</td>
-        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
-        <td><strong>44,54 €</strong></td>
-        <td><span class="badge badge-gray">offen</span></td>
-      </tr>
-      <tr>
-        <td><strong>#71</strong></td>
-        <td>30.3.2026</td>
-        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
-        <td><strong>44,54 €</strong></td>
-        <td><span class="badge badge-gray">offen</span></td>
-      </tr>
-      <tr>
-        <td><strong>#70</strong></td>
-        <td>30.3.2026</td>
-        <td>Michael Gavrilov Fußbodentechnik GmbH &amp; Co KG</td>
-        <td><strong>44,54 €</strong></td>
-        <td><span class="badge badge-gray">offen</span></td>
-      </tr></tbody></table>
+          <!-- BEWUSST LEER: renderDashboard() fuellt diese Tabelle per innerHTML.
+               Frueher standen hier eingefrorene Bestellzeilen mit echten
+               Kundennamen oeffentlich im Quelltext (admin.html wird VOR dem
+               Login ausgeliefert). -->
+          <tbody id="dashBestellungen"><tr><td colspan="5" style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</td></tr></tbody></table>
         </div>
       </div>
 
