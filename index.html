@@ -4841,13 +4841,20 @@ async function b2bRenderNav(aktId) {
   const navs = document.querySelectorAll('.b2b-katnav'); if (!navs.length) return;
   let kats = [];
   try { kats = await dbCached('kategorien', '?aktiv=eq.true&order=reihenfolge') || []; } catch (_) {}
-  const jsStr = s => String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-  const build = markActive => kats.map(k =>
-    `<button class="b2b-katbtn${markActive && Number(k.id) === Number(aktId) ? ' active' : ''}" onclick="zeigeProduktliste(${k.id}, '${jsStr(k.name)}')">${escapeHtml(k.name)}</button>`
-  ).join('');
   // Shop-Navigation markiert die aktive Kategorie; im Konto-Bereich bleibt KEINE Kategorie aktiv
   // (sonst wirkt es, als wäre man noch im Shop).
-  navs.forEach(nav => { nav.innerHTML = build(nav.id !== 'b2bKatNavKonto'); });
+  navs.forEach(nav => {
+    const markActive = nav.id !== 'b2bKatNavKonto';
+    const buttons = kats.map(k => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'b2b-katbtn' + (markActive && Number(k.id) === Number(aktId) ? ' active' : '');
+      button.textContent = String(k.name == null ? '' : k.name);
+      button.addEventListener('click', () => zeigeProduktliste(Number(k.id), String(k.name == null ? '' : k.name)));
+      return button;
+    });
+    nav.replaceChildren(...buttons);
+  });
 }
 
 // Mosaikparkett ist nach Verlegeverband (= Art) strukturiert, nicht nach Lamellenmaß.
@@ -4906,10 +4913,16 @@ function b2bChipDefs() {
 }
 function b2bRenderChips() {
   const box = document.getElementById('b2bChips'); if (!box) return;
-  box.innerHTML = b2bChipDefs().map(c => {
+  const buttons = b2bChipDefs().map(c => {
     const key = c.type + ':' + c.value;
-    return `<button class="b2b-chip${b2bFilter.has(key) ? ' active' : ''}" onclick="b2bToggleChip('${key.replace(/'/g, "\\'")}')">${escapeHtml(c.label)}</button>`;
-  }).join('');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'b2b-chip' + (b2bFilter.has(key) ? ' active' : '');
+    button.textContent = String(c.label == null ? '' : c.label);
+    button.addEventListener('click', () => b2bToggleChip(key));
+    return button;
+  });
+  box.replaceChildren(...buttons);
 }
 function b2bToggleChip(key) {
   if (b2bFilter.has(key)) b2bFilter.delete(key); else b2bFilter.add(key);
