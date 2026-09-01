@@ -133,7 +133,9 @@
   .wk-item { background: var(--white); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); display: flex; gap: 12px; align-items: flex-start; }
   .wk-item-icon { width: 44px; height: 44px; background: var(--oak-pale); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
   .wk-item-info { flex: 1; }
+  .wk-item-kategorie { display: inline-flex; margin-bottom: 5px; padding: 2px 7px; border-radius: 999px; background: var(--oak-pale); color: var(--oak-dark); font-size: 10px; font-weight: 700; letter-spacing: .35px; text-transform: uppercase; }
   .wk-item-name { font-weight: 600; font-size: 14px; color: var(--walnut); line-height: 1.3; margin-bottom: 3px; }
+  .wk-item-artnr { margin-bottom: 3px; font-size: 12px; color: var(--gray); }
   .wk-item-detail { font-size: 12px; color: var(--gray); }
   .wk-item-preis { font-size: 15px; font-weight: 700; color: var(--oak); margin-top: 4px; }
   .wk-remove { background: none; border: none; color: var(--gray); font-size: 18px; cursor: pointer; padding: 2px 4px; flex-shrink: 0; }
@@ -3196,12 +3198,14 @@ async function erneutKaufen(orderId) {
     if (!pos.length) { alert('Für diese Bestellung wurden keine Positionen gefunden.'); return; }
     const paketIds = [...new Set(pos.map(p => p.paket_id).filter(Boolean))];
     const produktIds = [...new Set(pos.map(p => p.produkt_id).filter(Boolean))];
-    const [pakete, produkte] = await Promise.all([
+    const [pakete, produkte, kategorien] = await Promise.all([
       paketIds.length ? db('pakete', `?id=in.(${paketIds.join(',')})`) : Promise.resolve([]),
-      produktIds.length ? db('produkte', `?id=in.(${produktIds.join(',')})`) : Promise.resolve([])
+      produktIds.length ? db('produkte', `?id=in.(${produktIds.join(',')})`) : Promise.resolve([]),
+      dbCached('kategorien', '?select=id,name')
     ]);
     const paketMap = {}; (pakete || []).forEach(p => paketMap[p.id] = p);
     const produktMap = {}; (produkte || []).forEach(p => produktMap[p.id] = p);
+    const kategorieMap = {}; (kategorien || []).forEach(k => kategorieMap[k.id] = k.name);
     const proProdukt = {};
     let fehlend = 0;
     pos.forEach(p => {
@@ -3215,7 +3219,8 @@ async function erneutKaufen(orderId) {
       const gesamtM2 = kombi.reduce((s, k) => s + k.anzahl * Number(k.paket.menge_m2 || 0), 0);
       const gesamtPreis = kombi.reduce((s, k) => s + posBetrag(k.paket, k.anzahl), 0);
       const gesamtGewicht = kombi.reduce((s, k) => s + k.anzahl * Number(produkt.gewicht_pro_paket_kg || 0), 0);
-      warenkorb.push({ id: Date.now() + hinzugefuegt, produktId: produkt.id, name: produkt.name, icon: HOLZ_ICON, kombi, staerke_mm: Number(produkt.staerke_mm) || null, benoetigt_m2: gesamtM2, gesamt_m2: gesamtM2, preis: gesamtPreis, gewicht: gesamtGewicht, gewichtProPaket: Number(produkt.gewicht_pro_paket_kg || 0) });
+      const kategorie = kategorieMap[produkt.kategorie_id] || '';
+      warenkorb.push({ id: Date.now() + hinzugefuegt, produktId: produkt.id, name: produkt.name, kategorie, artikelnummer: produkt.artikelnummer || '', icon: ICONS[kategorie] || HOLZ_ICON, kombi, staerke_mm: Number(produkt.staerke_mm) || null, benoetigt_m2: gesamtM2, gesamt_m2: gesamtM2, preis: gesamtPreis, gewicht: gesamtGewicht, gewichtProPaket: Number(produkt.gewicht_pro_paket_kg || 0) });
       hinzugefuegt++;
     });
     const cc = document.getElementById('cartCount'); if (cc) cc.textContent = warenkorb.length;
@@ -5333,8 +5338,10 @@ function b2bPush(p, kombi) {
   if (vorhanden) {
     for (const neu of kombi) { const t = vorhanden.kombi.find(k => k.paket.id === neu.paket.id); if (t) t.anzahl += neu.anzahl; else vorhanden.kombi.push(neu); }
     vorhanden.gesamt_m2 += gM2; vorhanden.preis += gPreis; vorhanden.gewicht += gGew; vorhanden.benoetigt_m2 = (vorhanden.benoetigt_m2 || 0) + gM2;
+    vorhanden.kategorie = vorhanden.kategorie || b2bAktKat.name;
+    vorhanden.artikelnummer = vorhanden.artikelnummer || p.artikelnummer || '';
   } else {
-    warenkorb.push({ id: Date.now() + (++b2bCartSeq), produktId: p.id, name, icon: ICONS[b2bAktKat.name] || HOLZ_ICON, kombi, staerke_mm: Number(p.staerke_mm) || null, benoetigt_m2: gM2, gesamt_m2: gM2, preis: gPreis, gewicht: gGew, gewichtProPaket: Number(p.gewicht_pro_paket_kg) || 0 });
+    warenkorb.push({ id: Date.now() + (++b2bCartSeq), produktId: p.id, name, kategorie: b2bAktKat.name, artikelnummer: p.artikelnummer || '', icon: ICONS[b2bAktKat.name] || HOLZ_ICON, kombi, staerke_mm: Number(p.staerke_mm) || null, benoetigt_m2: gM2, gesamt_m2: gM2, preis: gPreis, gewicht: gGew, gewichtProPaket: Number(p.gewicht_pro_paket_kg) || 0 });
   }
 }
 function b2bNachCart() {
@@ -5522,8 +5529,10 @@ function addToCart() {
     vorhanden.preis += gesamtPreis;
     vorhanden.gewicht += gesamtGewicht;
     vorhanden.benoetigt_m2 = (vorhanden.benoetigt_m2 || 0) + (isFinite(benoetigt) ? benoetigt : 0);
+    vorhanden.kategorie = vorhanden.kategorie || aktKat.name;
+    vorhanden.artikelnummer = vorhanden.artikelnummer || aktProdukt.artikelnummer || '';
   } else {
-    warenkorb.push({id:Date.now(),produktId:aktProdukt.id,name,icon:ICONS[aktKat.name]||HOLZ_ICON,kombi,staerke_mm:Number(aktProdukt.staerke_mm)||null,benoetigt_m2:benoetigt,gesamt_m2:gesamtM2,preis:gesamtPreis,gewicht:gesamtGewicht,gewichtProPaket:(aktProdukt.gewicht_pro_paket_kg||0)});
+    warenkorb.push({id:Date.now(),produktId:aktProdukt.id,name,kategorie:aktKat.name,artikelnummer:aktProdukt.artikelnummer||'',icon:ICONS[aktKat.name]||HOLZ_ICON,kombi,staerke_mm:Number(aktProdukt.staerke_mm)||null,benoetigt_m2:benoetigt,gesamt_m2:gesamtM2,preis:gesamtPreis,gewicht:gesamtGewicht,gewichtProPaket:(aktProdukt.gewicht_pro_paket_kg||0)});
   }
 
   pruefeHebebuehneGewicht();
@@ -5629,7 +5638,35 @@ function renderWarenkorb() {
   if (!warenkorb.length) { cont.innerHTML=`<div class="warenkorb-leer"><div class="warenkorb-leer-icon" style="color:var(--oak)">${cartSvg(54)}</div><h3>Warenkorb ist leer</h3><p>Entdecken Sie unser Sortiment.</p></div>`; return; }
   const gesamt = warenkorb.reduce((s,i)=>s+i.preis,0);
   const anzahl = warenkorb.length;
-  const items = warenkorb.map(item=>{const pakete=item.kombi.reduce((s,k)=>s+k.anzahl,0);const info=wkPositionInfo(item);return `<div class="wk-item"><div class="wk-item-icon">${item.icon}</div><div class="wk-item-info"><div class="wk-item-name">${escapeHtml(item.name)}</div>${info ? `<div class="wk-item-detail" style="font-size:12px;color:var(--gray);">${info}</div>` : ''}<div class="wk-item-detail">${deZahl(item.gesamt_m2,3)} m² · ${pakete} Paket${pakete!==1?'e':''}</div><div style="display:flex;align-items:center;gap:10px;margin:8px 0;"><button type="button" onclick="aendereWarenkorbMenge(${item.id},-1)" aria-label="Menge verringern" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--gray-light);background:var(--white);color:var(--walnut);font-size:18px;line-height:1;cursor:pointer;">−</button><input type="number" min="1" inputmode="numeric" value="${pakete}" onchange="setWarenkorbMenge(${item.id},this.value)" onclick="this.select()" aria-label="Anzahl Pakete" style="width:64px;height:30px;text-align:center;border:1px solid var(--gray-light);border-radius:8px;font-size:14px;color:var(--walnut);background:var(--white);"><span style="font-size:13px;color:var(--walnut);">Paket(e)</span><button type="button" onclick="aendereWarenkorbMenge(${item.id},1)" aria-label="Menge erhöhen" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--gray-light);background:var(--white);color:var(--walnut);font-size:18px;line-height:1;cursor:pointer;">+</button></div><div class="wk-item-preis"><span style="font-size:12px;color:var(--gray);font-weight:500;">Positionssumme netto:</span> ${deZahl(item.preis,2)} €</div><div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;"><span style="font-size:12px;color:var(--gray);white-space:nowrap;">BV / Bauvorhaben</span><input type="text" value="${escapeHtml(item.bauvorhaben||'')}" oninput="setWarenkorbBV(${item.id}, this.value)" placeholder="optional" style="flex:1;min-width:150px;padding:6px 9px;border:1px solid var(--gray-light);border-radius:8px;font-size:13px;color:var(--walnut);background:var(--white);box-sizing:border-box;">${kbAktuelleFiliale ? `<span style="font-size:12px;color:var(--gray);white-space:nowrap;">Filiale: <strong style="color:var(--walnut);">${escapeHtml(kbAktuelleFiliale)}</strong></span>` : ''}</div></div><button class="wk-remove" onclick="removeFromCart(${item.id})" title="Entfernen">✕</button></div>`}).join('');
+  const items = warenkorb.map(item => {
+    const pakete = item.kombi.reduce((s, k) => s + k.anzahl, 0);
+    const info = wkPositionInfo(item);
+    const kategorie = String(item.kategorie || '').trim();
+    const artikelnummer = String(item.artikelnummer || '').trim();
+    return `<div class="wk-item">
+      <div class="wk-item-icon">${item.icon}</div>
+      <div class="wk-item-info">
+        ${kategorie ? `<div class="wk-item-kategorie">${escapeHtml(kategorie)}</div>` : ''}
+        <div class="wk-item-name">${escapeHtml(item.name)}</div>
+        ${artikelnummer ? `<div class="wk-item-artnr">Art.-Nr.: <strong>${escapeHtml(artikelnummer)}</strong></div>` : ''}
+        ${info ? `<div class="wk-item-detail">${info}</div>` : ''}
+        <div class="wk-item-detail">${deZahl(item.gesamt_m2, 3)} m² · ${pakete} Paket${pakete !== 1 ? 'e' : ''}</div>
+        <div style="display:flex;align-items:center;gap:10px;margin:8px 0;">
+          <button type="button" onclick="aendereWarenkorbMenge(${item.id},-1)" aria-label="Menge verringern" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--gray-light);background:var(--white);color:var(--walnut);font-size:18px;line-height:1;cursor:pointer;">−</button>
+          <input type="number" min="1" inputmode="numeric" value="${pakete}" onchange="setWarenkorbMenge(${item.id},this.value)" onclick="this.select()" aria-label="Anzahl Pakete" style="width:64px;height:30px;text-align:center;border:1px solid var(--gray-light);border-radius:8px;font-size:14px;color:var(--walnut);background:var(--white);">
+          <span style="font-size:13px;color:var(--walnut);">Paket(e)</span>
+          <button type="button" onclick="aendereWarenkorbMenge(${item.id},1)" aria-label="Menge erhöhen" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--gray-light);background:var(--white);color:var(--walnut);font-size:18px;line-height:1;cursor:pointer;">+</button>
+        </div>
+        <div class="wk-item-preis"><span style="font-size:12px;color:var(--gray);font-weight:500;">Positionssumme netto:</span> ${deZahl(item.preis, 2)} €</div>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+          <span style="font-size:12px;color:var(--gray);white-space:nowrap;">BV / Bauvorhaben</span>
+          <input type="text" value="${escapeHtml(item.bauvorhaben || '')}" oninput="setWarenkorbBV(${item.id}, this.value)" placeholder="optional" style="flex:1;min-width:150px;padding:6px 9px;border:1px solid var(--gray-light);border-radius:8px;font-size:13px;color:var(--walnut);background:var(--white);box-sizing:border-box;">
+          ${kbAktuelleFiliale ? `<span style="font-size:12px;color:var(--gray);white-space:nowrap;">Filiale: <strong style="color:var(--walnut);">${escapeHtml(kbAktuelleFiliale)}</strong></span>` : ''}
+        </div>
+      </div>
+      <button class="wk-remove" onclick="removeFromCart(${item.id})" title="Entfernen">✕</button>
+    </div>`;
+  }).join('');
   cont.innerHTML=`<div class="wk-wrap">
     <div class="wk-col-items">
       <div class="wk-head">Warenkorb <span>(${anzahl} ${anzahl===1?'Artikel':'Artikel'})</span></div>
@@ -6211,7 +6248,11 @@ function zeigeBestelluebersicht() {
     return `
     <div style="padding:8px 0;border-bottom:1px solid var(--gray-light);font-size:14px;">
       <div style="display:flex;justify-content:space-between;">
-        <span style="color:var(--walnut)">${escapeHtml(item.name)}<br><span style="font-size:12px;color:var(--gray)">${item.gesamt_m2.toFixed(3)} m²</span></span>
+        <span style="color:var(--walnut)">
+          ${item.kategorie ? `<span style="font-size:10px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--oak);">${escapeHtml(item.kategorie)}</span><br>` : ''}
+          ${escapeHtml(item.name)}<br>
+          <span style="font-size:12px;color:var(--gray)">${item.artikelnummer ? `Art.-Nr.: ${escapeHtml(item.artikelnummer)} · ` : ''}${item.gesamt_m2.toFixed(3)} m²</span>
+        </span>
         <span style="font-weight:600;color:var(--oak)">${item.preis.toFixed(2).replace('.',',')} €</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
