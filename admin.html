@@ -973,6 +973,17 @@ function h(value) {
     .replace(/'/g, '&#039;');
 }
 
+// Externe URLs aus API-/Datenbankantworten nur kanonisch als HTTPS und ohne
+// eingebettete Zugangsdaten weiterverwenden. Ungueltige Werte werden verworfen.
+function sichereHttpsUrl(value) {
+  const roh = String(value == null ? '' : value).trim();
+  if (!roh) return null;
+  let url;
+  try { url = new URL(roh, window.location.origin); } catch (_) { return null; }
+  if (url.protocol !== 'https:' || url.username || url.password) return null;
+  return url.href;
+}
+
 function euro(value) {
   const n = Number(value || 0);
   return n.toFixed(2).replace('.', ',') + ' €';
@@ -985,7 +996,7 @@ function zahlungsartLabel(zahlungsart) {
     paypal: '' + vtIco('card') + ' PayPal',
     rechnung: '' + vtIco('receipt') + ' Kauf auf Rechnung'
   };
-  return labels[String(zahlungsart || '').toLowerCase()] || (zahlungsart || '—');
+  return labels[String(zahlungsart || '').toLowerCase()] || h(zahlungsart || '—');
 }
 
 function reservierungLabel(status) {
@@ -1360,7 +1371,7 @@ function renderDashboard(s) {
       <td>${b.erstellt_am ? new Date(b.erstellt_am).toLocaleDateString('de-DE') : '—'}</td>
       <td>${h(b.kundenname || '—')}</td>
       <td><strong>${Number(b.gesamtbetrag || 0).toFixed(2).replace('.', ',')} €</strong></td>
-      <td><span class="badge ${statusBadge(anzeigeStatus(b))}">${statusLabel(anzeigeStatus(b))}</span></td>
+      <td><span class="badge ${statusBadge(anzeigeStatus(b))}">${h(statusLabel(anzeigeStatus(b)))}</span></td>
     </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--gray);padding:20px;">Keine Bestellungen</td></tr>';
 }
 
@@ -1401,7 +1412,7 @@ async function ladeProdukte() {
       const bestand = bestandMap[p.id];
       const bild = p.bild_urls?.[0] || null;
       return `<tr>
-        <td><div class="img-preview">${bild ? `<img src="${h(bild)}" onerror="this.style.display='none'">` : vtIco('diele')}</div></td>
+        <td><div class="img-preview">${sichereHttpsUrl(bild) ? `<img src="${h(sichereHttpsUrl(bild))}" onerror="this.style.display='none'">` : vtIco('diele')}</div></td>
         <td>
           <strong>${h(p.name || '—')}</strong>
           <div style="font-size:12px;color:var(--gray);margin-top:2px;">
@@ -1924,12 +1935,13 @@ async function ladeAdminUsers() {
       ? '<span class="badge badge-green">Super-Admin</span>'
       : (istLagerRolle ? '<span class="badge badge-blue">Lager</span>' : 'Admin');
     const status = a.aktiv ? '<span class="badge badge-green">aktiv</span>' : '<span class="badge badge-red">inaktiv</span>';
+    const emailAttr = h(a.email);
     const aktionen = a.ist_super_admin
-      ? `<button class="btn btn-sm" onclick="oeffneAdminBearbeiten('${h(a.email)}')">Rechte</button>`
-      : `<button class="btn btn-sm" onclick="oeffneAdminBearbeiten('${h(a.email)}')">Bearbeiten</button>
-         <button class="btn btn-sm" onclick="neuEinladen('${h(a.email)}')">${vtIco('mail')} Einladung erneut senden</button>
-         <button class="btn btn-sm" onclick="toggleAdminAktiv('${h(a.email)}', ${a.aktiv ? 'false':'true'})">${a.aktiv?'Deaktivieren':'Aktivieren'}</button>
-         <button class="btn btn-red btn-sm" onclick="loescheAdminUser('${h(a.email)}')">Löschen</button>`;
+      ? `<button class="btn btn-sm" data-admin-email="${emailAttr}" onclick="oeffneAdminBearbeiten(this.dataset.adminEmail)">Rechte</button>`
+      : `<button class="btn btn-sm" data-admin-email="${emailAttr}" onclick="oeffneAdminBearbeiten(this.dataset.adminEmail)">Bearbeiten</button>
+         <button class="btn btn-sm" data-admin-email="${emailAttr}" onclick="neuEinladen(this.dataset.adminEmail)">${vtIco('mail')} Einladung erneut senden</button>
+         <button class="btn btn-sm" data-admin-email="${emailAttr}" onclick="toggleAdminAktiv(this.dataset.adminEmail, ${a.aktiv ? 'false':'true'})">${a.aktiv?'Deaktivieren':'Aktivieren'}</button>
+         <button class="btn btn-red btn-sm" data-admin-email="${emailAttr}" onclick="loescheAdminUser(this.dataset.adminEmail)">Löschen</button>`;
     return `<tr><td>${h(a.email)}</td><td>${h(a.name||'—')}</td><td>${rolle}</td><td>${status}</td><td style="display:flex;gap:6px;flex-wrap:wrap;">${aktionen}</td></tr>`;
   }).join('');
 }
@@ -2202,9 +2214,11 @@ async function zeigeRechnungPdf(id, titel) {
   try {
     const r = await backendApi(`/api/orders/${id}/invoice-pdf-url`);
     if (!r.url) { zeigeToast(r.message || 'Keine Rechnung als PDF vorhanden.', true); return; }
+    const sichereUrl = sichereHttpsUrl(r.url);
+    if (!sichereUrl) throw new Error('Die Dokumentadresse wurde aus Sicherheitsgründen abgelehnt.');
     document.getElementById('rechnungPdfTitel').textContent = titel || ('Rechnung zu Bestellung #' + id);
-    document.getElementById('rechnungPdfFrame').src = r.url;
-    document.getElementById('rechnungPdfDownload').href = r.url;
+    document.getElementById('rechnungPdfFrame').src = sichereUrl;
+    document.getElementById('rechnungPdfDownload').href = sichereUrl;
     document.getElementById('rechnungPdfModal').classList.add('open');
   } catch (e) { zeigeToast(e.message || 'Das PDF konnte nicht geladen werden.', true); }
 }
@@ -2212,9 +2226,11 @@ async function zeigeAdminDokument(id, typ, titel) {
   try {
     const r = await backendApi(`/api/orders/${id}/document/${typ}`);
     if (!r.url) { zeigeToast(r.message || 'Dokument noch nicht verfügbar.', true); return; }
+    const sichereUrl = sichereHttpsUrl(r.url);
+    if (!sichereUrl) throw new Error('Die Dokumentadresse wurde aus Sicherheitsgründen abgelehnt.');
     document.getElementById('rechnungPdfTitel').textContent = (titel || 'Dokument') + ' – Bestellung #' + id;
-    document.getElementById('rechnungPdfFrame').src = r.url;
-    document.getElementById('rechnungPdfDownload').href = r.url;
+    document.getElementById('rechnungPdfFrame').src = sichereUrl;
+    document.getElementById('rechnungPdfDownload').href = sichereUrl;
     document.getElementById('rechnungPdfModal').classList.add('open');
   } catch (e) { zeigeToast(e.message || 'Das PDF konnte nicht geladen werden.', true); }
 }
@@ -2496,7 +2512,7 @@ function versandplanungRow(b) {
     <td style="padding:10px;">${h(paletten)}</td>
     <td style="padding:10px;">${gewicht ? h(gewicht) + ' kg' : '—'}</td>
     <td style="padding:10px;">${komm}</td>
-    <td style="padding:10px;"><span class="badge badge-blue">${versandPhaseLabel(b.phase)}</span></td>
+    <td style="padding:10px;"><span class="badge badge-blue">${h(versandPhaseLabel(b.phase))}</span></td>
     <td style="padding:10px;">${aktion}</td>
   </tr>`;
 }
@@ -2681,7 +2697,7 @@ async function ladeBestellungen() {
         <td style="font-size:13px;">${h(b.firma || '—')}</td>
         <td><strong>${euro(Number(b.gesamtbetrag||0)*1.19)}</strong><div style="font-size:11px;color:var(--gray);">netto ${euro(b.gesamtbetrag)}</div></td>
         <td>${zahlungsartLabel(b.zahlungsart)}</td>
-        <td><span class="badge ${statusBadge(anzeigeStatus(b))}">${statusLabel(anzeigeStatus(b))}</span></td>
+        <td><span class="badge ${statusBadge(anzeigeStatus(b))}">${h(statusLabel(anzeigeStatus(b)))}</span></td>
         <td>${reservierung}</td>
         <td>
           <div class="admin-action-row">
@@ -2696,7 +2712,7 @@ async function ladeBestellungen() {
               ? `<select class="admin-select" disabled title="Diese Bestellung ist storniert. Ein Wiederbeleben über das Status-Feld ist nicht vorgesehen."><option selected>${statusLabel('storniert')}</option></select>`
               : String(b.status) === 'auf_rechnung'
               ? `<select class="admin-select" disabled title="Kauf auf Rechnung: Der Bestand wurde bereits direkt abgebucht. Der weitere Ablauf läuft über die Lager- und Versandaktionen; zum Zurücknehmen die Schaltfläche „Rechnungskauf stornieren&quot; verwenden (bucht den Bestand zurück)."><option selected>${statusLabel('auf_rechnung')}</option></select>`
-              : `<select class="admin-select" onchange="aktualisiereStatus(${b.id}, this.value, '${b.status || ''}', '${b.zahlungsart || ''}')">
+              : `<select class="admin-select" data-bestellung-id="${Number(b.id)}" data-status-vorher="${h(b.status || '')}" data-zahlungsart="${h(b.zahlungsart || '')}" onchange="aktualisiereStatus(Number(this.dataset.bestellungId),this.value,this.dataset.statusVorher,this.dataset.zahlungsart)">
               ${anzeigeStatus(b) === 'abgeholt_final' ? '<option value="abgeholt_final" selected>Abgeholt</option>' : ''}
               ${STATUS_OPTIONEN.map(s => `<option value="${s}" ${(anzeigeStatus(b) !== 'abgeholt_final' && (b.status === s || (b.status === 'bestätigt' && s === 'bestaetigt'))) ? 'selected' : ''}>${statusLabel(s)}</option>`).join('')}
             </select>`}
@@ -2790,8 +2806,8 @@ async function zeigeBestellung(id) {
       : '—';
 
     const zahlungsInfo = zahlungsart === 'vorkasse'
-      ? `<strong>${zahlungsLabel}</strong><br>Verwendungszweck: <strong style="color:var(--oak);">${verwendungszweck}</strong><br>Status: <strong>${statusLabel(anzeigeStatus(b))}</strong><br>Reservierung: ${reservierungInfo}`
-      : `<strong>${zahlungsLabel}</strong>${b.zahlungs_id ? '<br>Zahlungs-ID: <strong>' + h(b.zahlungs_id) + '</strong>' : ''}<br>Status: <strong>${statusLabel(anzeigeStatus(b))}</strong>`;
+      ? `<strong>${zahlungsLabel}</strong><br>Verwendungszweck: <strong style="color:var(--oak);">${h(verwendungszweck)}</strong><br>Status: <strong>${h(statusLabel(anzeigeStatus(b)))}</strong><br>Reservierung: ${reservierungInfo}`
+      : `<strong>${zahlungsLabel}</strong>${b.zahlungs_id ? '<br>Zahlungs-ID: <strong>' + h(b.zahlungs_id) + '</strong>' : ''}<br>Status: <strong>${h(statusLabel(anzeigeStatus(b)))}</strong>`;
 
     const vorkasseButtons = b.zahlungsart === 'vorkasse' && b.status === 'warte_auf_zahlung'
       ? `<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
@@ -2999,7 +3015,7 @@ function threadKarteHtml(t) {
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
         ${t.ungelesen > 0 ? `<span style="background:#B91C1C;color:#fff;border-radius:10px;padding:0 7px;font-size:11px;font-weight:700;">${t.ungelesen} neu</span>` : ''}
-        <span style="font-size:12px;font-weight:700;color:${farbe};">${NACHRICHT_STATUS_LABEL[status] || status}</span>
+        <span style="font-size:12px;font-weight:700;color:${farbe};">${h(NACHRICHT_STATUS_LABEL[status] || status)}</span>
         <button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="event.stopPropagation();oeffneThread(${t.id})">Öffnen</button>
       </div>
     </div>
@@ -3479,7 +3495,7 @@ function renderThreadOrderPane(b, pos, dok) {
       Bestellt von: <strong>${h(b.bestellt_von_email || b.email || '—')}</strong><br>
       Filiale: <strong>${h(b.filiale || '—')}</strong><br>
       ${_nl ? '' : `Zahlungsart: <strong>${zahlungsartLabel(b.zahlungsart)}</strong><br>`}
-      Status: <strong>${statusLabel(anzeigeStatus(b))}</strong><br>
+      Status: <strong>${h(statusLabel(anzeigeStatus(b)))}</strong><br>
       ${_nl ? '' : `Rechnungsnr.: <strong>${b.rechnung_nummer ? h(b.rechnung_nummer) : '—'}</strong><br>`}
       ${b.tracking_nr ? `Tracking: <strong>${h(b.tracking_nr)}</strong><br>` : ''}
       ${_nl ? '' : `Gesamt brutto: <strong>${euro(Number(b.gesamtbetrag || 0) * 1.19)}</strong>`}
@@ -3529,9 +3545,10 @@ function oeffneBestellungAusThread(id) {
 }
 
 function threadAnhangHtml(a) {
-  if (!a.url) return '';
-  if (String(a.mime_type || '').startsWith('image/')) return `<a href="${a.url}" target="_blank" rel="noopener"><img src="${a.url}" style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid #ddd;"></a>`;
-  return `<a href="${a.url}" target="_blank" rel="noopener" style="font-size:12px;color:var(--oak);text-decoration:underline;">${vtIco('file-text')} ${h(a.dateiname || 'Datei')}</a>`;
+  const url = sichereHttpsUrl(a.url);
+  if (!url) return '';
+  if (String(a.mime_type || '').startsWith('image/')) return `<a href="${h(url)}" target="_blank" rel="noopener noreferrer"><img src="${h(url)}" style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid #ddd;"></a>`;
+  return `<a href="${h(url)}" target="_blank" rel="noopener noreferrer" style="font-size:12px;color:var(--oak);text-decoration:underline;">${vtIco('file-text')} ${h(a.dateiname || 'Datei')}</a>`;
 }
 
 function threadBubbleHtml(m) {
@@ -3854,9 +3871,9 @@ function b18NacharbeitSelect(stornoId, aufgabe, status, erlaubtNichtNoetig = fal
   const optionen = ['offen','in_bearbeitung','erledigt','fehlgeschlagen'];
   if (erlaubtNichtNoetig) optionen.push('nicht_noetig');
   const deaktiviert = !(darf('bestellungen.stornieren') || adminMe.ist_super_admin);
-  return `<select id="b18-${stornoId}-${aufgabe}" class="admin-select" ${deaktiviert ? 'disabled' : ''}>
+  return `<select id="b18-${Number(stornoId)}-${h(aufgabe)}" class="admin-select" ${deaktiviert ? 'disabled' : ''}>
     ${optionen.map(x => `<option value="${x}" ${x === status ? 'selected' : ''}>${h(b18ArbeitsStatusLabel(x))}</option>`).join('')}
-  </select>${deaktiviert ? '' : `<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="b18NacharbeitSpeichern(${stornoId},'${aufgabe}')">Speichern</button>`}`;
+  </select>${deaktiviert ? '' : `<button class="btn btn-sm" data-storno-id="${Number(stornoId)}" data-aufgabe="${h(aufgabe)}" style="background:var(--oak-pale);color:var(--oak);" onclick="b18NacharbeitSpeichern(Number(this.dataset.stornoId),this.dataset.aufgabe)">Speichern</button>`}`;
 }
 
 function renderB18Aufgaben(aufgaben) {
