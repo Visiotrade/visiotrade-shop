@@ -2178,14 +2178,14 @@ function kbNachrichtThreadCard(t) {
     const paNr = t.pa_nummer || ('PA-' + t.preisanfrage_id);
     const paStatus = KB_PA_STATUS[t.pa_status] || 'Angefragt';
     const statusBadge = `<span style="display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:700;background:var(--oak-pale);color:var(--oak-dark);margin-left:6px;vertical-align:1px;">${escapeHtml(paStatus)}</span>`;
-    return `<div class="kb-card-line" style="padding:14px;cursor:pointer;" onclick="oeffnePreisanfrageVorgang(${t.preisanfrage_id},'${escapeHtml(paNr)}')">
+    return `<div class="kb-card-line" data-pa-id="${Number(t.preisanfrage_id)}" data-pa-nummer="${escapeHtml(paNr)}" style="padding:14px;cursor:pointer;" onclick="oeffnePreisanfrageVorgang(Number(this.dataset.paId),this.dataset.paNummer)">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
         <div style="min-width:0;">
           <strong>${vtIco('inbox')} Preisanfrage ${escapeHtml(paNr)}</strong>${statusBadge}${badge}
           <div style="font-size:12.5px;color:var(--gray);margin-top:5px;">Letzte Aktivität${rel ? ' · ' + rel : ''}</div>
           ${lastTxt ? `<div style="font-size:13px;color:var(--walnut);margin-top:4px;max-height:40px;overflow:hidden;white-space:pre-wrap;">${escapeHtml(lastTxt)}</div>` : ''}
         </div>
-        <button class="kb-yellow-btn" type="button" onclick="event.stopPropagation();oeffnePreisanfrageVorgang(${t.preisanfrage_id},'${escapeHtml(paNr)}')">Vorgang öffnen</button>
+        <button class="kb-yellow-btn" type="button" data-pa-id="${Number(t.preisanfrage_id)}" data-pa-nummer="${escapeHtml(paNr)}" onclick="event.stopPropagation();oeffnePreisanfrageVorgang(Number(this.dataset.paId),this.dataset.paNummer)">Vorgang öffnen</button>
       </div>
     </div>`;
   }
@@ -2194,14 +2194,14 @@ function kbNachrichtThreadCard(t) {
   const b = t.bestellung || {};
   const status = KB_NACHRICHT_STATUS[t.status] || t.status || 'Offen';
   const statusBadge = `<span style="display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:700;background:var(--oak-pale);color:var(--oak-dark);margin-left:6px;vertical-align:1px;">${escapeHtml(status)}</span>`;
-  return `<div class="kb-card-line" style="padding:14px;cursor:pointer;" onclick="oeffneNachrichtModal(${t.bestellung_id},'${t.typ || 'nachricht'}')">
+  return `<div class="kb-card-line" data-bestellung-id="${Number(t.bestellung_id)}" data-vorgang-typ="${escapeHtml(t.typ || 'nachricht')}" style="padding:14px;cursor:pointer;" onclick="oeffneNachrichtModal(Number(this.dataset.bestellungId),this.dataset.vorgangTyp)">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
       <div style="min-width:0;">
         <strong>${vtIco('clipboard')} Bestellung #${t.bestellung_id}</strong>${b.rechnung_nummer ? ` <span style="color:var(--gray);font-size:13px;">· ${escapeHtml(b.rechnung_nummer)}</span>` : ''}${statusBadge}${badge}
         <div style="font-size:12.5px;color:var(--gray);margin-top:5px;">Letzte Aktivität${rel ? ' · ' + rel : ''}</div>
         ${lastTxt ? `<div style="font-size:13px;color:var(--walnut);margin-top:4px;max-height:40px;overflow:hidden;white-space:pre-wrap;">${escapeHtml(lastTxt)}</div>` : ''}
       </div>
-      <button class="kb-yellow-btn" type="button" onclick="event.stopPropagation();oeffneNachrichtModal(${t.bestellung_id},'${t.typ || 'nachricht'}')">Vorgang öffnen</button>
+      <button class="kb-yellow-btn" type="button" data-bestellung-id="${Number(t.bestellung_id)}" data-vorgang-typ="${escapeHtml(t.typ || 'nachricht')}" onclick="event.stopPropagation();oeffneNachrichtModal(Number(this.dataset.bestellungId),this.dataset.vorgangTyp)">Vorgang öffnen</button>
     </div>
   </div>`;
 }
@@ -2292,6 +2292,30 @@ function escapeHtml(value) {
   }[char]));
 }
 
+// URL-Werte aus API-/Datenbankantworten nie direkt in href/src einsetzen.
+// Relative URLs werden gegen den aktuellen Shop aufgeloest; erlaubt bleibt nur HTTPS
+// ohne eingebettete Zugangsdaten. Der Rueckgabewert ist kanonisch oder null.
+function sichereHttpsUrl(value) {
+  const roh = String(value == null ? '' : value).trim();
+  if (!roh) return null;
+  let url;
+  try { url = new URL(roh, window.location.origin); } catch (_) { return null; }
+  if (url.protocol !== 'https:' || url.username || url.password) return null;
+  return url.href;
+}
+
+function sichereZahlungsUrl(value, zahlungsart) {
+  const href = sichereHttpsUrl(value);
+  if (!href) return null;
+  const host = new URL(href).hostname.toLowerCase();
+  const erlaubt = String(zahlungsart) === 'stripe'
+    ? host === 'checkout.stripe.com'
+    : String(zahlungsart) === 'paypal'
+      ? (host === 'paypal.com' || host.endsWith('.paypal.com'))
+      : false;
+  return erlaubt ? href : null;
+}
+
 function formatDateDE(value) {
   return value ? new Date(value).toLocaleDateString('de-DE') : '—';
 }
@@ -2320,7 +2344,7 @@ function zahlungsartLabel(z) {
     stripe: 'Kreditkarte / Debitkarte',
     rechnung: 'Kauf auf Rechnung'
   };
-  return labels[String(z || '').toLowerCase()] || (z || '—');
+  return escapeHtml(labels[String(z || '').toLowerCase()] || (z || '—'));
 }
 
 function zahlungsLabelBestellung(b) {
@@ -2661,7 +2685,7 @@ async function paAnnahmeSenden() {
 function renderNachrichtOrderPane(b) {
   const el = document.getElementById('nachrichtOrderPane');
   if (!el) return;
-  const sl = statusLabel(kbAnzeigeStatus(b));
+  const sl = escapeHtml(statusLabel(kbAnzeigeStatus(b)));
   const sk = statusClass(kbAnzeigeStatus(b));
   const netto = Number(b.gesamtbetrag || 0);
   const pos = (b.positionen || []).map(p =>
@@ -2772,11 +2796,12 @@ function renderNachrichtVerlauf(nachrichten, thread) {
 }
 
 function kbAnhangHtml(a) {
-  if (!a.url) return '';
+  const url = sichereHttpsUrl(a.url);
+  if (!url) return '';
   if (String(a.mime_type || '').startsWith('image/')) {
-    return `<a href="${a.url}" target="_blank" rel="noopener"><img src="${a.url}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #ddd;"></a>`;
+    return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"><img src="${escapeHtml(url)}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #ddd;"></a>`;
   }
-  return `<a href="${a.url}" target="_blank" rel="noopener" style="font-size:12px;color:var(--oak);text-decoration:underline;">${vtIco('file-text')} ${escapeHtml(a.dateiname || 'Datei')}</a>`;
+  return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" style="font-size:12px;color:var(--oak);text-decoration:underline;">${vtIco('file-text')} ${escapeHtml(a.dateiname || 'Datei')}</a>`;
 }
 
 // Vorgangscenter: Systemereignisse werden als zentrierte Timeline-Einträge dargestellt
@@ -2800,7 +2825,7 @@ function kbSystemEintrag(m) {
     (meta.betrag != null) ? formatEuro(Number(meta.betrag)) : ''
   ].filter(Boolean).join(' · ');
   const dok = (meta.dok_typ && oid)
-    ? ` · <a onclick="zeigeKundeDokument(${oid},'${escapeHtml(meta.dok_typ)}','Dokument')" style="cursor:pointer;color:var(--oak);text-decoration:underline;">Dokument öffnen</a>`
+    ? ` · <a data-bestellung-id="${Number(oid)}" data-dok-typ="${escapeHtml(meta.dok_typ)}" onclick="zeigeKundeDokument(Number(this.dataset.bestellungId),this.dataset.dokTyp,'Dokument')" style="cursor:pointer;color:var(--oak);text-decoration:underline;">Dokument öffnen</a>`
     : '';
   return `<div style="display:flex;justify-content:center;margin:10px 0;">
     <div style="max-width:88%;background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:8px 14px;text-align:center;">
@@ -3149,12 +3174,14 @@ async function zeigeKundeDokument(orderId, typ, titel) {
     const data = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(data.error || 'Das Dokument konnte nicht geladen werden. Bitte versuchen Sie es später erneut.');
     if (!data.url) { alert(data.message || 'Dieses Dokument ist noch nicht verfügbar.'); return; }
+    const sichereUrl = sichereHttpsUrl(data.url);
+    if (!sichereUrl) throw new Error('Die Dokumentadresse wurde aus Sicherheitsgründen abgelehnt.');
     document.getElementById('kbPdfTitel').textContent = (titel || 'Dokument') + ' – Bestellung #' + orderId;
     // PDF direkt in „Fit Width" öffnen (Standard-PDF-Parameter, von Chrome/Edge/Firefox unterstützt),
     // damit die Seite sofort die volle Breite nutzt und lesbar ist. Toolbar/Zoom bleiben erhalten.
-    const pdfUrl = data.url + (data.url.includes('#') ? '&' : '#') + 'view=FitH';
-    document.getElementById('kbPdfFrame').src = pdfUrl;
-    document.getElementById('kbPdfDownload').href = data.url;   // Download bleibt die rohe Datei-URL
+    const pdfUrl = sichereUrl + (sichereUrl.includes('#') ? '&' : '#') + 'view=FitH';
+    document.getElementById('kbPdfFrame').src = sichereUrl;
+    document.getElementById('kbPdfDownload').href = sichereUrl;
     document.getElementById('kbPdfModal').style.display = 'flex';
   } catch (e) { alert(e.message || 'Das Dokument konnte nicht geladen werden.'); }
 }
@@ -3202,7 +3229,7 @@ function renderOrderCard(b, context = 'bestellungen') {
   const d = formatDateDE(b.erstellt_am);
   const brutto = formatEuro(bestellBrutto(b));
   const sk = statusClass(kbAnzeigeStatus(b));
-  const sl = statusLabel(kbAnzeigeStatus(b));
+  const sl = escapeHtml(statusLabel(kbAnzeigeStatus(b)));
   const invoiceNo = b.rechnung_nummer || '—';
   const firstProduct = orderPositionsSummary(b);
   // Einkaufsleiter sieht, welcher Mitarbeiter die Bestellung ausgelöst hat.
@@ -4986,8 +5013,9 @@ function b2bThumbErsatz(img) {
 }
 function b2bRowHtml(p) {
   const bild = (Array.isArray(p.bild_urls) && p.bild_urls[0]) ? p.bild_urls[0] : null;
-  const thumb = bild
-    ? `<img src="${escapeHtml(bild)}" class="b2b-thumb" loading="lazy" onerror="b2bThumbErsatz(this)">`
+  const bildUrl = sichereHttpsUrl(bild);
+  const thumb = bildUrl
+    ? `<img src="${escapeHtml(bildUrl)}" class="b2b-thumb" loading="lazy" onerror="b2bThumbErsatz(this)">`
     : '<div class="b2b-thumb b2b-thumb-fallback">' + HOLZ_ICON + '</div>';
   let name = `${p.holzart || ''} ${p._sortName || ''}`.trim() || p.name || '—';
   // Kantenprofil (Besäumt / Nut/Feder) zur Unterscheidung an den Namen hängen.
@@ -6032,7 +6060,7 @@ async function aktualisiereFrachtMitPlz(plz) {
 
     if (data.auf_anfrage || data.lieferkosten_netto == null) {
       aktuellerFrachtKunde = null;
-      details.innerHTML = `<div style="font-size:13px;">Für PLZ ${plz.trim()} berechnen wir die Lieferkosten individuell – bitte kontaktieren Sie uns.</div>`;
+      details.innerHTML = `<div style="font-size:13px;">Für PLZ ${escapeHtml(plz.trim())} berechnen wir die Lieferkosten individuell – bitte kontaktieren Sie uns.</div>`;
       box.style.display = 'block';
     } else {
       aktuellerFrachtKunde = Number(data.lieferkosten_netto);
@@ -6450,7 +6478,9 @@ async function bestellungAbsenden() {
     }
 
     if ((zahlungsart === 'stripe' || zahlungsart === 'paypal') && checkoutData.url) {
-      window.location.href = checkoutData.url;
+      const zahlungsUrl = sichereZahlungsUrl(checkoutData.url, zahlungsart);
+      if (!zahlungsUrl) throw new Error('Die Zahlungsadresse wurde aus Sicherheitsgründen abgelehnt.');
+      window.location.href = zahlungsUrl;
       return;
     }
 
