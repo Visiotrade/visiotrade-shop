@@ -1184,8 +1184,19 @@
   <div class="erfolg-screen">
     <div class="erfolg-icon" style="color:var(--green);"><svg class="vt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div>
     <h2>Vielen Dank!</h2>
-    <p>Ihre Bestellung wurde erfolgreich aufgenommen.<br>Die Zahlungsbestätigung und Ihre Rechnung werden per E-Mail versendet.</p>
+    <p>Ihre Bestellung wurde erfolgreich aufgenommen.<br>Die Auftragsbestätigung erhalten Sie per E-Mail, die Rechnung separat.</p>
     <button class="weiter-btn" onclick="showScreen(&#39;home&#39;)">Zurück zum Shop</button>
+  </div>
+</div>
+
+<!-- ZAHLUNGSRUECKKEHR: NOCH NICHT BESTAETIGT -->
+<div id="screen-zahlung-pruefung" class="screen">
+  <div class="erfolg-screen">
+    <h2>Zahlungsstatus prüfen</h2>
+    <p id="zahlung-pruefung-text" role="status" aria-live="polite">Die Bestätigung wird geprüft. Bitte nicht erneut bezahlen.</p>
+    <button id="zahlung-pruefung-erneut" class="weiter-btn" type="button">Status erneut prüfen</button>
+    <p>Bei Fragen: <a href="mailto:info@visiotrade.shop">info@visiotrade.shop</a></p>
+    <button class="weiter-btn" type="button" onclick="showScreen('home')">Zurück zum Shop</button>
   </div>
 </div>
 
@@ -6646,14 +6657,55 @@ async function setzeNeuesPasswort() {
   } catch (e) { spError(e.message); }
 }
 
-// Wertet einen Zahlungsrücklauf aus und meldet dem Startablauf, WELCHER Fall vorlag:
-//   'keine'   – kein Zahlungsrücklauf in der URL (normaler Seitenaufruf)
-//   'abbruch' – Kunde hat die Zahlung abgebrochen
-//   'erfolg'  – Erfolgsseite wurde gesetzt und muss stehen bleiben
-//   'fehler'  – Rücklauf vorhanden, aber nicht zuordenbar (Meldung gezeigt)
-// Hintergrund (Audit R-02): Der Startablauf darf NICHT anhand der URL entscheiden, ob er die
-// Produktliste öffnet – diese Funktion räumt die URL selbst auf, und der Stripe-Zweig läuft
-// dabei komplett synchron durch. Nur ein zurückgegebener Status ist eindeutig.
+// Nur eine bestätigte Backend-Antwort darf Warenkorb und Erfolgsanzeige ändern.
+// Auch bei Verzögerung oder Netzfehler nie zu einem zweiten Zahlversuch auffordern.
+async function pruefeStripeRueckkehr(sessionId, bestellungId) {
+  showScreen('zahlung-pruefung');
+  const hinweis = document.getElementById('zahlung-pruefung-text');
+  const erneut = document.getElementById('zahlung-pruefung-erneut');
+  const zugeordnet = /^cs_(test|live)_[A-Za-z0-9]{8,200}$/.test(sessionId || '')
+    && /^[1-9][0-9]{0,14}$/.test(bestellungId || '');
+  erneut.hidden = !zugeordnet;
+  erneut.disabled = true;
+  erneut.onclick = () => pruefeStripeRueckkehr(sessionId, bestellungId);
+  if (!zugeordnet) {
+    hinweis.textContent = 'Dieser Rückkehrlink enthält keine prüfbare Zahlungszuordnung. Bitte prüfen Sie Ihr Kundenkonto oder kontaktieren Sie uns. Nicht erneut bezahlen.';
+    return 'pruefung';
+  }
+  hinweis.textContent = 'Die Bestätigung wird geprüft. Bitte nicht erneut bezahlen.';
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
+  try {
+    const response = await fetch(`${API_URL}/api/stripe/checkout-status`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId, bestellung_id: bestellungId }),
+      signal: controller.signal
+    });
+    const daten = await response.json();
+    if (!response.ok) throw new Error('Statusprüfung fehlgeschlagen');
+    if (daten.state === 'confirmed') {
+      warenkorb = [];
+      document.getElementById('cartCount').textContent = 0;
+      showScreen('erfolg');
+      return 'erfolg';
+    }
+    const texte = {
+      processing: 'Stripe hat die Zahlung bestätigt. Die Verarbeitung der Bestellung ist noch nicht bestätigt. Bitte den Status später erneut prüfen – nicht nochmals bezahlen.',
+      cancelled: 'Diese Bestellung ist storniert. Falls bereits Geld abgebucht wurde, kontaktieren Sie uns bitte. Nicht erneut bezahlen.',
+      unconfirmed: 'Ein erfolgreicher Zahlungsabschluss ist noch nicht bestätigt. Bitte prüfen Sie Ihr Kundenkonto oder kontaktieren Sie uns, bevor Sie erneut bezahlen.'
+    };
+    hinweis.textContent = texte[daten.state] || 'Der Zahlungsstatus ist noch unklar. Bitte kontaktieren Sie uns. Nicht erneut bezahlen.';
+  } catch (_) {
+    hinweis.textContent = 'Der Zahlungsstatus konnte gerade nicht geprüft werden. Bitte den Status erneut prüfen oder uns kontaktieren. Nicht erneut bezahlen.';
+  } finally {
+    clearTimeout(timer);
+    erneut.disabled = false;
+  }
+  return 'pruefung';
+}
+
+// Rückgabe an den Startablauf: keine, abbruch, fehler, erfolg oder pruefung.
+// Die URL wird bereinigt; allein der Rückgabewert steuert die danach sichtbare Seite.
 async function checkPayPalReturn() {
   const params = new URLSearchParams(window.location.search);
 
@@ -6718,8 +6770,11 @@ async function checkPayPalReturn() {
         ergebnis = 'fehler';
       }
     } else {
-      warenkorb=[]; document.getElementById('cartCount').textContent=0; showScreen('erfolg');
-      ergebnis = 'erfolg';
+      const sessionId = zahlung === 'stripe' ? params.get('session_id') : null;
+      // Session-Nachweis nicht in der URL stehen lassen. Die Wiederholungsaktion
+      // hält ihn nur im Speicher; es werden keinerlei Secrets protokolliert.
+      window.history.replaceState({}, document.title, window.location.pathname);
+      ergebnis = await pruefeStripeRueckkehr(sessionId, bestellungId);
     }
     window.history.replaceState({}, document.title, window.location.pathname);
     return ergebnis;
@@ -6759,21 +6814,18 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // Startbildschirm nach RÜCKKEHRTYP steuern (Audit R-02) – NICHT über eine einmalig
   // berechnete URL-Prüfung. Grund: checkSetPassword() und checkPayPalReturn() räumen die URL
-  // selbst per history.replaceState auf, und der Stripe-Zweig läuft dabei komplett synchron
-  // durch (nur der PayPal-Zweig enthält ein `await`). Eine nachträgliche URL-Auswertung sah
-  // deshalb keinen Zahlungsrücklauf mehr und überschrieb die Erfolgsseite mit der Produktliste
-  // – bei JEDER Kartenzahlung. Eine vorgezogene URL-Auswertung wiederum hätte den Abbruchfall
-  // (?cancelled=1) mit einem leeren Produktbereich enden lassen. Beide Fehler entstehen aus
-  // derselben Ursache: eine Variable für vier verschiedene Fälle.
+  // selbst per history.replaceState auf. Beide Zahlungswege prüfen asynchron.
+  // Eine nachträgliche URL-Auswertung darf weder Erfolgs- noch Prüfseite überschreiben.
   //
   //   Passwort-/Einladungslink → Passwortseite stehen lassen
   //   Zahlungserfolg           → Erfolgsseite stehen lassen
+  //   Zahlung noch ungeklärt   → Prüfseite stehen lassen
   //   Zahlungsabbruch/-fehler  → Meldung ist gezeigt, danach normal in die Produktliste
   //   normaler Aufruf          → Produktliste
   if (checkSetPassword()) return;
 
   const _rueckkehr = await checkPayPalReturn();
-  if (_rueckkehr === 'erfolg') return;
+  if (_rueckkehr === 'erfolg' || _rueckkehr === 'pruefung') return;
 
   zeigeProduktliste(1, 'Stabparkett');
 });
