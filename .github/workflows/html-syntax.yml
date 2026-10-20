@@ -60,3 +60,9 @@ jobs:
 
       - name: Inline-JavaScript prüfen
         run: node scripts/check-inline-js.js index.html admin.html
+
+      - name: Checkout- und Admin-Regressionen (ohne externe Dienste)
+        run: |
+          node scripts/checkout-return.test.js
+          node scripts/admin-abholung.test.js
+          node scripts/admin-lager-nachrichten.test.js
