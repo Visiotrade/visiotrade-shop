@@ -19,7 +19,7 @@ const code = [
   'istAbholung', 'statusLabel', 'statusBadge', 'istLagerfaehigFrontend', 'anzeigeStatus',
   'feVersandPhase', 'ladeBestellungen', 'zeigeBestellung', 'renderThreadOrderPane',
   'versandPhaseLabel', 'versandplanungRow', 'lagerLieferadresse', 'lagerStatusLabel',
-  'lagerCardHtml', 'versanddatenOeffnen', 'versanddatenAbsenden',
+  'lieferhinweiseHtml', 'lagerCardHtml', 'versanddatenOeffnen', 'versanddatenAbsenden',
   'versandAbholungAbschliessen', 'ladeThreadDetail'
 ].map(funktion).join('\n');
 

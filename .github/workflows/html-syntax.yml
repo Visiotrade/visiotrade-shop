@@ -66,3 +66,4 @@ jobs:
           node scripts/checkout-return.test.js
           node scripts/admin-abholung.test.js
           node scripts/admin-lager-nachrichten.test.js
+          node scripts/lieferhinweise.test.js
