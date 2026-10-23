@@ -995,7 +995,7 @@
         <input type="checkbox" id="eigenAbladung">
         <span><svg class="vti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v9"/><path d="M8.5 8.5 12 12l3.5-3.5"/><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg> Eigenständige Entladung durch den Käufer</span>
       </label>
-      <div class="form-group"><label>Sonstiges / Anmerkungen zur Lieferung</label><textarea id="rech-sonstiges" rows="2" style="width:100%;padding:13px 14px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-size:15px;font-family:&#39;DM Sans&#39;,sans-serif;color:var(--walnut);background:var(--white);outline:none;resize:vertical;" placeholder="z. B. Lieferhinweise, Öffnungszeiten ..."></textarea></div>
+      <div class="form-group"><label>Sonstiges / Anmerkungen zur Lieferung (max. 2000 Zeichen)</label><textarea id="rech-sonstiges" maxlength="2000" rows="2" style="width:100%;padding:13px 14px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-size:15px;font-family:&#39;DM Sans&#39;,sans-serif;color:var(--walnut);background:var(--white);outline:none;resize:vertical;" placeholder="z. B. Lieferhinweise, Öffnungszeiten ..."></textarea></div>
 
     <div id="frachtVorschau" style="display: none; background: rgb(240, 247, 240); border: 1px solid rgb(45, 106, 79); border-radius: 8px; padding: 14px; font-size: 14px; color: rgb(27, 67, 50); margin-bottom: 8px;">
       <div style="font-weight:600;color:#2D6A4F;margin-bottom:8px;"><svg class="vti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5h10.5v9H3z"/><path d="M13.5 9.5H17l3.5 3.2v2.8h-7z"/><circle cx="7" cy="18" r="1.5"/><circle cx="17.5" cy="18" r="1.5"/></svg> Geschätzte Lieferkosten</div>
@@ -1098,7 +1098,7 @@
           <input type="checkbox" id="lief-eigenAbladung">
           <span><svg class="vti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v9"/><path d="M8.5 8.5 12 12l3.5-3.5"/><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg> Eigenständige Entladung durch den Käufer</span>
         </label>
-        <div class="form-group"><label>Sonstiges / Anmerkungen zur Lieferadresse</label><textarea id="lief-sonstiges" rows="2" style="width:100%;padding:13px 14px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-size:15px;font-family:&#39;DM Sans&#39;,sans-serif;color:var(--walnut);background:var(--white);outline:none;resize:vertical;" placeholder="z. B. Tor-Code, Anlieferzeit, besondere Hinweise ..."></textarea></div>
+        <div class="form-group"><label>Sonstiges / Anmerkungen zur Lieferadresse (max. 2000 Zeichen)</label><textarea id="lief-sonstiges" maxlength="2000" rows="2" style="width:100%;padding:13px 14px;border:2px solid var(--gray-light);border-radius:var(--radius-sm);font-size:15px;font-family:&#39;DM Sans&#39;,sans-serif;color:var(--walnut);background:var(--white);outline:none;resize:vertical;" placeholder="z. B. Tor-Code, Anlieferzeit, besondere Hinweise ..."></textarea></div>
         <label class="checkbox-row" id="liefSpeichernWrap">
           <input type="checkbox" id="lief-speichern">
           <span><svg class="vti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4"/><path d="M8 13h8v7H8z"/></svg>Diese Adresse für zukünftige Bestellungen speichern</span>
@@ -5748,7 +5748,10 @@ function resetCheckoutIdentityFields() {
   const leeren = (id) => { const el = document.getElementById(id); if (el) el.value = ''; };
   // Kontakt + Firma + Rechnungsadresse
   ['vorname','nachname','firma','email','telefon','ustid',
-   'rech-strasse','rech-plz','rech-ort'].forEach(leeren);
+   'rech-strasse','rech-plz','rech-ort','rech-sonstiges'].forEach(leeren);
+  ['hebebuehne','eigenAbladung','lief-eigenAbladung'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.checked = false;
+  });
   const rechLand = document.getElementById('rech-land'); if (rechLand) rechLand.value = 'DE';
   if (typeof pruefeUstPflicht === 'function') pruefeUstPflicht();
   // Abweichende Lieferadresse (inkl. gewählter gespeicherter Adresse)
@@ -5833,9 +5836,12 @@ function waehleGespeicherteLieferadresse() {
   const setVal = (fid, val) => { const el = document.getElementById(fid); if (el) el.value = val || ''; };
   const idEl = document.getElementById('lief-id'); if (idEl) idEl.value = id;
   const speichernWrap = document.getElementById('liefSpeichernWrap');
+  // Keine Entladeoption vom zuvor gewählten Standort übernehmen.
+  const eigen = document.getElementById('lief-eigenAbladung'); if (eigen) eigen.checked = false;
 
   if (!id) {
-    ['lief-empfaenger','lief-strasse','lief-plz','lief-ort','lief-telefon'].forEach(f => setVal(f, ''));
+    ['lief-empfaenger','lief-strasse','lief-plz','lief-ort','lief-telefon','lief-sonstiges'].forEach(f => setVal(f, ''));
+    const heb = document.getElementById('lief-hebebuehne'); if (heb) heb.checked = false;
     if (speichernWrap) speichernWrap.style.display = '';
     if (typeof pruefeCheckboxen === 'function') pruefeCheckboxen();
     return;
@@ -6360,6 +6366,20 @@ function zeigeVorkasseErfolg(bestellungId, bruttoBetrag) {
   showScreen('vorkasse-erfolg');
 }
 
+// Nur Angaben der tatsächlich ausgewählten Anlieferstelle versenden.
+function checkoutLieferangaben(lieferart, abweichend) {
+  const lieferung = lieferart === 'lieferung';
+  const textId = abweichend ? 'lief-sonstiges' : 'rech-sonstiges';
+  const text = lieferung ? (document.getElementById(textId)?.value || '').trim() : '';
+  if (text.length > 2000) throw new Error('Lieferhinweise dürfen höchstens 2000 Zeichen enthalten.');
+  return {
+    hebebuehne: lieferung && !abweichend && !!document.getElementById('hebebuehne')?.checked,
+    lieferadresse_hebebuehne: lieferung && !!abweichend && !!document.getElementById('lief-hebebuehne')?.checked,
+    eigenentladung: lieferung && !!document.getElementById(abweichend ? 'lief-eigenAbladung' : 'eigenAbladung')?.checked,
+    lieferhinweise: text || null
+  };
+}
+
 async function bestellungAbsenden() {
   const btn = document.getElementById('bestellBtn');
 
@@ -6454,7 +6474,7 @@ async function bestellungAbsenden() {
       rechnungsadresse_plz: rechPlz,
       rechnungsadresse_ort: rechOrt,
       rechnungsadresse_land: rechLand,
-      hebebuehne: lieferart === 'lieferung' ? document.getElementById('hebebuehne').checked : false,
+      ...checkoutLieferangaben(lieferart, abwLiefChecked),
       abweichende_lieferadresse: abwLiefChecked,
       lieferadresse_empfaenger: abwLiefChecked ? document.getElementById('lief-empfaenger').value.trim() : null,
       lieferadresse_strasse: abwLiefChecked ? document.getElementById('lief-strasse').value.trim() : (lieferart === 'lieferung' ? rechStrasse : null),
@@ -6462,7 +6482,6 @@ async function bestellungAbsenden() {
       lieferadresse_ort: abwLiefChecked ? document.getElementById('lief-ort').value.trim() : (lieferart === 'lieferung' ? rechOrt : null),
       lieferadresse_land: abwLiefChecked ? document.getElementById('lief-land').value : (lieferart === 'lieferung' ? rechLand : null),
       lieferadresse_telefon: abwLiefChecked ? document.getElementById('lief-telefon').value.trim() : telefon,
-      lieferadresse_hebebuehne: abwLiefChecked ? document.getElementById('lief-hebebuehne').checked : false,
       gesamtbetrag: zahlbetragNetto,
       warenwert_netto: gesamt,
       lieferkosten_netto: lieferkostenNettoKunde,

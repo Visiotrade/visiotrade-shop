@@ -2287,6 +2287,16 @@ function lagerStatusLabel(b) {
   return '<span class="badge" style="background:var(--oak-pale);color:var(--oak);">In Vorbereitung</span>';
 }
 
+function lieferhinweiseHtml(b) {
+  if (b.lieferart !== 'lieferung') return '';
+  const zeilen = [];
+  if (b.abweichende_lieferadresse ? b.lieferadresse_hebebuehne === true : b.hebebuehne === true) zeilen.push('Anlieferung mit Hebebühne');
+  if (b.eigenentladung === true) zeilen.push('Eigenständige Entladung');
+  if (typeof b.lieferhinweise === 'string' && b.lieferhinweise.trim()) zeilen.push(b.lieferhinweise.trim());
+  if (!zeilen.length) return '';
+  return `<div style="margin-top:8px;padding:10px;background:var(--oak-pale);border-radius:6px;max-width:100%;overflow-wrap:anywhere;"><strong>Lieferhinweise</strong><div style="white-space:pre-wrap;">${h(zeilen.join('\n'))}</div></div>`;
+}
+
 function lagerCardHtml(b) {
   const abholung = istAbholung(b.lieferart);
   const adr = lagerLieferadresse(b).map(h).join('<br>');
@@ -2339,6 +2349,7 @@ function lagerCardHtml(b) {
         <div style="color:var(--gray);margin-top:6px;">Positionen (${b.anzahl_positionen || 0})</div><ul style="margin:4px 0 0;padding-left:18px;">${pos || '<li>—</li>'}</ul>
       </div>
     </div>
+    ${lieferhinweiseHtml(b)}
     ${infoBlock}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
       ${b.lieferschein_verfuegbar && darfDruck ? `<button class="btn btn-sm" style="background:var(--oak-pale);color:var(--oak);" onclick="zeigeAdminDokument(${b.id},'lieferschein','Lieferschein')">${vtIco('file-text')} Lieferschein ansehen</button>` : (darfDruck ? '<span style="font-size:12px;color:var(--red);align-self:center;">' + vtIco('alert') + ' Lieferschein fehlt</span>' : '')}
@@ -2517,7 +2528,7 @@ function versandplanungRow(b) {
   return `<tr style="border-top:1px solid var(--gray-light);">
     <td style="padding:10px;font-weight:600;">#${b.id}</td>
     <td style="padding:10px;">${h(b.kundenname || '—')}${b.firma ? '<div style="font-size:12px;color:var(--gray);">' + h(b.firma) + '</div>' : ''}</td>
-    <td style="padding:10px;">${h(b.lieferart || '—')}${b.spediteur ? '<div style="font-size:12px;color:var(--gray);">' + h(b.spediteur) + '</div>' : ''}</td>
+    <td style="padding:10px;min-width:180px;max-width:320px;">${h(b.lieferart || '—')}${b.spediteur ? '<div style="font-size:12px;color:var(--gray);">' + h(b.spediteur) + '</div>' : ''}${lieferhinweiseHtml(b)}</td>
     <td style="padding:10px;">${h(pakete)}</td>
     <td style="padding:10px;">${h(paletten)}</td>
     <td style="padding:10px;">${gewicht ? h(gewicht) + ' kg' : '—'}</td>
@@ -2882,6 +2893,7 @@ async function zeigeBestellung(id) {
           </div>
         </div>
 
+        ${lieferhinweiseHtml(b)}
         ${b.kundenprofil_id ? `
         <div style="background:var(--cream);padding:14px;border-radius:var(--radius-sm);">
           <div style="font-size:11px;font-weight:700;color:var(--oak);text-transform:uppercase;margin-bottom:6px;">B2B / Besteller</div>
@@ -3568,6 +3580,7 @@ function renderThreadOrderPane(b, pos, dok) {
     <div style="margin-top:10px;font-size:12px;line-height:1.6;">
       <div style="font-weight:700;color:var(--oak);">${istAbholung(b.lieferart) ? 'Selbstabholung · Kundenanschrift' : 'Lieferadresse'}</div>
       ${h(b.lieferadresse_strasse || b.rechnungsadresse_strasse || '—')}<br>${h(b.lieferadresse_plz || b.rechnungsadresse_plz || '')} ${h(b.lieferadresse_ort || b.rechnungsadresse_ort || '')}
+      ${lieferhinweiseHtml(b)}
     </div>`;
 }
 
