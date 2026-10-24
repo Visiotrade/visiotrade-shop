@@ -40,6 +40,7 @@ function harness(rights = ['warehouse.chat_view', 'warehouse.chat_write'], nurLa
     darfLagerZugang: () => rights.some(p => p.startsWith('warehouse.')),
     BREITE_RECHTE_FE: ['messages.view'], renderTestmodusBanner: () => {},
     aktualisierePreisanfrageBadge: () => {}, aktualisiereBestellBadge: () => {},
+    aktualisiereLagerBadge: () => {}, renderLagerBadge: () => {},
     ladeAdminUngelesen: () => {}, ladeKategorienListe: () => {}, ladeLager: () => {},
     ladeVersandplanung: () => {}, ladeBestellungen: () => {}, ladeThreadDetail: () => {},
     aktiviereSeite: page => pages.push(page), zeigeToast: (...args) => toasts.push(args),
