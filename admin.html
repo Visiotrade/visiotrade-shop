@@ -183,7 +183,7 @@
       <div id="navProdukte" class="sidebar-item" onclick="zeigeSeite(&#39;produkte&#39;)"><span class="sidebar-icon" data-ico="boxes"></span> Produkte</div>
       <div id="navKategorien" class="sidebar-item" onclick="zeigeSeite(&#39;kategorien&#39;)"><span class="sidebar-icon" data-ico="folder-tree"></span> Kategorien</div>
       <div id="navBestellungen" class="sidebar-item" onclick="zeigeSeite(&#39;bestellungen&#39;)"><span class="sidebar-icon" data-ico="package"></span> Bestellungen <span id="navBestellungenBadge" style="display:none;background:#B91C1C;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></div>
-      <div id="navLager" class="sidebar-item" style="display:none;" onclick="zeigeSeite(&#39;lager&#39;)"><span class="sidebar-icon" data-ico="warehouse"></span> Lager</div>
+      <div id="navLager" class="sidebar-item" style="display:none;" onclick="zeigeSeite(&#39;lager&#39;)"><span class="sidebar-icon" data-ico="warehouse"></span> Lager <span id="navLagerBadge" aria-live="polite" title="Neue Lagerbestellungen seit dem letzten Ansehen in diesem Browser" style="display:none;background:#B91C1C;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></div>
       <div id="navVersandplanung" class="sidebar-item" style="display:none;" onclick="zeigeSeite(&#39;versandplanung&#39;)"><span class="sidebar-icon" data-ico="truck"></span> Versandplanung</div>
       <div id="navNachrichten" class="sidebar-item" onclick="zeigeSeite(&#39;nachrichten&#39;)"><span class="sidebar-icon" data-ico="message-circle"></span> Nachrichten <span id="navNachrichtenBadge" style="display:none;background:#B91C1C;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></div>
       <div id="navPreisanfragen" class="sidebar-item" onclick="zeigeSeite(&#39;preisanfragen&#39;)"><span class="sidebar-icon" data-ico="file-question"></span> Preisanfragen <span id="navPreisanfragenBadge" style="display:none;background:#B91C1C;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></div>
@@ -548,7 +548,8 @@
     </div>
     <div class="field"><label>Abholdatum</label><input type="date" id="vsAbholdatum"></div>
     <div class="field"><label>Trackingnummer (optional)</label><input type="text" id="vsTrackingNr" placeholder="Sendungsnummer"></div>
-    <div class="field"><label>Tracking-Link (optional)</label><input type="text" id="vsTrackingUrl" placeholder="https://…"></div>
+    <div class="field"><label for="vsTrackingUrl">Tracking-Link (optional)</label><input type="text" id="vsTrackingUrl" placeholder="https://…" aria-describedby="vsTrackingHilfe vsFehler"><small id="vsTrackingHilfe">Vollständigen HTTPS-Link der Spedition einfügen. Ohne Link das Feld leer lassen.</small></div>
+    <div id="vsFehler" role="alert" style="display:none;color:var(--red);margin-bottom:12px;"></div>
     <div class="field"><label>Interne Notiz (optional)</label><input type="text" id="vsNotiz" placeholder="nur intern sichtbar"></div>
     <div class="modal-footer">
       <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;versandSpeditionModal&#39;)">Abbrechen</button>
@@ -577,7 +578,8 @@
       </select>
     </div>
     <div class="field"><label>Sendungsnummer</label><input type="text" id="vvTrackingNr" placeholder="Sendungsnummer"></div>
-    <div class="field"><label>Tracking-Link (optional)</label><input type="text" id="vvTrackingUrl" placeholder="https://…"></div>
+    <div class="field"><label for="vvTrackingUrl">Tracking-Link (optional)</label><input type="text" id="vvTrackingUrl" placeholder="https://…" aria-describedby="vvTrackingHilfe vvFehler"><small id="vvTrackingHilfe">Vollständigen HTTPS-Link der Spedition einfügen. Ohne Link das Feld leer lassen.</small></div>
+    <div id="vvFehler" role="alert" style="display:none;color:var(--red);margin-bottom:12px;"></div>
     <div class="modal-footer">
       <button class="btn btn-red btn-sm" onclick="schliesseModal(&#39;versandVersendenModal&#39;)">Abbrechen</button>
       <button class="btn btn-sm" style="background:#1f7a4d;color:#fff;" id="vvBtn" onclick="versandVersendenAbsenden()">Versenden & Rechnung senden</button>
@@ -1253,6 +1255,8 @@ async function adminLogin() {
 }
 
 function adminLogout() {
+  lagerBadgeRevision++;
+  renderLagerBadge(0);
   adminToken = null; adminUser = null;
   localStorage.removeItem('vt_admin');
   const al = document.getElementById('authLoader'); if (al) al.style.display = 'none';
@@ -1881,6 +1885,7 @@ async function ladeAdminMe() {
   const nurLager = istNurLager();
   const lagerZugang = darfLagerZugang();
   setNav('navLager', lagerZugang);
+  renderLagerBadge(0);
   // Dieselbe Prüfung wie beim Seitenwechsel; eigene interne Lager-API, kein Kundenpostfach.
   if (nurLager) setNav('navNachrichten', darfSeite('nachrichten'));
   if (!nurLager) {
@@ -1902,6 +1907,7 @@ async function ladeAdminMe() {
   // Landebereich: Lager-only → Lager, sonst Dashboard. KEIN Auto-Dashboard für Lager.
   const landing = nurLager ? 'lager' : 'dashboard';
   aktiviereSeite(landing);
+  if (lagerZugang) { aktualisiereLagerBadge(); startNachrichtenPoller(); }
 
   // Hintergrund-Funktionen nur, wenn erlaubt (keine Daten für Lager-only).
   if (!nurLager && (darf('bestellungen.ansehen') || darf('messages.view'))) { aktualisiereNachrichtenBadge(); aktualisierePreisanfrageBadge(); aktualisiereBestellBadge(); startNachrichtenPoller(); }
@@ -2237,15 +2243,84 @@ async function zeigeAdminDokument(id, typ, titel) {
 }
 
 // ===== LAGER =====
+// Pro Konto und Browser, ohne Änderungen an Bestellungen. Beim ersten Abruf
+// wird der Altbestand als Ausgangsstand übernommen. Nur danach neu eingegangene
+// lagerfähige Aufträge zählen. Automatische Aktualisierung quittiert nichts.
+const lagerGesehenCache = new Map();
+let lagerBadgeLadenAktiv = false;
+let lagerBadgeRevision = 0;
+function lagerBadgeKonto() {
+  return String(adminMe?.email || adminUser?.email || '').trim().toLowerCase();
+}
+function lagerGeseheneIds(konto) {
+  const key = 'vt_lager_gesehen_v1:' + konto;
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw !== null) {
+      const ids = JSON.parse(raw);
+      if (Array.isArray(ids) && ids.every(id => Number.isSafeInteger(id) && id > 0)) {
+        lagerGesehenCache.set(konto, ids);
+      }
+    }
+  } catch (_) { /* Gesperrter Speicher: Lesestand wenigstens für diese Sitzung. */ }
+  return lagerGesehenCache.get(konto) ?? null;
+}
+function speichereLagerGesehen(konto, ids) {
+  const eindeutig = [...new Set(ids)];
+  lagerGesehenCache.set(konto, eindeutig);
+  try { localStorage.setItem('vt_lager_gesehen_v1:' + konto, JSON.stringify(eindeutig)); } catch (_) {}
+}
+function renderLagerBadge(anzahl) {
+  const badge = document.getElementById('navLagerBadge');
+  if (!badge) return;
+  badge.textContent = String(anzahl);
+  badge.style.display = anzahl > 0 ? 'inline-block' : 'none';
+  badge.setAttribute('aria-label', `${anzahl} neue Lagerbestellungen`);
+}
+function merkeLagerGesehen(ids, konto) {
+  if (!konto || konto !== lagerBadgeKonto()) return;
+  // Nur tatsächlich angezeigte Einträge quittieren, keine unsichtbaren Aufträge.
+  speichereLagerGesehen(konto, [...(lagerGeseheneIds(konto) || []), ...ids]);
+}
+async function aktualisiereLagerBadge() {
+  if (!adminToken || !darfLagerZugang()) { renderLagerBadge(0); return; }
+  const konto = lagerBadgeKonto();
+  if (!konto || lagerBadgeLadenAktiv || lagerLadenAktiv) return;
+  const revision = lagerBadgeRevision;
+  lagerBadgeLadenAktiv = true;
+  try {
+    const r = await backendApi('/api/admin/lager/neu-ids');
+    if (!adminToken || !darfLagerZugang() || konto !== lagerBadgeKonto() || revision !== lagerBadgeRevision) return;
+    if (!Array.isArray(r.ids) || !r.ids.every(id => Number.isSafeInteger(id) && id > 0)) return;
+    const ids = [...new Set(r.ids)];
+    const vorher = lagerGeseheneIds(konto);
+    // Abgeschlossene/stornierte Aufträge verschwinden auch aus dem Lesestand.
+    const gesehen = vorher === null ? ids : vorher.filter(id => ids.includes(id));
+    speichereLagerGesehen(konto, gesehen);
+    const gesehenSet = new Set(gesehen);
+    renderLagerBadge(ids.filter(id => !gesehenSet.has(id)).length);
+  } catch (_) { /* Bei Netzfehler keinen falschen Null-/Gesehen-Stand speichern. */ }
+  finally {
+    lagerBadgeLadenAktiv = false;
+    // Ein inzwischen manuell geöffneter Lagerbereich hat den alten Poll
+    // entwertet. Den neuen Lesestand danach sofort anzeigen, nicht erst in 12 s.
+    if (revision !== lagerBadgeRevision && adminToken && !lagerLadenAktiv) aktualisiereLagerBadge();
+  }
+}
+
 let lagerLadenAktiv = false;
 async function ladeLager({ silent = false } = {}) {
   const box = document.getElementById('lagerCards');
   if (!box) return;
+  if (!adminToken || !darfLagerZugang()) return;
   if (lagerLadenAktiv) return;
+  const konto = lagerBadgeKonto();
+  const revision = ++lagerBadgeRevision;
   lagerLadenAktiv = true;
   if (!silent) box.innerHTML = '<div style="text-align:center;color:var(--gray);padding:20px;">Wird geladen…</div>';
   try {
     const r = await backendApi('/api/admin/lager');
+    if (!adminToken || !darfLagerZugang() || konto !== lagerBadgeKonto() || revision !== lagerBadgeRevision) return;
     const alle = r.bestellungen || [];
     // Nur Bestellungen, für die das Lager aktuell etwas zu tun/verfolgen hat.
     const zuKomm = alle.filter(b => b.phase === 'in_bearbeitung');
@@ -2260,6 +2335,9 @@ async function ladeLager({ silent = false } = {}) {
       + sektion('' + vtIco('truck') + ' Wartet auf Abholung durch Spedition', wartetAbholung)
       + sektion('' + vtIco('check-circle') + ' Abholbereit gemeldet', abholbereit);
     box.innerHTML = html || '<div style="text-align:center;color:var(--gray);padding:30px;">Keine Bestellungen zur Vorbereitung. ' + vtIco('sparkles') + '</div>';
+    if (!silent && !document.hidden && document.getElementById('page-lager')?.classList.contains('active')) {
+      merkeLagerGesehen(zuKomm.map(b => b.id), konto);
+    }
   } catch (e) {
     // Beim automatischen Hintergrundabruf die zuletzt sichtbaren Karten stehen lassen.
     // Sonst springt die Lagerseite alle 12 Sekunden auf "Wird geladen…" bzw. eine
@@ -2268,6 +2346,7 @@ async function ladeLager({ silent = false } = {}) {
     else console.warn('Stille Lager-Aktualisierung fehlgeschlagen:', e);
   } finally {
     lagerLadenAktiv = false;
+    aktualisiereLagerBadge();
   }
 }
 
@@ -2431,7 +2510,7 @@ async function versanddatenAbsenden() {
     await backendApi(`/api/admin/lager/${id}/an-disposition`, 'POST', payload);
     schliesseModal('versanddatenModal');
     zeigeToast(abholung ? 'Kommissionierung für Abholung gespeichert. Noch nicht abholbereit gemeldet.' : 'An Disposition weitergegeben');
-    ladeLager();
+    ladeLager({ silent: true });
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
   finally { btn.disabled = false; btn.textContent = abholung ? 'Kommissionierung speichern' : 'An Disposition weitergeben'; }
@@ -2443,7 +2522,7 @@ async function lagerAbgeholt(id) {
   try {
     await backendApi(`/api/admin/lager/${id}/abgeholt`, 'POST', {});
     zeigeToast('Abholung bestätigt');
-    ladeLager();
+    ladeLager({ silent: true });
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
 }
@@ -2454,7 +2533,7 @@ async function lagerAbholbereit(id) {
   try {
     await backendApi(`/api/admin/lager/${id}/abholbereit`, 'POST', {});
     zeigeToast('Abholbereit gemeldet – Kunde informiert');
-    ladeLager();
+    ladeLager({ silent: true });
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
   } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
 }
@@ -2539,6 +2618,7 @@ function versandplanungRow(b) {
 }
 
 function versandSpeditionOeffnen(id) {
+  zeigeVersandFormFehler('vs', '');
   const b = versandplanungCache.find(x => x.id === id)
     || (threadOrderAktuell && threadOrderAktuell.id === id ? threadOrderAktuell : {}) || {};
   const vd = b.versanddaten || {};
@@ -2554,6 +2634,7 @@ function versandSpeditionOeffnen(id) {
 }
 
 async function versandSpeditionBeauftragen() {
+  zeigeVersandFormFehler('vs', '');
   const id = document.getElementById('vsId').value;
   const payload = {
     spediteur: document.getElementById('vsSpediteur').value,
@@ -2570,13 +2651,14 @@ async function versandSpeditionBeauftragen() {
     zeigeToast('Spedition beauftragt');
     ladeVersandplanung();
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
-  } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
+  } catch (e) { zeigeVersandFormFehler('vs', e.message); }
   finally { btn.disabled = false; btn.textContent = 'Spedition beauftragen'; }
 }
 
 // Versenden-Dialog: Spedition/Tracking erfassen (→ versanddaten) und in EINER Mail
 // Versandbestätigung + Rechnung an den Kunden schicken. Vorbelegt aus bereits erfassten Werten.
 function versandVersenden(id) {
+  zeigeVersandFormFehler('vv', '');
   const b = versandplanungCache.find(x => x.id === id)
     || (threadOrderAktuell && threadOrderAktuell.id === id ? threadOrderAktuell : {}) || {};
   const vd = b.versanddaten || {};
@@ -2587,6 +2669,7 @@ function versandVersenden(id) {
   document.getElementById('versandVersendenModal').classList.add('open');
 }
 async function versandVersendenAbsenden() {
+  zeigeVersandFormFehler('vv', '');
   const id = document.getElementById('vvId').value;
   const payload = {
     spedition: document.getElementById('vvSpedition').value,
@@ -2601,8 +2684,17 @@ async function versandVersendenAbsenden() {
     zeigeToast('Versendet – Kunde informiert, Rechnung erstellt');
     ladeVersandplanung();
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
-  } catch (e) { zeigeToast('Fehler: ' + e.message, true); }
+  } catch (e) { zeigeVersandFormFehler('vv', e.message); }
   finally { btn.disabled = false; btn.textContent = 'Versenden & Rechnung senden'; }
+}
+function zeigeVersandFormFehler(prefix, message) {
+  const error = document.getElementById(prefix + 'Fehler');
+  error.textContent = message;
+  error.style.display = message ? 'block' : 'none';
+  const input = document.getElementById(prefix + 'TrackingUrl');
+  const trackingFehler = !!message && message.includes('Tracking-Link');
+  input.setAttribute('aria-invalid', String(trackingFehler));
+  if (trackingFehler) input.focus();
 }
 // Abholung abschließen: setzt versendet OHNE weitere Kundenmail (Kunde wurde bei
 // „abholbereit" inkl. Rechnung informiert). Kein Tracking-Dialog.
@@ -3855,6 +3947,7 @@ function startNachrichtenPoller() {
       if (_tippt) return;
       try { laden({ silent: true }); } catch (_) {}
     });
+    aktualisiereLagerBadge();
     // Offener Chat: nur den Verlauf aktualisieren (Flacker-/Scrollschutz in renderThreadVerlauf).
     if (document.getElementById('threadModal')?.classList.contains('open') && threadAktuelleId) ladeThreadDetail(true);
     if (document.getElementById('lagerChatModal')?.classList.contains('open')) ladeLagerChat(true);
