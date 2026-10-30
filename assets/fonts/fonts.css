@@ -1,0 +1,15 @@
+/* Unmodified variable fonts, SIL OFL 1.1; licenses alongside these files. */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 100 1000;
+  font-display: swap;
+  src: url('./dm-sans.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('./playfair-display.ttf') format('truetype');
+}
